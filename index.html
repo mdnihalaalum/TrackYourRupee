@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>TrackYourRupee • Modular Expense Tracker</title>
+  <title>TrackYourRupee • Personal Daily Ledger</title>
   <link rel="icon" href="data:," />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -265,7 +265,7 @@
           <div class="stat-block stat-block-right">
             <span class="metric-label">Spent Today</span>
             <h2 class="metric-value metric-value-secondary" id="todayTotal">₹0</h2>
-            <span class="metric-sub" id="dailyAllowanceSub">Daily allowance: ₹0</span>
+            <button type="button" class="metric-sub daily-limit-trigger" id="dailyAllowanceSub" title="Tap to see how Daily Limit is calculated">Daily limit: ₹0 ⓘ</button>
           </div>
         </div>
       </article>
@@ -456,7 +456,7 @@
     </footer>
   </div>
 
-  <!-- Phone only: bottom tab bar and interactive toast (with Undo support) -->
+  <!-- Phone only: bottom tab bar -->
   <nav class="mobile-tabbar mobile-only" id="mobileTabbar" aria-label="Main sections">
     <button type="button" class="mobile-tab" data-tab="home">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/></svg>
@@ -475,7 +475,9 @@
       <span>More</span>
     </button>
   </nav>
-  <div class="mobile-toast mobile-only" id="mobileToast" role="status" aria-live="polite">
+
+  <!-- Interactive Toast (Works on Mobile & Desktop for Undo + Daily Limit Info) -->
+  <div class="mobile-toast" id="mobileToast" role="status" aria-live="polite">
     <span id="mobileToastText"></span>
     <button type="button" class="toast-undo-btn hidden" id="mobileToastUndoBtn">Undo</button>
   </div>
