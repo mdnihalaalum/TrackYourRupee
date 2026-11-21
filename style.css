@@ -274,6 +274,10 @@ textarea {
   color-scheme: var(--scheme);
 }
 
+.month-picker-wrap input[type="month"]::-webkit-calendar-picker-indicator {
+  margin-left: 8px;
+  cursor: pointer;
+}
 .storage-badge {
   font-size: 0.78rem;
   font-weight: 600;
