@@ -52,6 +52,17 @@ body {
   padding: 20px;
   line-height: 1.5;
   transition: background-color 0.2s ease, color 0.2s ease;
+  /* Fix 2: Block accidental text selection & Chrome "Tap to Search" popups on static UI labels */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Keep form inputs & textareas selectable for editing */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .sr-only {
@@ -471,6 +482,7 @@ body {
 
 .stat-block-right {
   text-align: right;
+  align-items: flex-end;
 }
 
 .mini-edit-btn {
@@ -546,6 +558,22 @@ body {
 .metric-sub {
   font-size: 0.76rem;
   color: var(--text-muted);
+}
+
+/* Fix 3A: Tappable Daily Limit Formula Trigger */
+.daily-limit-trigger {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  text-align: right;
+  cursor: pointer;
+  text-decoration: underline dotted rgba(148, 163, 184, 0.55);
+  text-underline-offset: 3px;
+}
+
+.daily-limit-trigger:hover {
+  color: var(--accent-cyan);
 }
 
 /* Inline Budget Drawer */
@@ -643,6 +671,8 @@ form {
   flex-direction: column;
   gap: 6px;
 }
+
+/* Laptop Note (Optional) Input Overflow Fix */
 .form-row > .form-group {
   min-width: 0;
 }
@@ -985,6 +1015,46 @@ input:focus, select:focus {
   background: rgba(2, 132, 199, 0.08);
 }
 
+/* Interactive Toast (Desktop & Mobile) */
+.mobile-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 1100;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 28px);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--text-primary);
+  color: var(--bg-card);
+  font-size: 0.86rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.toast-undo-btn {
+  background: var(--accent-cyan);
+  color: var(--btn-primary-text);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1140px) {
   .summary-three-grid {
@@ -1190,7 +1260,7 @@ input:focus, select:focus {
   }
 
   .brand h1 {
-    font-size: min(1.1rem, 4.9vw);
+    font-size: min(1.06rem, 4.7vw);
     line-height: 1.2;
     white-space: nowrap;
   }
@@ -1608,44 +1678,9 @@ input:focus, select:focus {
     background: rgba(2, 132, 199, 0.1);
   }
 
-  /* Interactive Toast with Undo */
+  /* Position Toast Above Mobile Tab Bar */
   .mobile-toast {
-    position: fixed;
-    left: 50%;
     bottom: calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom));
-    z-index: 1100;
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    max-width: calc(100% - 28px);
-    padding: 10px 16px;
-    border-radius: 999px;
-    background: var(--text-primary);
-    color: var(--bg-card);
-    font-size: 0.86rem;
-    font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(-50%, 8px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .mobile-toast.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate(-50%, 0);
-  }
-
-  .toast-undo-btn {
-    background: var(--accent-cyan);
-    color: var(--btn-primary-text);
-    border: none;
-    border-radius: 999px;
-    padding: 4px 11px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
   }
 
   /* Recent & Donut */
