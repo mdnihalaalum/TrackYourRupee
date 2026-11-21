@@ -1247,12 +1247,33 @@ const FEATURE_REQUEST_URL = '';
   let editingShortcutId = null;
   let pendingQuickLogShortcut = null;
 
-  /* ---------- Phase 1: Create, Save, Use (with Non-Destructive Amount Edit), Edit, Delete, Reorder ---------- */
+  /* ---------- Cross-Browser History API Back Gesture Handling ---------- */
+  function getCurrentTab() {
+    return document.body.getAttribute('data-mobile-tab') || 'home';
+  }
+
+  function pushModalHistoryState(modalName) {
+    if (window.history && window.history.pushState) {
+      window.history.pushState({ tab: getCurrentTab(), modal: modalName }, '');
+    }
+  }
+
+  function closeShortcutsModalUI() {
+    shortcutsModal.classList.add('hidden');
+    shortcutEditorBox.classList.add('hidden');
+    quickLogConfirmBox.classList.add('hidden');
+    editingShortcutId = null;
+    pendingQuickLogShortcut = null;
+  }
+
   function openShortcutsModal(startInCreateMode = false) {
     editingShortcutId = null;
     pendingQuickLogShortcut = null;
     quickLogConfirmBox.classList.add('hidden');
     renderShortcutsList();
+    if (shortcutsModal.classList.contains('hidden')) {
+      pushModalHistoryState('shortcuts');
+    }
     shortcutsModal.classList.remove('hidden');
 
     if (startInCreateMode) {
@@ -1262,12 +1283,12 @@ const FEATURE_REQUEST_URL = '';
     }
   }
 
-  function closeShortcutsModal() {
-    shortcutsModal.classList.add('hidden');
-    shortcutEditorBox.classList.add('hidden');
-    quickLogConfirmBox.classList.add('hidden');
-    editingShortcutId = null;
-    pendingQuickLogShortcut = null;
+  function closeShortcutsModal(fromPopState = false) {
+    if (shortcutsModal.classList.contains('hidden')) return;
+    closeShortcutsModalUI();
+    if (!fromPopState && window.history && window.history.state && window.history.state.modal === 'shortcuts') {
+      window.history.back();
+    }
   }
 
   function startCreateShortcut() {
@@ -1337,7 +1358,7 @@ const FEATURE_REQUEST_URL = '';
       activeMonthInput.value = activeMonth;
     }
 
-    closeShortcutsModal();
+    closeShortcutsModal(false);
     renderAll();
     await StorageService.saveData(appData);
     showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
@@ -1349,8 +1370,8 @@ const FEATURE_REQUEST_URL = '';
   if (addNewShortcutModalBtn) {
     addNewShortcutModalBtn.addEventListener('click', startCreateShortcut);
   }
-  closeShortcutsBtn.addEventListener('click', closeShortcutsModal);
-  closeShortcutsFooterBtn.addEventListener('click', closeShortcutsModal);
+  closeShortcutsBtn.addEventListener('click', () => closeShortcutsModal(false));
+  closeShortcutsFooterBtn.addEventListener('click', () => closeShortcutsModal(false));
 
   confirmQuickLogBtn.addEventListener('click', async () => {
     if (!pendingQuickLogShortcut) return;
@@ -1512,7 +1533,7 @@ const FEATURE_REQUEST_URL = '';
     }
   });
 
-  /* ---------- Tabs ---------- */
+  /* ---------- Tabs + History API Back Navigation ---------- */
   function readSavedTab() {
     try {
       const t = localStorage.getItem(TAB_KEY);
@@ -1522,7 +1543,7 @@ const FEATURE_REQUEST_URL = '';
     }
   }
 
-  function setTab(tab, scrollTop) {
+  function applyTabUI(tab, scrollTop) {
     if (!TABS.includes(tab)) tab = 'home';
     document.body.setAttribute('data-mobile-tab', tab);
     tabButtons.forEach((btn) => {
@@ -1539,12 +1560,51 @@ const FEATURE_REQUEST_URL = '';
     if (scrollTop) window.scrollTo(0, 0);
   }
 
-  tabbar.addEventListener('click', (e) => {
-    const btn = e.target.closest('.mobile-tab');
-    if (btn) setTab(btn.dataset.tab, true);
+  function setTab(tab, scrollTop, fromPopState = false) {
+    if (!TABS.includes(tab)) tab = 'home';
+    const prevTab = getCurrentTab();
+
+    if (!fromPopState && window.history && window.history.pushState && prevTab !== tab) {
+      if (tab === 'home') {
+        if (window.history.state && window.history.state.tab && window.history.state.tab !== 'home') {
+          applyTabUI('home', scrollTop);
+          window.history.back();
+          return;
+        }
+        window.history.replaceState({ tab: 'home' }, '');
+      } else if (prevTab === 'home') {
+        window.history.pushState({ tab }, '');
+      } else {
+        window.history.replaceState({ tab }, '');
+      }
+    }
+
+    applyTabUI(tab, scrollTop);
+  }
+
+  window.addEventListener('popstate', (event) => {
+    if (!shortcutsModal.classList.contains('hidden')) {
+      closeShortcutsModalUI();
+      return;
+    }
+    if (budgetPromptModal && !budgetPromptModal.classList.contains('hidden')) {
+      budgetPromptModal.classList.add('hidden');
+      return;
+    }
+    if (welcomeModal && !welcomeModal.classList.contains('hidden')) {
+      welcomeModal.classList.add('hidden');
+      return;
+    }
+    const targetTab = event.state && TABS.includes(event.state.tab) ? event.state.tab : 'home';
+    applyTabUI(targetTab, false);
   });
 
-  recentSeeAllBtn.addEventListener('click', () => setTab('transactions', true));
+  tabbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mobile-tab');
+    if (btn) setTab(btn.dataset.tab, true, false);
+  });
+
+  recentSeeAllBtn.addEventListener('click', () => setTab('transactions', true, false));
 
   /* ---------- Hide tab bar while typing ---------- */
   function isKeyboardField(el) {
@@ -1745,6 +1805,13 @@ const FEATURE_REQUEST_URL = '';
   };
 
   renderMoreList();
-  setTab(readSavedTab(), false);
+  const initialTab = readSavedTab();
+  applyTabUI(initialTab, false);
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState({ tab: 'home' }, '');
+    if (initialTab !== 'home') {
+      window.history.pushState({ tab: initialTab }, '');
+    }
+  }
   renderMobileExtras();
 })();
