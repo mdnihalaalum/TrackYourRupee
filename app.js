@@ -756,6 +756,20 @@ activeMonthInput.addEventListener('change', (e) => {
   }
 });
 
+if (monthCalendarBox && activeMonthInput) {
+  monthCalendarBox.addEventListener('click', () => {
+    if (typeof activeMonthInput.showPicker === 'function') {
+      try {
+        activeMonthInput.showPicker();
+      } catch {
+        activeMonthInput.focus();
+      }
+    } else {
+      activeMonthInput.focus();
+    }
+  });
+}
+
 // Welcome / Privacy Modal
 closeWelcomeBtn.addEventListener('click', () => {
   localStorage.setItem(StorageService.WELCOME_SEEN_KEY, 'true');
