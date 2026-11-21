@@ -1273,13 +1273,23 @@ input:focus, select:focus {
     display: none;
   }
 
-  .month-picker-wrap {
+ .month-picker-wrap {
     grid-column: span 2;
     height: 36px;
     padding: 4px 8px;
     border-radius: 9px;
   }
 
+  .month-picker-wrap input[type="month"] {
+    width: 100%;
+    padding: 2px;
+    font-size: 0.78rem;
+  }
+
+  .month-picker-wrap input[type="month"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
   .month-picker-wrap input[type="month"] {
     width: 100%;
     padding: 2px;
