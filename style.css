@@ -1274,6 +1274,7 @@ input:focus, select:focus {
   }
 
  .month-picker-wrap {
+    position: relative;
     grid-column: span 2;
     height: 36px;
     padding: 4px 8px;
@@ -1287,13 +1288,12 @@ input:focus, select:focus {
   }
 
   .month-picker-wrap input[type="month"]::-webkit-calendar-picker-indicator {
-    display: none;
-    -webkit-appearance: none;
-  }
-  .month-picker-wrap input[type="month"] {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    padding: 2px;
-    font-size: 0.84rem;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
   }
 
   .storage-badge,
