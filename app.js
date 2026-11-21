@@ -323,6 +323,7 @@ const resetBudgetBtn = document.getElementById('resetBudgetBtn');
 const cancelBudgetBtn = document.getElementById('cancelBudgetBtn');
 
 // Add Expense Form
+const formCard = document.querySelector('.form-card');
 const expenseForm = document.getElementById('expenseForm');
 const amountInput = document.getElementById('amount');
 const categoryInput = document.getElementById('category');
@@ -786,6 +787,17 @@ editBudgetBtn.addEventListener('click', () => {
     }, 150);
   }
 });
+
+// Auto-scroll Add Expense card above mobile keypad when typing Amount or Note
+function scrollAddExpenseIntoView() {
+  if (!formCard || window.innerWidth > 640) return;
+  setTimeout(() => {
+    formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 150);
+}
+
+amountInput.addEventListener('focus', scrollAddExpenseIntoView);
+noteInput.addEventListener('focus', scrollAddExpenseIntoView);
 
 scheduleReminderDrawerBtn.addEventListener('click', () => {
   budgetDrawer.classList.add('hidden');
