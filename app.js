@@ -1,1 +1,1750 @@
-const _0x357409=_0x36a4;(function(_0xa53c5e,_0xc90c83){const _0x5641cd=_0x36a4,_0x187b12=_0xa53c5e();while(!![]){try{const _0x2e5cfc=parseInt(_0x5641cd(0x232))/0x1*(parseInt(_0x5641cd(0x216))/0x2)+parseInt(_0x5641cd(0x1d3))/0x3+-parseInt(_0x5641cd(0x1d2))/0x4+-parseInt(_0x5641cd(0x157))/0x5*(parseInt(_0x5641cd(0x1bf))/0x6)+parseInt(_0x5641cd(0x27c))/0x7+-parseInt(_0x5641cd(0x1e3))/0x8*(parseInt(_0x5641cd(0x24f))/0x9)+parseInt(_0x5641cd(0x1bb))/0xa;if(_0x2e5cfc===_0xc90c83)break;else _0x187b12['push'](_0x187b12['shift']());}catch(_0x505429){_0x187b12['push'](_0x187b12['shift']());}}}(_0x5caa,0xe7eaf));const GOOGLE_CLIENT_ID=_0x357409(0x2c4),DRIVE_SCOPE=_0x357409(0x2a6),DRIVE_FILE_NAME=_0x357409(0x1ea),StorageService={'STORAGE_KEY':'expenseflow_data_v3','FILE_ID_KEY':'expenseflow_drive_file_id','DRIVE_PREF_KEY':'expenseflow_drive_pref','THEME_KEY':_0x357409(0x2be),'WELCOME_SEEN_KEY':_0x357409(0x13c),'BUDGET_REMINDER_KEY':_0x357409(0x17b),'accessToken':null,'tokenClient':null,'driveFileId':localStorage[_0x357409(0x22a)](_0x357409(0x1e5))||null,'packData'(_0x63efdc){const _0x504c9c=_0x357409;return JSON[_0x504c9c(0x226)]({'v':0x1,'b':_0x63efdc[_0x504c9c(0x274)]||{},'e':(_0x63efdc[_0x504c9c(0x136)]||[])['map'](_0x23115a=>({'i':_0x23115a['id'],'a':_0x23115a[_0x504c9c(0x2a5)],'c':_0x23115a[_0x504c9c(0x1a3)],'m':_0x23115a[_0x504c9c(0x178)],'d':_0x23115a[_0x504c9c(0x265)],'n':_0x23115a[_0x504c9c(0x1d1)]||''})),'s':(_0x63efdc[_0x504c9c(0x2aa)]||[])['map'](_0x5166b2=>({'i':_0x5166b2['id'],'a':_0x5166b2[_0x504c9c(0x2a5)],'c':_0x5166b2[_0x504c9c(0x1a3)],'m':_0x5166b2['mode'],'n':_0x5166b2['note']||''}))});},'unpackData'(_0x24b408){const _0x243bf2=_0x357409;if(!_0x24b408||typeof _0x24b408!==_0x243bf2(0x22c))return{'budgets':{},'expenses':[],'shortcuts':[]};if(_0x24b408['b']!==undefined||_0x24b408['e']!==undefined)return{'budgets':_0x24b408['b']||{},'expenses':(_0x24b408['e']||[])['map'](_0x52c031=>({'id':_0x52c031['i']||Date[_0x243bf2(0x201)]()+Math[_0x243bf2(0x17e)](),'amount':Number(_0x52c031['a'])||0x0,'category':_0x52c031['c']||_0x243bf2(0x284),'mode':_0x52c031['m']||_0x243bf2(0x15f),'date':_0x52c031['d']||getTodayISO(),'note':_0x52c031['n']||''})),'shortcuts':Array[_0x243bf2(0x1b4)](_0x24b408['s'])?_0x24b408['s'][_0x243bf2(0x1b7)](_0x4fe93b=>({'id':_0x4fe93b['i']||Date[_0x243bf2(0x201)]()+Math[_0x243bf2(0x17e)](),'amount':Number(_0x4fe93b['a'])||0x0,'category':_0x4fe93b['c']||_0x243bf2(0x284),'mode':_0x4fe93b['m']||_0x243bf2(0x15f),'note':_0x4fe93b['n']||''})):[]};return{'budgets':_0x24b408[_0x243bf2(0x274)]||{},'expenses':Array[_0x243bf2(0x1b4)](_0x24b408[_0x243bf2(0x136)])?_0x24b408[_0x243bf2(0x136)]:[],'shortcuts':Array['isArray'](_0x24b408[_0x243bf2(0x2aa)])?_0x24b408[_0x243bf2(0x2aa)]:[]};},'loadLocal'(){const _0x4c1859=_0x357409;try{const _0x2f20e6=localStorage['getItem'](this['STORAGE_KEY']);if(!_0x2f20e6)return{'budgets':{},'expenses':[],'shortcuts':[]};return this[_0x4c1859(0x21a)](JSON[_0x4c1859(0x27e)](_0x2f20e6));}catch{return{'budgets':{},'expenses':[],'shortcuts':[]};}},'saveLocal'(_0x3bcd32){const _0x22ca36=_0x357409;localStorage[_0x22ca36(0x2a4)](this[_0x22ca36(0x20e)],this['packData'](_0x3bcd32));},'isDriveOptedIn'(){const _0x3c8905=_0x357409;return localStorage[_0x3c8905(0x22a)](this[_0x3c8905(0x1e8)])===_0x3c8905(0x252);},'isConfigured'(){const _0x2d848e=_0x357409;return GOOGLE_CLIENT_ID&&!GOOGLE_CLIENT_ID[_0x2d848e(0x170)](_0x2d848e(0x22f));},'initTokenClient'(_0x2af201){const _0x260f1c=_0x357409;if(!this[_0x260f1c(0x212)]()||typeof google===_0x260f1c(0x1f4)||!google[_0x260f1c(0x1cb)])return![];return!this['tokenClient']?this['tokenClient']=google[_0x260f1c(0x1cb)][_0x260f1c(0x2b6)][_0x260f1c(0x28c)]({'client_id':GOOGLE_CLIENT_ID,'scope':DRIVE_SCOPE,'callback':_0x2af201}):this[_0x260f1c(0x148)]['callback']=_0x2af201,!![];},'requestToken'(_0x12a300=_0x357409(0x25c)){return new Promise((_0x534ecb,_0x596581)=>{const _0x52237c=_0x36a4,_0x40de18=this[_0x52237c(0x28c)](_0x22d4dd=>{const _0x28b9e3=_0x52237c;if(_0x22d4dd[_0x28b9e3(0x12d)]){_0x596581(new Error(_0x22d4dd['error']));return;}this[_0x28b9e3(0x2b8)]=_0x22d4dd[_0x28b9e3(0x183)],localStorage[_0x28b9e3(0x2a4)](this['DRIVE_PREF_KEY'],_0x28b9e3(0x252)),_0x534ecb(this[_0x28b9e3(0x2b8)]);});if(!_0x40de18){_0x596581(new Error(_0x52237c(0x287)));return;}this['tokenClient'][_0x52237c(0x27b)]({'prompt':_0x12a300});});},async 'driveFetch'(_0x367fad,_0x17d46e={}){const _0x1216f7=_0x357409,_0x2300ad=await fetch(_0x367fad,{..._0x17d46e,'headers':{'Authorization':_0x1216f7(0x2bf)['concat'](this[_0x1216f7(0x2b8)]),..._0x17d46e['headers']||{}}});if(_0x2300ad[_0x1216f7(0x19a)]===0x191){this[_0x1216f7(0x2b8)]=null;throw new Error(_0x1216f7(0x168));}if(!_0x2300ad['ok']){const _0x29141d=await _0x2300ad[_0x1216f7(0x14d)]();throw new Error('Drive\x20API\x20('['concat'](_0x2300ad[_0x1216f7(0x19a)],_0x1216f7(0x1a2))['concat'](_0x29141d));}return _0x2300ad;},async 'findOrCreateDriveFile'(_0x46f2d7){const _0x2976d1=_0x357409;if(this[_0x2976d1(0x1fe)])try{return await this[_0x2976d1(0x1ed)](_0x2976d1(0x25e)['concat'](this[_0x2976d1(0x1fe)],_0x2976d1(0x189))),this[_0x2976d1(0x1fe)];}catch{this['driveFileId']=null,localStorage[_0x2976d1(0x222)](this[_0x2976d1(0x1f3)]);}const _0x42e857=encodeURIComponent('name=\x27'[_0x2976d1(0x1ba)](DRIVE_FILE_NAME,'\x27\x20and\x20trashed=false')),_0x3bcf6e=await this[_0x2976d1(0x1ed)](_0x2976d1(0x257)['concat'](_0x42e857,'&fields=files(id,name)&spaces=drive')),_0x3092de=await _0x3bcf6e['json']();if(_0x3092de['files']&&_0x3092de[_0x2976d1(0x18a)][_0x2976d1(0x14a)]>0x0)return this[_0x2976d1(0x1fe)]=_0x3092de[_0x2976d1(0x18a)][0x0]['id'],localStorage[_0x2976d1(0x2a4)](this[_0x2976d1(0x1f3)],this[_0x2976d1(0x1fe)]),this[_0x2976d1(0x1fe)];const _0x595d41='expenseflow_multipart_boundary',_0x4c0c08={'name':DRIVE_FILE_NAME,'mimeType':_0x2976d1(0x1cf)},_0x1105bb='--'['concat'](_0x595d41,'\x0d\x0a')+_0x2976d1(0x180)+''['concat'](JSON[_0x2976d1(0x226)](_0x4c0c08),'\x0d\x0a')+'--'[_0x2976d1(0x1ba)](_0x595d41,'\x0d\x0a')+_0x2976d1(0x146)+''[_0x2976d1(0x1ba)](this['packData'](_0x46f2d7),'\x0d\x0a')+'--'[_0x2976d1(0x1ba)](_0x595d41,'--'),_0x52aaaf=await this['driveFetch'](_0x2976d1(0x26b),{'method':_0x2976d1(0x18f),'headers':{'Content-Type':_0x2976d1(0x1ee)[_0x2976d1(0x1ba)](_0x595d41)},'body':_0x1105bb}),_0x17ced8=await _0x52aaaf['json']();return this[_0x2976d1(0x1fe)]=_0x17ced8['id'],localStorage[_0x2976d1(0x2a4)](this[_0x2976d1(0x1f3)],this[_0x2976d1(0x1fe)]),this[_0x2976d1(0x1fe)];},async 'readDriveData'(){const _0x43ca97=_0x357409;if(!this[_0x43ca97(0x1fe)])return null;const _0xfe9e7c=await this['driveFetch'](_0x43ca97(0x25e)[_0x43ca97(0x1ba)](this[_0x43ca97(0x1fe)],_0x43ca97(0x16f))),_0x11021c=await _0xfe9e7c[_0x43ca97(0x210)]();return this[_0x43ca97(0x21a)](_0x11021c);},async 'writeDriveData'(_0x2bd8a8){const _0x36a0be=_0x357409;if(!this[_0x36a0be(0x2b8)])return![];return await this[_0x36a0be(0x18b)](_0x2bd8a8),await this[_0x36a0be(0x1ed)](_0x36a0be(0x1f7)[_0x36a0be(0x1ba)](this[_0x36a0be(0x1fe)],_0x36a0be(0x1e1)),{'method':_0x36a0be(0x1e0),'headers':{'Content-Type':_0x36a0be(0x1cf)},'body':this[_0x36a0be(0x24d)](_0x2bd8a8)}),!![];},async 'saveData'(_0x4d70e3){const _0x16a76c=_0x357409;this['saveLocal'](_0x4d70e3);if(!this[_0x16a76c(0x214)]()){updateSyncUI('Saved\x20on\x20Device','default');return;}if(!this['accessToken']){updateSyncUI(_0x16a76c(0x264),_0x16a76c(0x161));return;}try{updateSyncUI(_0x16a76c(0x155),_0x16a76c(0x2ba)),await this[_0x16a76c(0x23f)](_0x4d70e3),updateSyncUI('Device\x20+\x20Drive\x20Synced',_0x16a76c(0x290));}catch(_0x43947c){console[_0x16a76c(0x12d)](_0x43947c),updateSyncUI('Saved\x20Locally\x20(Drive\x20paused)',_0x16a76c(0x12d));}}};let appData=StorageService[_0x357409(0x220)]();function _0x5caa(){const _0xb9252e=['<path\x20d=\x22M13\x202\x204\x2014h7l-1\x208\x209-12h-7z\x22/>','quickLogConfirmTitle','ALL','%)</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bar-track\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bar-fill\x22\x20style=\x22width:\x20','Includes\x20+','submit','STORAGE_KEY','badge-cash','json','focus','isConfigured','toLocaleString','isDriveOptedIn','day','2332WZCJhV','reminderDateBox','Shortcuts','Auto-set:\x20₹0\x20balance\x20remaining\x20for\x20the\x20rest\x20of\x20this\x20month','unpackData','push','\x22></span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22donut-legend-name\x22>','quickLogConfirmBox','dark','width','loadLocal','promptBudgetAmount','removeItem','max','Reminder:\x20You\x20scheduled\x20','password','stringify','scAmount','Set\x20','UPI','getItem','upiTypeGroup','object','forEach','\x20rollover','YOUR_GOOGLE_CLIENT_ID','removeChild','.more-row','880uQktMv','splice','\x20Budget\x20(₹)','Sync\x20Drive\x20Now','\x20left','budgetDrawerTitle','Payment\x20Mode','Includes\x20prev.\x20month\x20rollover','getDate','month','budgetReminderText','shortcutEditorBox','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22tx-amount\x22>','writeDriveData','Category','Reminder:\x20','createObjectURL','\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22more-icon\x22>','type','innerHTML','.mobile-tab','input','text/csv;charset=utf-8;','UPI\x20•\x20Bank','\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20stroke-dasharray=\x22','cancelShortcutEditBtn','\x0a\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22more-row\x22\x20data-more-index=\x22','packData','edit','3489093Easuwq','toLowerCase','saveData','enabled','Feature\x20requests\x20will\x20open\x20here\x20soon','closeWelcomeBtn','key','style','https://www.googleapis.com/drive/v3/files?q=','scId','filter','\x22\x20stroke-dashoffset=\x22','\x20budget.','consent','\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22donut-wrap\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20class=\x22donut-svg\x22\x20viewBox=\x220\x200\x20120\x20120\x22\x20role=\x22img\x22\x20aria-label=\x22Category\x20breakdown:\x20','https://www.googleapis.com/drive/v3/files/','replaceBudgetBtn','categoryDonut','No\x20expenses\x20recorded\x20in\x20','findIndex','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22badge\x20','Saved\x20Locally\x20(Click\x20Sync\x20Drive)','date','entries','focusin','Welcome\x20to\x20','monthStatusBadge','quickLogAmountInput','https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id','budgetTotal','upiSubGroup',')\x22>✕</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20','tel','[data-sc-action]','replace','toLocaleDateString','center','budgets','categoryBars','getElementById','breakdownMonthLabel','Auto-set:\x20','hidden','values','requestAccessToken','7582281ltFTcS','BUDGET_REMINDER_KEY','parse','UPI\x20Lite','&quot;','body','red','tag','Other','recentList','data-mobile-tab','Google\x20Identity\x20Services\x20not\x20ready\x20or\x20Client\x20ID\x20missing.','Includes\x20','Saved\x20on\x20Device\x20(Drive\x20cancelled)','Add\x20','&amp;','initTokenClient','Mobile\x20tabs\x20render\x20failed','cashTotal','driveAuthBtn','connected','en-IN','promptDismissBtn','reduce','more','green','cat-room','</span>\x0a\x20\x20\x20\x20\x20\x20</button>','shortcutsModal','documentElement','budgetPromptMessage','savePromptBudgetBtn','\x20<span\x20class=\x22more-tag\x22>','.csv','aria-current','Connecting\x20Drive...','trim','is-long','themeToggleBtn','tab','setItem','amount','https://www.googleapis.com/auth/drive.file','upiLiteTotal','Before\x20recording\x20₹','info','shortcuts','<path\x20d=\x22m9\x206\x206\x206-6\x206\x22/>','Pick\x20a\x20reminder\x20date\x20for\x20your\x20','mobileToast','getAttribute','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22delete-btn\x22\x20title=\x22Delete\x20expense\x22\x20onclick=\x22deleteExpense(','monthCount','&lt;','spentMonthLabel','setAttribute','</strong>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>spent</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20','Food','oauth2','status-green','accessToken','todayTotal','syncing','Dark\x20Mode','cat-travel','No\x20entries\x20in\x20','expenseflow_theme','Bearer\x20','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22badge\x20','cancelBudgetBtn','welcomeModal','.modal-backdrop','381251059137-hkv6bjlmcjg0i32qqblt0h0dubemdgap.apps.googleusercontent.com','addedThisMonth','<svg\x20viewBox=\x220\x200\x2024\x2024\x22\x20aria-hidden=\x22true\x22>','error','historyCount','click','remainingBalanceSub','deleteReminderBtn','shortcutsList','bolt','confirmQuickLogBtn','icon','expenses','%\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20','querySelectorAll','\x20•\x20',',\x20would\x20you\x20like\x20to\x20set\x20your\x20','monthTotal','expenseflow_welcome_seen','activeMonthInput','Expense\x20undone','email','resetBudgetBtn','Tell\x20us\x20what\x20you\x20would\x20like\x20to\x20see\x20next','<circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x229.5\x22/><path\x20d=\x22M12\x2011v5.5\x22/><path\x20d=\x22M12\x207.5h.01\x22/>','<p\x20class=\x22empty-state\x22>No\x20expenses\x20recorded\x20yet.</p>','dataset','localeCompare','Content-Type:\x20application/json\x0d\x0a\x0d\x0a','createElement','tokenClient','filterPayment','length','No\x20allowance\x20left\x20ⓘ','deleteExpense','text','paymentModeGroup','download','\x20•\x20Saved\x20default:\x20','revokeObjectURL','addEventListener','status-','moreIndex','Syncing\x20to\x20Drive...','quickLogConfirmMeta','8070jDgegI','.pill','Device\x20+\x20Drive\x20Synced','Careful','recentCount','chevron','WELCOME_SEEN_KEY','storageStatus','Cash','change','default','cat-other','Saved\x20shortcut:\x20','some','Enter','\x22></circle>','moreList','AUTH_EXPIRED','upiBankTotal','remove','noopener','\x20budget\x20to\x20₹0?\x20Your\x20recorded\x20expenses\x20will\x20not\x20be\x20deleted.','cat-food','closeShortcutsFooterBtn','?alt=media','startsWith','transactionList','expenseForm','data-theme','On\x20track','textContent','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-meta\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','includes','mode','budgetPromptModal','Spent\x20(','expenseflow_budget_reminder','yellow','sort','random','Click\x20\x22+\x20Add\x20/\x20Edit\x22\x20to\x20set','Content-Type:\x20application/json;\x20charset=UTF-8\x0d\x0a\x0d\x0a','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22delete-btn\x22\x20title=\x22Delete\x20expense\x22\x20onclick=\x22deleteExpense(','budgetReminderChip','access_token','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22shortcut-row\x22\x20data-sc-id=\x22','split','keydown','Auto-set:\x20Remaining\x20balance\x20÷\x20days\x20left\x20in\x20the\x20month','&gt;','?fields=id,trashed','files','findOrCreateDriveFile','removeAttribute','expenseflow_mobile_tab','badge-bank','POST','light','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22shortcut-controls\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22sc-icon-btn\x22\x20data-sc-action=\x22up\x22\x20','short','show','\x20budget\x20first?','\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22shortcut-tap-area\x22\x20data-sc-action=\x22use\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22shortcut-main\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<strong>','dailyAllowanceSub','Over','url','mobileTabbar','status','Shortcut\x20updated','target','active','2-digit','%</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</li>','\x20Budget','</svg>','):\x20','category','tagName','slice','UPI\x20•\x20Lite','todayStatusBadge','page','remindOn','getTime','\x20Allowance','\x0a\x20\x20\x20\x20','activeElement','insights','join','rolloverIn','addFundsBtn','remainingBalanceValue','<path\x20d=\x22M9\x2018h6\x22/><path\x20d=\x22M10\x2022h4\x22/><path\x20d=\x22M12\x202a7\x207\x200\x200\x200-4\x2012.7c.6.5\x201\x201.3\x201\x202.1V17h6v-.2c0-.8.4-1.6\x201-2.1A7\x207\x200\x200\x200\x2012\x202z\x22/>','isArray','Manage\x20','add','map','Reset\x20','remainingBalance','concat','17647570SIjvCP','disabled','use','smooth','6654ETzcif','Added\x20','home','Light\x20Mode','select','editBudgetBtn','</strong>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22shortcut-amt\x22>','<p\x20class=\x22empty-state\x22>No\x20matching\x20expenses\x20for\x20this\x20month.</p>','\x20of\x20','transactions','round','openQuickAddBtn','accounts','classList','saveLocal','badge-lite','application/json','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bar-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bar-top\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>','note','1260892Scicuh','1032285YAoasS','closest','Google\x20Client\x20ID\x20missing\x20in\x20app.js.','transaction','mtab-kb-open','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22more-text\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22more-title\x22>','<circle\x20class=\x22donut-seg\x20','\x20deficit','THEME_KEY','preventDefault','totalAvailablePool','entry','scrollIntoView','PATCH','?uploadType=media','\x20to\x20add\x20your\x20','24UCuXBs','search','expenseflow_drive_file_id','set','unshift','DRIVE_PREF_KEY','addNewShortcutModalBtn','expense.json','number','value','driveFetch','multipart/related;\x20boundary=','cat-study','budgetReminderDate','Saved\x20on\x20Device','cancelQuickLogBtn','FILE_ID_KEY','undefined','true','TEXTAREA','https://www.googleapis.com/upload/drive/v3/files/','\x20balance\x20left\x20÷\x20','scheduleReminderDrawerBtn','UPI\x20Bank','toggle','Date','min','driveFileId','from','Enter\x20an\x20amount\x20first','now','Set\x20budget\x20for\x20today\x27s\x20limit\x20ⓘ','status-red','toISOString','getTimezoneOffset','budgetCardLabel','How\x20your\x20data\x20is\x20stored\x20and\x20kept\x20private'];_0x5caa=function(){return _0xb9252e;};return _0x5caa();}if(!Array[_0x357409(0x1b4)](appData[_0x357409(0x2aa)]))appData[_0x357409(0x2aa)]=[];let selectedMode=_0x357409(0x15f),selectedUpiType=_0x357409(0x27f),activeMonth=getCurrentMonth(),pendingExpenseEntry=null,currentDailyFormulaText=_0x357409(0x187);const welcomeModal=document['getElementById'](_0x357409(0x2c2)),closeWelcomeBtn=document[_0x357409(0x276)](_0x357409(0x254)),openGuideBtn=document[_0x357409(0x276)]('openGuideBtn'),budgetPromptModal=document[_0x357409(0x276)](_0x357409(0x179)),budgetPromptTitle=document[_0x357409(0x276)]('budgetPromptTitle'),budgetPromptMessage=document[_0x357409(0x276)](_0x357409(0x29a)),promptBudgetAmount=document[_0x357409(0x276)](_0x357409(0x221)),reminderDateBox=document[_0x357409(0x276)](_0x357409(0x217)),budgetReminderDate=document[_0x357409(0x276)](_0x357409(0x1f0)),savePromptBudgetBtn=document[_0x357409(0x276)](_0x357409(0x29b)),notNowBudgetBtn=document['getElementById']('notNowBudgetBtn'),confirmReminderBtn=document['getElementById']('confirmReminderBtn'),monthCalendarBox=document[_0x357409(0x276)]('monthCalendarBox'),activeMonthInput=document[_0x357409(0x276)](_0x357409(0x13d)),storageStatus=document[_0x357409(0x276)](_0x357409(0x15e)),driveAuthBtn=document[_0x357409(0x276)](_0x357409(0x28f)),themeToggleBtn=document[_0x357409(0x276)](_0x357409(0x2a2)),exportCsvBtn=document[_0x357409(0x276)]('exportCsvBtn'),drivePromptBanner=document['getElementById']('drivePromptBanner'),promptConnectBtn=document[_0x357409(0x276)]('promptConnectBtn'),promptDismissBtn=document[_0x357409(0x276)](_0x357409(0x292)),walletModule=document[_0x357409(0x276)]('walletModule'),monthStatusBadge=document[_0x357409(0x276)](_0x357409(0x269)),budgetCardLabel=document[_0x357409(0x276)](_0x357409(0x206)),editBudgetBtn=document[_0x357409(0x276)](_0x357409(0x1c4)),budgetTotal=document[_0x357409(0x276)](_0x357409(0x26c)),budgetStatusSub=document[_0x357409(0x276)]('budgetStatusSub'),budgetReminderChip=document[_0x357409(0x276)](_0x357409(0x182)),budgetReminderText=document[_0x357409(0x276)](_0x357409(0x23c)),deleteReminderBtn=document[_0x357409(0x276)](_0x357409(0x131)),remainingBalanceValue=document[_0x357409(0x276)](_0x357409(0x1b2)),budgetBarFill=document[_0x357409(0x276)]('budgetBarFill'),remainingBalanceSub=document[_0x357409(0x276)](_0x357409(0x130)),spentMonthLabel=document[_0x357409(0x276)](_0x357409(0x2b2)),monthTotal=document['getElementById'](_0x357409(0x13b)),monthCount=document[_0x357409(0x276)](_0x357409(0x2b0)),todayTotal=document[_0x357409(0x276)](_0x357409(0x2b9)),todayDateLabel=document[_0x357409(0x276)]('todayDateLabel'),todayStatusBadge=document['getElementById'](_0x357409(0x1a7)),dailyAllowanceSub=document['getElementById'](_0x357409(0x196)),cashTotal=document[_0x357409(0x276)](_0x357409(0x28e)),upiLiteTotal=document['getElementById'](_0x357409(0x2a7)),upiBankTotal=document[_0x357409(0x276)](_0x357409(0x169)),budgetDrawer=document['getElementById']('budgetDrawer'),budgetDrawerTitle=document[_0x357409(0x276)](_0x357409(0x237)),budgetInput=document[_0x357409(0x276)]('budgetInput'),addFundsBtn=document[_0x357409(0x276)](_0x357409(0x1b1)),replaceBudgetBtn=document[_0x357409(0x276)](_0x357409(0x25f)),scheduleReminderDrawerBtn=document[_0x357409(0x276)](_0x357409(0x1f9)),resetBudgetBtn=document['getElementById'](_0x357409(0x140)),cancelBudgetBtn=document[_0x357409(0x276)](_0x357409(0x2c1)),expenseForm=document[_0x357409(0x276)](_0x357409(0x172)),amountInput=document[_0x357409(0x276)]('amount'),categoryInput=document[_0x357409(0x276)]('category'),paymentModeGroup=document[_0x357409(0x276)](_0x357409(0x14e)),upiSubGroup=document[_0x357409(0x276)](_0x357409(0x26d)),upiTypeGroup=document[_0x357409(0x276)](_0x357409(0x22b)),dateInput=document[_0x357409(0x276)](_0x357409(0x265)),noteInput=document[_0x357409(0x276)](_0x357409(0x1d1)),historyCount=document['getElementById'](_0x357409(0x12e)),searchInput=document['getElementById']('searchInput'),filterCategory=document['getElementById']('filterCategory'),filterPayment=document[_0x357409(0x276)](_0x357409(0x149)),transactionList=document[_0x357409(0x276)](_0x357409(0x171)),breakdownMonthLabel=document[_0x357409(0x276)](_0x357409(0x277)),categoryBars=document[_0x357409(0x276)](_0x357409(0x275)),toastEl=document[_0x357409(0x276)](_0x357409(0x2ad)),toastTextEl=document[_0x357409(0x276)]('mobileToastText'),toastUndoBtn=document[_0x357409(0x276)]('mobileToastUndoBtn');let lastUndoExpenseId=null,toastTimer=null;function showAppToast(_0x1a38c9,_0x539c84=null,_0x29e21c=0xa28){const _0x5f569b=_0x357409;if(!toastEl||!toastTextEl)return;toastTextEl[_0x5f569b(0x175)]=_0x1a38c9,lastUndoExpenseId=_0x539c84,toastUndoBtn&&(_0x539c84?toastUndoBtn[_0x5f569b(0x1cc)][_0x5f569b(0x16a)](_0x5f569b(0x279)):toastUndoBtn[_0x5f569b(0x1cc)]['add'](_0x5f569b(0x279))),toastEl['classList']['add']('show'),clearTimeout(toastTimer),toastTimer=setTimeout(()=>{const _0x59154f=_0x5f569b;toastEl[_0x59154f(0x1cc)][_0x59154f(0x16a)](_0x59154f(0x193)),lastUndoExpenseId=null;},_0x539c84?0x1194:_0x29e21c);}toastUndoBtn&&toastUndoBtn[_0x357409(0x152)](_0x357409(0x12f),async()=>{const _0x35d795=_0x357409;if(!lastUndoExpenseId)return;const _0x36cbe2=lastUndoExpenseId;lastUndoExpenseId=null,toastEl[_0x35d795(0x1cc)]['remove']('show'),await window[_0x35d795(0x14c)](_0x36cbe2),showAppToast(_0x35d795(0x13e));});function getTodayISO(){const _0x4ebd00=_0x357409,_0x3703ee=new Date(),_0x1a9602=_0x3703ee[_0x4ebd00(0x205)]();return new Date(_0x3703ee[_0x4ebd00(0x1aa)]()-_0x1a9602*0xea60)[_0x4ebd00(0x204)]()[_0x4ebd00(0x185)]('T')[0x0];}function getCurrentMonth(){return getTodayISO()['slice'](0x0,0x7);}function formatINR(_0x37cf27){const _0x3a2eaf=_0x357409;return'₹'+Number(_0x37cf27||0x0)[_0x3a2eaf(0x213)](_0x3a2eaf(0x291),{'minimumFractionDigits':_0x37cf27%0x1===0x0?0x0:0x2,'maximumFractionDigits':0x2});}function formatMonthLabel(_0x9765c8){const _0x5f08db=_0x357409,[_0x3440f6,_0x2afba4]=_0x9765c8[_0x5f08db(0x185)]('-')[_0x5f08db(0x1b7)](Number),_0x2c47dd=new Date(_0x3440f6,_0x2afba4-0x1,0x1);return _0x2c47dd['toLocaleDateString'](_0x5f08db(0x291),{'month':_0x5f08db(0x192),'year':'numeric'});}function formatDateReadable(_0x5829cb){const _0x31f74b=_0x357409,[_0x50b043,_0x34c648,_0x37540a]=_0x5829cb[_0x31f74b(0x185)]('-')[_0x31f74b(0x1b7)](Number),_0x332442=new Date(_0x50b043,_0x34c648-0x1,_0x37540a);return _0x332442[_0x31f74b(0x272)](_0x31f74b(0x291),{'day':_0x31f74b(0x19e),'month':_0x31f74b(0x192),'year':'numeric'});}function getRemainingDaysInMonth(_0x561302){const _0x2d4089=_0x357409,[_0x13b84f,_0x1bbef7]=_0x561302[_0x2d4089(0x185)]('-')[_0x2d4089(0x1b7)](Number),_0x66fc2e=new Date(_0x13b84f,_0x1bbef7,0x0)[_0x2d4089(0x23a)](),_0x4012bb=getTodayISO(),_0x5d9f99=_0x4012bb[_0x2d4089(0x1a5)](0x0,0x7);if(_0x561302===_0x5d9f99){const _0x3a1659=Number(_0x4012bb[_0x2d4089(0x1a5)](0x8,0xa));return Math[_0x2d4089(0x223)](0x1,_0x66fc2e-_0x3a1659+0x1);}return Math[_0x2d4089(0x223)](0x1,_0x66fc2e);}function setStatusClass(_0x4f67d9,_0x46033a){const _0x501655=_0x357409;if(!_0x4f67d9)return;_0x4f67d9[_0x501655(0x1cc)][_0x501655(0x16a)](_0x501655(0x2b7),'status-yellow',_0x501655(0x203)),_0x4f67d9['classList'][_0x501655(0x1b6)](_0x501655(0x153)[_0x501655(0x1ba)](_0x46033a));}function updateSyncUI(_0x49b4b6,_0x409677=_0x357409(0x161)){const _0x146485=_0x357409;storageStatus[_0x146485(0x175)]=_0x49b4b6,storageStatus['className']='storage-badge';if(_0x409677===_0x146485(0x290))storageStatus['classList'][_0x146485(0x1b6)](_0x146485(0x290));if(_0x409677===_0x146485(0x2ba))storageStatus['classList'][_0x146485(0x1b6)](_0x146485(0x2ba));if(_0x409677===_0x146485(0x12d))storageStatus[_0x146485(0x1cc)][_0x146485(0x1b6)](_0x146485(0x12d));}function applyTheme(_0x34b6f6){const _0x57047b=_0x357409,_0x3f98df=_0x34b6f6==='dark';_0x3f98df?(document[_0x57047b(0x299)][_0x57047b(0x2b3)](_0x57047b(0x173),_0x57047b(0x21e)),themeToggleBtn[_0x57047b(0x175)]=_0x57047b(0x1c2)):(document[_0x57047b(0x299)][_0x57047b(0x18c)](_0x57047b(0x173)),themeToggleBtn['textContent']=_0x57047b(0x2bb)),localStorage[_0x57047b(0x2a4)](StorageService['THEME_KEY'],_0x3f98df?'dark':_0x57047b(0x190));}themeToggleBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x42d3ad=_0x357409,_0x28d444=document['documentElement'][_0x42d3ad(0x2ae)](_0x42d3ad(0x173));applyTheme(_0x28d444===_0x42d3ad(0x21e)?_0x42d3ad(0x190):_0x42d3ad(0x21e));});async function triggerDriveSync(_0xcaeb1d=_0x357409(0x25c)){const _0x2fd437=_0x357409;alert('Google\x20Drive\x20Backup\x20is\x20temporarily\x20unavailable\x20while\x20the\x20app\x20is\x20in\x20testing\x20mode.\x20Your\x20expenses\x20remain\x20safely\x20saved\x20on\x20this\x20device.');return;if(!StorageService[_0x2fd437(0x212)]()){alert(_0x2fd437(0x1d5));return;}try{updateSyncUI(_0x2fd437(0x29f),_0x2fd437(0x2ba)),await StorageService['requestToken'](_0xcaeb1d),await StorageService['findOrCreateDriveFile'](appData);const _0x1429ae=await StorageService['readDriveData']();if(_0x1429ae){const _0x3a09ba=new Map();[..._0x1429ae[_0x2fd437(0x136)]||[],...appData[_0x2fd437(0x136)]||[]][_0x2fd437(0x22d)](_0x39f26f=>{const _0x4a1bb8=_0x2fd437;_0x3a09ba[_0x4a1bb8(0x1e6)](_0x39f26f['id'],_0x39f26f);}),appData['expenses']=Array[_0x2fd437(0x1ff)](_0x3a09ba[_0x2fd437(0x27a)]())[_0x2fd437(0x17d)]((_0x4b62bb,_0x2b833e)=>_0x2b833e[_0x2fd437(0x265)][_0x2fd437(0x145)](_0x4b62bb['date'])||_0x2b833e['id']-_0x4b62bb['id']),appData[_0x2fd437(0x274)]={..._0x1429ae[_0x2fd437(0x274)]||{},...appData[_0x2fd437(0x274)]||{}},(!appData[_0x2fd437(0x2aa)]||appData['shortcuts']['length']===0x0)&&Array[_0x2fd437(0x1b4)](_0x1429ae['shortcuts'])&&(appData[_0x2fd437(0x2aa)]=_0x1429ae[_0x2fd437(0x2aa)]);}StorageService[_0x2fd437(0x1cd)](appData),await StorageService[_0x2fd437(0x23f)](appData),drivePromptBanner[_0x2fd437(0x1cc)][_0x2fd437(0x1b6)](_0x2fd437(0x279)),driveAuthBtn[_0x2fd437(0x175)]=_0x2fd437(0x235),driveAuthBtn['classList']['add'](_0x2fd437(0x290)),updateSyncUI(_0x2fd437(0x159),'connected'),renderAll();}catch(_0xd4f769){console[_0x2fd437(0x12d)](_0xd4f769),updateSyncUI(_0x2fd437(0x289),'error');}}driveAuthBtn['addEventListener']('click',()=>{const _0x5c346a=_0x357409;triggerDriveSync(StorageService[_0x5c346a(0x2b8)]?'':'consent');}),promptConnectBtn['addEventListener'](_0x357409(0x12f),()=>{triggerDriveSync('consent');}),promptDismissBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x2793c1=_0x357409;localStorage[_0x2793c1(0x2a4)](StorageService[_0x2793c1(0x1e8)],'dismissed'),drivePromptBanner['classList'][_0x2793c1(0x1b6)](_0x2793c1(0x279));});function maybeShowDrivePrompt(){return;}function calculateMonthMetrics(_0x23672d){const _0x178c55=_0x357409,_0x30721b=new Set([...Object['keys'](appData[_0x178c55(0x274)]),...appData[_0x178c55(0x136)][_0x178c55(0x1b7)](_0xda7f7c=>_0xda7f7c['date'][_0x178c55(0x1a5)](0x0,0x7)),_0x23672d]),_0x543fac=Array['from'](_0x30721b)[_0x178c55(0x17d)]();let _0x558fe6=0x0,_0x3f00a0=0x0,_0x1644f2=0x0,_0x3ba6e5=0x0;for(const _0x6e165f of _0x543fac){if(_0x6e165f>_0x23672d)break;const _0x42ef76=Number(appData['budgets'][_0x6e165f]||0x0),_0x44f688=appData[_0x178c55(0x136)][_0x178c55(0x259)](_0x52670a=>_0x52670a[_0x178c55(0x265)][_0x178c55(0x170)](_0x6e165f))[_0x178c55(0x293)]((_0x53eb7b,_0x2f8539)=>_0x53eb7b+Number(_0x2f8539['amount']),0x0);_0x6e165f===_0x23672d&&(_0x3ba6e5=_0x558fe6,_0x3f00a0=_0x42ef76,_0x1644f2=_0x44f688),_0x558fe6=_0x558fe6+_0x42ef76-_0x44f688;}return{'addedThisMonth':_0x3f00a0,'rolloverIn':_0x3ba6e5,'totalAvailablePool':_0x3ba6e5+_0x3f00a0,'spentThisMonth':_0x1644f2,'remainingBalance':_0x558fe6};}function getSavedReminder(){const _0x1b34c5=_0x357409;try{const _0x4b0bfd=localStorage['getItem'](StorageService['BUDGET_REMINDER_KEY']);return _0x4b0bfd?JSON[_0x1b34c5(0x27e)](_0x4b0bfd):null;}catch{return null;}}function clearSavedReminder(){const _0xd156df=_0x357409;localStorage[_0xd156df(0x222)](StorageService[_0xd156df(0x27d)]),renderReminderChip();}function renderReminderChip(){const _0x4a7d8d=_0x357409,_0x580891=getSavedReminder();_0x580891&&_0x580891[_0x4a7d8d(0x23b)]===activeMonth&&_0x580891[_0x4a7d8d(0x1a9)]?(budgetReminderText[_0x4a7d8d(0x175)]=_0x4a7d8d(0x241)[_0x4a7d8d(0x1ba)](formatDateReadable(_0x580891[_0x4a7d8d(0x1a9)])),budgetReminderChip[_0x4a7d8d(0x1cc)][_0x4a7d8d(0x16a)]('hidden')):budgetReminderChip[_0x4a7d8d(0x1cc)][_0x4a7d8d(0x1b6)](_0x4a7d8d(0x279));}deleteReminderBtn['addEventListener'](_0x357409(0x12f),()=>{clearSavedReminder();});function openBudgetPrompt(_0x1c9324,_0x1aafc6,_0x9698be=null,_0x39ed14=![]){const _0x365823=_0x357409;pendingExpenseEntry=_0x9698be;const _0x599681=formatMonthLabel(_0x1c9324);budgetPromptTitle[_0x365823(0x175)]=_0x365823(0x228)[_0x365823(0x1ba)](_0x599681,_0x365823(0x1a0)),budgetPromptMessage[_0x365823(0x175)]=_0x1aafc6,promptBudgetAmount[_0x365823(0x1ec)]='';const _0x213080=getTodayISO(),_0x1da1ba=getSavedReminder();budgetReminderDate[_0x365823(0x1fd)]=_0x213080,budgetReminderDate[_0x365823(0x1ec)]=_0x1da1ba&&_0x1da1ba[_0x365823(0x23b)]===_0x1c9324&&_0x1da1ba['remindOn']>=_0x213080?_0x1da1ba[_0x365823(0x1a9)]:_0x213080,_0x39ed14?reminderDateBox[_0x365823(0x1cc)][_0x365823(0x16a)](_0x365823(0x279)):reminderDateBox['classList'][_0x365823(0x1b6)](_0x365823(0x279)),budgetPromptModal[_0x365823(0x1cc)][_0x365823(0x16a)](_0x365823(0x279)),setTimeout(()=>{const _0xfbb367=_0x365823;_0x39ed14?budgetReminderDate[_0xfbb367(0x211)]():(promptBudgetAmount[_0xfbb367(0x211)](),promptBudgetAmount[_0xfbb367(0x1c3)]());},0x32);}function checkMonthlyBudgetPrompt(){const _0x96595f=_0x357409,_0x554bba=getTodayISO(),_0x29d502=_0x554bba[_0x96595f(0x1a5)](0x0,0x7),_0x4dc48a=(Number(appData['budgets'][_0x29d502])||0x0)>0x0;if(_0x4dc48a)return;const _0x1484a8=getSavedReminder();if(_0x1484a8&&_0x1484a8[_0x96595f(0x23b)]===_0x29d502&&_0x1484a8[_0x96595f(0x1a9)]){_0x554bba>=_0x1484a8[_0x96595f(0x1a9)]&&openBudgetPrompt(_0x29d502,_0x96595f(0x224)[_0x96595f(0x1ba)](formatDateReadable(_0x1484a8[_0x96595f(0x1a9)]),_0x96595f(0x1e2))['concat'](formatMonthLabel(_0x29d502),_0x96595f(0x25b)));return;}openBudgetPrompt(_0x29d502,_0x96595f(0x268)[_0x96595f(0x1ba)](formatMonthLabel(_0x29d502),'!\x20Set\x20your\x20monthly\x20budget\x20now\x20to\x20track\x20your\x20balance.'));}async function finalizePendingExpense(){const _0x196107=_0x357409;if(!pendingExpenseEntry)return;const _0x47fc88=pendingExpenseEntry;pendingExpenseEntry=null,appData[_0x196107(0x136)][_0x196107(0x1e7)](_0x47fc88);const _0x51bf9b=_0x47fc88[_0x196107(0x265)][_0x196107(0x1a5)](0x0,0x7);_0x51bf9b!==activeMonth&&(activeMonth=_0x51bf9b,activeMonthInput['value']=activeMonth),amountInput[_0x196107(0x1ec)]='',noteInput[_0x196107(0x1ec)]='',renderAll(),await StorageService[_0x196107(0x251)](appData),maybeShowDrivePrompt();}function _0x36a4(_0x26f550,_0x277920){_0x26f550=_0x26f550-0x12b;const _0x5caa98=_0x5caa();let _0x36a46b=_0x5caa98[_0x26f550];return _0x36a46b;}savePromptBudgetBtn[_0x357409(0x152)](_0x357409(0x12f),async()=>{const _0x18de66=_0x357409,_0x360347=parseFloat(promptBudgetAmount[_0x18de66(0x1ec)]);if(isNaN(_0x360347)||_0x360347<=0x0){promptBudgetAmount[_0x18de66(0x211)]();return;}const _0x4ecbad=pendingExpenseEntry?pendingExpenseEntry['date'][_0x18de66(0x1a5)](0x0,0x7):activeMonth;appData['budgets'][_0x4ecbad]=(Number(appData['budgets'][_0x4ecbad])||0x0)+_0x360347,clearSavedReminder(),budgetPromptModal[_0x18de66(0x1cc)][_0x18de66(0x1b6)](_0x18de66(0x279)),renderAll(),await StorageService[_0x18de66(0x251)](appData),await finalizePendingExpense();}),notNowBudgetBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x38b0b5=_0x357409;reminderDateBox[_0x38b0b5(0x1cc)][_0x38b0b5(0x16a)](_0x38b0b5(0x279)),budgetReminderDate[_0x38b0b5(0x211)]();}),confirmReminderBtn['addEventListener'](_0x357409(0x12f),async()=>{const _0x142ff2=_0x357409,_0x358870=budgetReminderDate['value'];if(!_0x358870){budgetReminderDate[_0x142ff2(0x211)]();return;}const _0x556ca0=pendingExpenseEntry?pendingExpenseEntry[_0x142ff2(0x265)][_0x142ff2(0x1a5)](0x0,0x7):activeMonth;localStorage[_0x142ff2(0x2a4)](StorageService[_0x142ff2(0x27d)],JSON[_0x142ff2(0x226)]({'month':_0x556ca0,'remindOn':_0x358870})),budgetPromptModal[_0x142ff2(0x1cc)][_0x142ff2(0x1b6)](_0x142ff2(0x279)),renderReminderChip(),await finalizePendingExpense();}),promptBudgetAmount[_0x357409(0x152)](_0x357409(0x186),_0x28ab76=>{const _0x2821b6=_0x357409;_0x28ab76[_0x2821b6(0x255)]===_0x2821b6(0x165)&&(_0x28ab76[_0x2821b6(0x1dc)](),savePromptBudgetBtn[_0x2821b6(0x12f)]());}),budgetReminderDate[_0x357409(0x152)]('keydown',_0x48c487=>{const _0x445c38=_0x357409;_0x48c487['key']==='Enter'&&(_0x48c487[_0x445c38(0x1dc)](),confirmReminderBtn['click']());}),budgetInput[_0x357409(0x152)](_0x357409(0x186),_0x2cd5a8=>{const _0x31b057=_0x357409;_0x2cd5a8[_0x31b057(0x255)]===_0x31b057(0x165)&&(_0x2cd5a8[_0x31b057(0x1dc)](),addFundsBtn[_0x31b057(0x12f)]());}),paymentModeGroup[_0x357409(0x152)]('click',_0x55f156=>{const _0x530067=_0x357409,_0x2d5bbc=_0x55f156[_0x530067(0x19c)]['closest']('.pill');if(!_0x2d5bbc)return;paymentModeGroup['querySelectorAll'](_0x530067(0x158))['forEach'](_0x218c5d=>_0x218c5d[_0x530067(0x1cc)][_0x530067(0x16a)]('active')),_0x2d5bbc['classList'][_0x530067(0x1b6)](_0x530067(0x19d)),selectedMode=_0x2d5bbc[_0x530067(0x144)][_0x530067(0x178)],upiSubGroup[_0x530067(0x1cc)][_0x530067(0x1fb)](_0x530067(0x279),selectedMode!==_0x530067(0x229));}),upiTypeGroup['addEventListener'](_0x357409(0x12f),_0xb40c46=>{const _0x4ada9f=_0x357409,_0x48dbf1=_0xb40c46['target'][_0x4ada9f(0x1d4)]('.pill');if(!_0x48dbf1)return;upiTypeGroup[_0x4ada9f(0x138)](_0x4ada9f(0x158))[_0x4ada9f(0x22d)](_0x4319e1=>_0x4319e1[_0x4ada9f(0x1cc)]['remove'](_0x4ada9f(0x19d))),_0x48dbf1[_0x4ada9f(0x1cc)][_0x4ada9f(0x1b6)]('active'),selectedUpiType=_0x48dbf1[_0x4ada9f(0x144)]['upi'];}),activeMonthInput[_0x357409(0x152)](_0x357409(0x160),_0x1bcdbd=>{const _0x35ca95=_0x357409;_0x1bcdbd[_0x35ca95(0x19c)][_0x35ca95(0x1ec)]&&(activeMonth=_0x1bcdbd['target'][_0x35ca95(0x1ec)],renderAll());}),closeWelcomeBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x2dab98=_0x357409;localStorage[_0x2dab98(0x2a4)](StorageService[_0x2dab98(0x15d)],_0x2dab98(0x1f5)),welcomeModal[_0x2dab98(0x1cc)][_0x2dab98(0x1b6)](_0x2dab98(0x279)),checkMonthlyBudgetPrompt();}),openGuideBtn[_0x357409(0x152)]('click',()=>{const _0x67f4b4=_0x357409;welcomeModal['classList'][_0x67f4b4(0x16a)](_0x67f4b4(0x279));});dailyAllowanceSub&&dailyAllowanceSub[_0x357409(0x152)](_0x357409(0x12f),()=>{showAppToast(currentDailyFormulaText,null,0xed8);});editBudgetBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0xd24528=_0x357409;budgetDrawerTitle[_0xd24528(0x175)]=_0xd24528(0x1b5)['concat'](formatMonthLabel(activeMonth),_0xd24528(0x234)),budgetInput['value']='',budgetDrawer[_0xd24528(0x1cc)]['toggle'](_0xd24528(0x279)),!budgetDrawer['classList']['contains'](_0xd24528(0x279))&&(budgetInput[_0xd24528(0x211)](),budgetInput[_0xd24528(0x1c3)](),setTimeout(()=>{const _0x26e9c0=_0xd24528;budgetDrawer[_0x26e9c0(0x1df)]({'behavior':_0x26e9c0(0x1be),'block':_0x26e9c0(0x273)});},0x96));}),scheduleReminderDrawerBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x54ffa2=_0x357409;budgetDrawer[_0x54ffa2(0x1cc)]['add']('hidden'),openBudgetPrompt(activeMonth,_0x54ffa2(0x2ac)[_0x54ffa2(0x1ba)](formatMonthLabel(activeMonth),'\x20budget:'),null,!![]);}),cancelBudgetBtn['addEventListener'](_0x357409(0x12f),()=>{const _0x3c1b43=_0x357409;budgetDrawer[_0x3c1b43(0x1cc)][_0x3c1b43(0x1b6)]('hidden');}),addFundsBtn[_0x357409(0x152)](_0x357409(0x12f),async()=>{const _0x52d290=_0x357409,_0x2a6d33=parseFloat(budgetInput['value']);if(isNaN(_0x2a6d33)||_0x2a6d33<=0x0){budgetInput[_0x52d290(0x211)]();return;}appData[_0x52d290(0x274)][activeMonth]=Number(appData['budgets'][activeMonth]||0x0)+_0x2a6d33,clearSavedReminder(),budgetDrawer[_0x52d290(0x1cc)][_0x52d290(0x1b6)]('hidden'),renderAll(),await StorageService[_0x52d290(0x251)](appData);}),replaceBudgetBtn[_0x357409(0x152)](_0x357409(0x12f),async()=>{const _0x588b32=_0x357409,_0x32ee59=parseFloat(budgetInput['value']);if(isNaN(_0x32ee59)||_0x32ee59<0x0){budgetInput[_0x588b32(0x211)]();return;}appData['budgets'][activeMonth]=_0x32ee59,_0x32ee59>0x0&&clearSavedReminder(),budgetDrawer['classList'][_0x588b32(0x1b6)](_0x588b32(0x279)),renderAll(),await StorageService[_0x588b32(0x251)](appData);}),resetBudgetBtn[_0x357409(0x152)](_0x357409(0x12f),async()=>{const _0x3604cc=_0x357409,_0xc51fc6=confirm(_0x3604cc(0x1b8)[_0x3604cc(0x1ba)](formatMonthLabel(activeMonth),_0x3604cc(0x16c)));if(!_0xc51fc6)return;delete appData[_0x3604cc(0x274)][activeMonth],budgetDrawer[_0x3604cc(0x1cc)][_0x3604cc(0x1b6)](_0x3604cc(0x279)),renderAll(),await StorageService['saveData'](appData);}),expenseForm[_0x357409(0x152)](_0x357409(0x20d),async _0x236239=>{const _0x31648c=_0x357409;_0x236239[_0x31648c(0x1dc)]();const _0x16016b=parseFloat(amountInput[_0x31648c(0x1ec)]);if(isNaN(_0x16016b)||_0x16016b<=0x0)return;const _0x4f3624=selectedMode==='Cash'?_0x31648c(0x15f):selectedUpiType,_0x51b83c=dateInput[_0x31648c(0x1ec)]||getTodayISO(),_0x4f8c75={'id':Date['now'](),'amount':_0x16016b,'category':categoryInput[_0x31648c(0x1ec)],'mode':_0x4f3624,'date':_0x51b83c,'note':noteInput[_0x31648c(0x1ec)]['trim']()},_0x459a1b=_0x51b83c[_0x31648c(0x1a5)](0x0,0x7),_0x4fcad3=Object[_0x31648c(0x27a)](appData[_0x31648c(0x274)])[_0x31648c(0x164)](_0xbff651=>Number(_0xbff651)>0x0),_0x1f4230=getSavedReminder(),_0x4b480c=_0x1f4230&&_0x1f4230[_0x31648c(0x23b)]===_0x459a1b;if(!_0x4fcad3&&!_0x4b480c){openBudgetPrompt(_0x459a1b,_0x31648c(0x2a8)[_0x31648c(0x1ba)](_0x16016b,_0x31648c(0x13a))[_0x31648c(0x1ba)](formatMonthLabel(_0x459a1b),_0x31648c(0x194)),_0x4f8c75);return;}appData[_0x31648c(0x136)][_0x31648c(0x1e7)](_0x4f8c75),_0x459a1b!==activeMonth&&(activeMonth=_0x459a1b,activeMonthInput['value']=activeMonth),amountInput['value']='',noteInput['value']='',renderAll(),await StorageService[_0x31648c(0x251)](appData),maybeShowDrivePrompt();}),window['deleteExpense']=async function(_0x394375){const _0x18e0bd=_0x357409;appData['expenses']=appData['expenses'][_0x18e0bd(0x259)](_0x5f3a07=>_0x5f3a07['id']!==_0x394375),renderAll(),await StorageService['saveData'](appData);},exportCsvBtn[_0x357409(0x152)](_0x357409(0x12f),()=>{const _0x35212c=_0x357409,_0x337d83=appData[_0x35212c(0x136)][_0x35212c(0x259)](_0x1af596=>_0x1af596[_0x35212c(0x265)][_0x35212c(0x170)](activeMonth));if(_0x337d83[_0x35212c(0x14a)]===0x0){alert(_0x35212c(0x261)[_0x35212c(0x1ba)](formatMonthLabel(activeMonth),'\x20to\x20export.'));return;}const _0x15a7dc=[_0x35212c(0x1fc),_0x35212c(0x240),_0x35212c(0x238),'Amount\x20(INR)','Note'],_0x20fa04=_0x337d83[_0x35212c(0x1b7)](_0x33d62a=>[_0x33d62a[_0x35212c(0x265)],'\x22'[_0x35212c(0x1ba)](_0x33d62a[_0x35212c(0x1a3)],'\x22'),'\x22'[_0x35212c(0x1ba)](_0x33d62a[_0x35212c(0x178)],'\x22'),_0x33d62a['amount'],'\x22'[_0x35212c(0x1ba)]((_0x33d62a['note']||'')[_0x35212c(0x271)](/"/g,'\x22\x22'),'\x22')]),_0xa624b9=[_0x15a7dc[_0x35212c(0x1af)](','),..._0x20fa04['map'](_0x5d1f6c=>_0x5d1f6c[_0x35212c(0x1af)](','))][_0x35212c(0x1af)]('\x0a'),_0x2e88c3=new Blob([_0xa624b9],{'type':_0x35212c(0x248)}),_0x2293e5=URL[_0x35212c(0x242)](_0x2e88c3),_0x3fc7ac=document[_0x35212c(0x147)]('a');_0x3fc7ac['href']=_0x2293e5,_0x3fc7ac[_0x35212c(0x14f)]='TrackYourRupee_'[_0x35212c(0x1ba)](activeMonth,_0x35212c(0x29d)),document[_0x35212c(0x281)]['appendChild'](_0x3fc7ac),_0x3fc7ac[_0x35212c(0x12f)](),document[_0x35212c(0x281)][_0x35212c(0x230)](_0x3fc7ac),URL[_0x35212c(0x151)](_0x2293e5);}),filterCategory[_0x357409(0x152)](_0x357409(0x160),renderTransactions),filterPayment['addEventListener'](_0x357409(0x160),renderTransactions),searchInput[_0x357409(0x152)](_0x357409(0x247),renderTransactions);function renderAll(){renderSummaryAndSplit(),renderReminderChip(),renderCategoryBreakdown(),renderTransactions();}function renderSummaryAndSplit(){const _0x3a0319=_0x357409,_0x479e88=calculateMonthMetrics(activeMonth),_0x116451=formatMonthLabel(activeMonth),_0x448d1a=getTodayISO();budgetCardLabel[_0x3a0319(0x175)]=''[_0x3a0319(0x1ba)](_0x116451,_0x3a0319(0x1ab)),budgetTotal['textContent']=formatINR(_0x479e88[_0x3a0319(0x12b)]),budgetStatusSub[_0x3a0319(0x175)]=_0x479e88['addedThisMonth']>0x0?'Allowance\x20added':_0x3a0319(0x17f),remainingBalanceValue[_0x3a0319(0x175)]=formatINR(_0x479e88['remainingBalance']),remainingBalanceValue[_0x3a0319(0x1cc)][_0x3a0319(0x1fb)]('text-danger',_0x479e88[_0x3a0319(0x1b9)]<0x0);let _0x53098c=_0x3a0319(0x295),_0x1a968f=_0x3a0319(0x174),_0x2fd271=0x0;if(_0x479e88[_0x3a0319(0x1dd)]>0x0){const _0x2eafe1=_0x479e88[_0x3a0319(0x1b9)]/_0x479e88[_0x3a0319(0x1dd)]*0x64;_0x2fd271=Math['min'](0x64,Math[_0x3a0319(0x223)](0x0,Math[_0x3a0319(0x1c9)](_0x2eafe1)));if(_0x2eafe1>0x32)_0x53098c=_0x3a0319(0x295),_0x1a968f=_0x3a0319(0x174);else _0x2eafe1>=0x14?(_0x53098c=_0x3a0319(0x17c),_0x1a968f=_0x3a0319(0x15a)):(_0x53098c=_0x3a0319(0x282),_0x1a968f='Over');}else _0x479e88['remainingBalance']<0x0&&(_0x53098c=_0x3a0319(0x282),_0x1a968f='Over',_0x2fd271=0x64);budgetBarFill[_0x3a0319(0x256)][_0x3a0319(0x21f)]=''['concat'](_0x2fd271,'%'),setStatusClass(budgetBarFill,_0x53098c),setStatusClass(walletModule,_0x53098c),setStatusClass(monthCalendarBox,_0x53098c),setStatusClass(monthStatusBadge,_0x53098c),monthStatusBadge['textContent']=_0x1a968f;if(_0x479e88[_0x3a0319(0x1b0)]>0x0)remainingBalanceSub[_0x3a0319(0x175)]=_0x3a0319(0x20c)[_0x3a0319(0x1ba)](formatINR(_0x479e88[_0x3a0319(0x1b0)]),_0x3a0319(0x22e));else _0x479e88[_0x3a0319(0x1b0)]<0x0?remainingBalanceSub[_0x3a0319(0x175)]=_0x3a0319(0x288)[_0x3a0319(0x1ba)](formatINR(_0x479e88[_0x3a0319(0x1b0)]),_0x3a0319(0x1da)):remainingBalanceSub[_0x3a0319(0x175)]=_0x3a0319(0x239);const _0x31173b=appData[_0x3a0319(0x136)][_0x3a0319(0x259)](_0x4f8a14=>_0x4f8a14[_0x3a0319(0x265)][_0x3a0319(0x170)](activeMonth));spentMonthLabel[_0x3a0319(0x175)]=_0x3a0319(0x17a)[_0x3a0319(0x1ba)](_0x116451,')'),monthTotal[_0x3a0319(0x175)]=formatINR(_0x479e88['spentThisMonth']),monthCount[_0x3a0319(0x175)]=''[_0x3a0319(0x1ba)](_0x31173b[_0x3a0319(0x14a)],'\x20')[_0x3a0319(0x1ba)](_0x31173b[_0x3a0319(0x14a)]===0x1?_0x3a0319(0x1d6):_0x3a0319(0x1c8));const _0x2ec85a=appData[_0x3a0319(0x136)][_0x3a0319(0x259)](_0x497a12=>_0x497a12['date']===_0x448d1a),_0x3051aa=_0x2ec85a[_0x3a0319(0x293)]((_0x40099c,_0xdda3d0)=>_0x40099c+Number(_0xdda3d0[_0x3a0319(0x2a5)]),0x0);todayTotal[_0x3a0319(0x175)]=formatINR(_0x3051aa),todayDateLabel[_0x3a0319(0x175)]=formatDateReadable(_0x448d1a);const _0x1c0817=getRemainingDaysInMonth(activeMonth),_0x38df00=_0x479e88['remainingBalance'],_0xcf03e8=_0x38df00>0x0?_0x38df00/_0x1c0817:0x0;let _0x2318e5='green',_0x1b7c20='On\x20track';if(_0xcf03e8>0x0){const _0x254987=_0x3051aa/_0xcf03e8*0x64;if(_0x254987<0x46)_0x2318e5=_0x3a0319(0x295),_0x1b7c20=_0x3a0319(0x174);else _0x254987<=0x64?(_0x2318e5=_0x3a0319(0x17c),_0x1b7c20=_0x3a0319(0x15a)):(_0x2318e5=_0x3a0319(0x282),_0x1b7c20=_0x3a0319(0x197));dailyAllowanceSub[_0x3a0319(0x175)]='Today\x27s\x20limit:\x20'[_0x3a0319(0x1ba)](formatINR(Math[_0x3a0319(0x1c9)](_0xcf03e8)),'\x20ⓘ'),currentDailyFormulaText=_0x3a0319(0x278)[_0x3a0319(0x1ba)](formatINR(_0x38df00),_0x3a0319(0x1f8))[_0x3a0319(0x1ba)](_0x1c0817,'\x20')['concat'](_0x1c0817===0x1?_0x3a0319(0x215):'days',_0x3a0319(0x236));}else _0x3051aa>0x0?(_0x2318e5=_0x3a0319(0x282),_0x1b7c20=_0x3a0319(0x197),dailyAllowanceSub[_0x3a0319(0x175)]=_0x3a0319(0x14b),currentDailyFormulaText=_0x3a0319(0x219)):(dailyAllowanceSub['textContent']=_0x3a0319(0x202),currentDailyFormulaText='Auto-set:\x20Balance\x20left\x20÷\x20days\x20remaining\x20once\x20a\x20monthly\x20budget\x20is\x20added');setStatusClass(todayStatusBadge,_0x2318e5),todayStatusBadge['textContent']=_0x1b7c20;let _0x53d942=0x0,_0x5d6313=0x0,_0x5a74a3=0x0;_0x31173b[_0x3a0319(0x22d)](_0x5999c2=>{const _0x3b863d=_0x3a0319;if(_0x5999c2[_0x3b863d(0x178)]===_0x3b863d(0x15f))_0x53d942+=Number(_0x5999c2['amount']);else{if(_0x5999c2[_0x3b863d(0x178)]==='UPI\x20Lite')_0x5d6313+=Number(_0x5999c2[_0x3b863d(0x2a5)]);else{if(_0x5999c2[_0x3b863d(0x178)]==='Bank\x20Account'||_0x5999c2[_0x3b863d(0x178)]===_0x3b863d(0x1fa))_0x5a74a3+=Number(_0x5999c2[_0x3b863d(0x2a5)]);}}}),cashTotal[_0x3a0319(0x175)]=formatINR(_0x53d942),upiLiteTotal[_0x3a0319(0x175)]=formatINR(_0x5d6313),upiBankTotal[_0x3a0319(0x175)]=formatINR(_0x5a74a3);}function renderCategoryBreakdown(){const _0x37e510=_0x357409,_0x184601=appData[_0x37e510(0x136)][_0x37e510(0x259)](_0x20c321=>_0x20c321[_0x37e510(0x265)][_0x37e510(0x170)](activeMonth)),_0x34e528=_0x184601[_0x37e510(0x293)]((_0x33da9c,_0x33b6b2)=>_0x33da9c+Number(_0x33b6b2[_0x37e510(0x2a5)]),0x0);breakdownMonthLabel[_0x37e510(0x175)]=formatMonthLabel(activeMonth);if(_0x184601['length']===0x0||_0x34e528===0x0){categoryBars['innerHTML']='<p\x20class=\x22empty-state\x22>No\x20expenses\x20recorded\x20yet.</p>';return;}const _0x85f66d={};_0x184601[_0x37e510(0x22d)](_0x44222c=>{const _0x14d4ef=_0x37e510;_0x85f66d[_0x44222c[_0x14d4ef(0x1a3)]]=(_0x85f66d[_0x44222c[_0x14d4ef(0x1a3)]]||0x0)+Number(_0x44222c['amount']);});const _0x1031e1=Object[_0x37e510(0x266)](_0x85f66d)['sort']((_0x565af0,_0x528843)=>_0x528843[0x1]-_0x565af0[0x1]);categoryBars[_0x37e510(0x245)]=_0x1031e1['map'](([_0x57a032,_0x104f04])=>{const _0x3c3870=_0x37e510,_0x2f8a33=Math['round'](_0x104f04/_0x34e528*0x64);return _0x3c3870(0x1d0)['concat'](escapeHtml(_0x57a032),'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>')[_0x3c3870(0x1ba)](formatINR(_0x104f04),'\x20(')[_0x3c3870(0x1ba)](_0x2f8a33,_0x3c3870(0x20b))[_0x3c3870(0x1ba)](_0x2f8a33,_0x3c3870(0x137));})[_0x37e510(0x1af)]('');}function renderTransactions(){const _0x5c3284=_0x357409,_0x12a491=filterCategory[_0x5c3284(0x1ec)],_0x20ab5d=filterPayment[_0x5c3284(0x1ec)],_0x2606f6=searchInput[_0x5c3284(0x1ec)][_0x5c3284(0x2a0)]()[_0x5c3284(0x250)](),_0x42da9f=appData['expenses']['filter'](_0x336362=>_0x336362['date'][_0x5c3284(0x170)](activeMonth))['filter'](_0x5a40b4=>_0x12a491===_0x5c3284(0x20a)?!![]:_0x5a40b4[_0x5c3284(0x1a3)]===_0x12a491)['filter'](_0x30c869=>_0x20ab5d==='ALL'?!![]:_0x30c869[_0x5c3284(0x178)]===_0x20ab5d)['filter'](_0x1791fc=>{const _0x3dcf9b=_0x5c3284;if(!_0x2606f6)return!![];return _0x1791fc[_0x3dcf9b(0x1d1)]&&_0x1791fc[_0x3dcf9b(0x1d1)][_0x3dcf9b(0x250)]()[_0x3dcf9b(0x177)](_0x2606f6)||_0x1791fc[_0x3dcf9b(0x1a3)][_0x3dcf9b(0x250)]()['includes'](_0x2606f6)||_0x1791fc[_0x3dcf9b(0x178)][_0x3dcf9b(0x250)]()[_0x3dcf9b(0x177)](_0x2606f6);})[_0x5c3284(0x17d)]((_0x590eb9,_0x55a80e)=>_0x55a80e[_0x5c3284(0x265)][_0x5c3284(0x145)](_0x590eb9['date'])||_0x55a80e['id']-_0x590eb9['id']);historyCount['textContent']='Showing\x20'[_0x5c3284(0x1ba)](_0x42da9f['length'],'\x20')[_0x5c3284(0x1ba)](_0x42da9f['length']===0x1?_0x5c3284(0x1de):_0x5c3284(0x266));if(_0x42da9f[_0x5c3284(0x14a)]===0x0){transactionList['innerHTML']=_0x5c3284(0x1c6);return;}transactionList[_0x5c3284(0x245)]=_0x42da9f[_0x5c3284(0x1b7)](_0x151042=>{const _0x172ec9=_0x5c3284,_0x261a4e=_0x151042[_0x172ec9(0x178)]===_0x172ec9(0x15f),_0x5e6b7e=_0x151042['mode']==='UPI\x20Lite',_0x420ec6=_0x261a4e?_0x172ec9(0x20f):_0x5e6b7e?_0x172ec9(0x1ce):_0x172ec9(0x18e),_0x49e597=_0x261a4e?_0x172ec9(0x15f):_0x5e6b7e?_0x172ec9(0x1a6):_0x172ec9(0x249),_0x406ab8=_0x151042[_0x172ec9(0x1d1)]?_0x172ec9(0x139)[_0x172ec9(0x1ba)](escapeHtml(_0x151042[_0x172ec9(0x1d1)])):'';return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-left\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-title-row\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22tx-category\x22>'['concat'](escapeHtml(_0x151042['category']),_0x172ec9(0x263))[_0x172ec9(0x1ba)](_0x420ec6,'\x22>')[_0x172ec9(0x1ba)](_0x49e597,_0x172ec9(0x176))[_0x172ec9(0x1ba)](formatDateReadable(_0x151042[_0x172ec9(0x265)]))['concat'](_0x406ab8,'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22tx-amount\x22>')[_0x172ec9(0x1ba)](formatINR(_0x151042[_0x172ec9(0x2a5)]),_0x172ec9(0x2af))[_0x172ec9(0x1ba)](_0x151042['id'],')\x22>✕</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20');})['join']('');}function escapeHtml(_0x410259){const _0x6fb3b2=_0x357409;return String(_0x410259)[_0x6fb3b2(0x271)](/&/g,_0x6fb3b2(0x28b))[_0x6fb3b2(0x271)](/</g,_0x6fb3b2(0x2b1))[_0x6fb3b2(0x271)](/>/g,_0x6fb3b2(0x188))[_0x6fb3b2(0x271)](/"/g,_0x6fb3b2(0x280));}function init(){const _0x29f06d=_0x357409,_0x5a3218=localStorage[_0x29f06d(0x22a)](StorageService[_0x29f06d(0x1db)])||'light';applyTheme(_0x5a3218),activeMonthInput[_0x29f06d(0x1ec)]=activeMonth,dateInput[_0x29f06d(0x1ec)]=getTodayISO(),localStorage[_0x29f06d(0x22a)](StorageService['WELCOME_SEEN_KEY'])!==_0x29f06d(0x1f5)?welcomeModal[_0x29f06d(0x1cc)]['remove']('hidden'):checkMonthlyBudgetPrompt(),StorageService[_0x29f06d(0x214)]()?(updateSyncUI(_0x29f06d(0x264),'default'),driveAuthBtn[_0x29f06d(0x175)]='Sync\x20Drive'):updateSyncUI(_0x29f06d(0x1f1),_0x29f06d(0x161)),renderAll(),maybeShowDrivePrompt();}init();const FEATURE_REQUEST_URL='';(function(){const _0x543151=_0x357409,_0x41ed9f=_0x543151(0x18d),_0x2bc83e=['home','transactions',_0x543151(0x1ae),_0x543151(0x294)],_0x42f87c=0x3,_0x4636ac=[_0x543151(0x14d),_0x543151(0x1eb),_0x543151(0x1e4),_0x543151(0x13f),_0x543151(0x26f),_0x543151(0x198),_0x543151(0x225)],_0x1dd488={'Food':_0x543151(0x16d),'Travel':_0x543151(0x2bc),'Room/Hostel':_0x543151(0x296),'Study':_0x543151(0x1ef),'Shopping':'cat-shopping','Other':_0x543151(0x162)},_0x10db52={'bolt':_0x543151(0x208),'bulb':_0x543151(0x1b3),'info':_0x543151(0x142),'chevron':_0x543151(0x2ab)},_0x515e5a=document[_0x543151(0x276)](_0x543151(0x199)),_0x333678=Array[_0x543151(0x1ff)](_0x515e5a[_0x543151(0x138)](_0x543151(0x246))),_0x3892a4=document[_0x543151(0x276)](_0x543151(0x285)),_0x31abf4=document[_0x543151(0x276)](_0x543151(0x15b)),_0x22c762=document[_0x543151(0x276)]('recentSeeAllBtn'),_0x332c1d=document[_0x543151(0x276)](_0x543151(0x260)),_0x571369=document['getElementById'](_0x543151(0x167)),_0x1117f3=document[_0x543151(0x276)](_0x543151(0x1ca)),_0x5bb55c=document[_0x543151(0x276)]('saveAsShortcutBtn'),_0x49372e=document[_0x543151(0x276)](_0x543151(0x298)),_0x170b44=document['getElementById'](_0x543151(0x1e9)),_0x195a4f=document[_0x543151(0x276)]('closeShortcutsBtn'),_0x193d69=document[_0x543151(0x276)](_0x543151(0x16e)),_0x2fdabe=document[_0x543151(0x276)](_0x543151(0x132)),_0x2e8dfd=document[_0x543151(0x276)](_0x543151(0x21d)),_0x25cfb0=document[_0x543151(0x276)](_0x543151(0x209)),_0x48797=document[_0x543151(0x276)](_0x543151(0x156)),_0xc41f94=document[_0x543151(0x276)](_0x543151(0x26a)),_0x53abdd=document[_0x543151(0x276)](_0x543151(0x134)),_0x5f5427=document[_0x543151(0x276)](_0x543151(0x1f2)),_0x13cfcf=document[_0x543151(0x276)](_0x543151(0x23d)),_0x474eb2=document['getElementById']('shortcutEditorTitle'),_0x500fab=document[_0x543151(0x276)](_0x543151(0x227)),_0x34d8fe=document[_0x543151(0x276)]('scCategory'),_0x50e3cd=document['getElementById']('scMode'),_0x12fa83=document[_0x543151(0x276)]('scNote'),_0x5a766a=document[_0x543151(0x276)]('saveShortcutEditBtn'),_0x47fe62=document[_0x543151(0x276)](_0x543151(0x24b));let _0x490c7c=null,_0x166512=null;function _0xa5d9bb(_0x270b46=![]){const _0x5d21bf=_0x543151;_0x490c7c=null,_0x166512=null,_0x2e8dfd[_0x5d21bf(0x1cc)][_0x5d21bf(0x1b6)](_0x5d21bf(0x279)),_0x56ae95(),_0x49372e['classList'][_0x5d21bf(0x16a)](_0x5d21bf(0x279)),_0x270b46?_0x468581():_0x13cfcf[_0x5d21bf(0x1cc)][_0x5d21bf(0x1b6)](_0x5d21bf(0x279));}function _0x382c66(){const _0x24ef09=_0x543151;_0x49372e['classList']['add'](_0x24ef09(0x279)),_0x13cfcf[_0x24ef09(0x1cc)]['add']('hidden'),_0x2e8dfd['classList'][_0x24ef09(0x1b6)](_0x24ef09(0x279)),_0x490c7c=null,_0x166512=null;}function _0x468581(){const _0x460ee9=_0x543151;_0x490c7c=null,_0x166512=null,_0x2e8dfd[_0x460ee9(0x1cc)][_0x460ee9(0x1b6)]('hidden'),_0x474eb2[_0x460ee9(0x175)]='New\x20Shortcut',_0x500fab[_0x460ee9(0x1ec)]='',_0x34d8fe['value']=_0x460ee9(0x2b5),_0x50e3cd['value']='Cash',_0x12fa83[_0x460ee9(0x1ec)]='',_0x13cfcf[_0x460ee9(0x1cc)][_0x460ee9(0x16a)](_0x460ee9(0x279)),setTimeout(()=>_0x500fab[_0x460ee9(0x211)](),0x28);}function _0x64a5b(_0x8bcab6){const _0x2e7356=_0x543151;_0x490c7c=_0x8bcab6['id'],_0x166512=null,_0x2e8dfd['classList']['add'](_0x2e7356(0x279)),_0x474eb2[_0x2e7356(0x175)]='Edit\x20Shortcut',_0x500fab['value']=_0x8bcab6[_0x2e7356(0x2a5)],_0x34d8fe[_0x2e7356(0x1ec)]=_0x8bcab6[_0x2e7356(0x1a3)],_0x50e3cd[_0x2e7356(0x1ec)]=_0x8bcab6[_0x2e7356(0x178)],_0x12fa83['value']=_0x8bcab6[_0x2e7356(0x1d1)]||'',_0x13cfcf[_0x2e7356(0x1cc)][_0x2e7356(0x16a)](_0x2e7356(0x279)),setTimeout(()=>{_0x500fab['focus'](),_0x500fab['select']();},0x28);}function _0x3e7ac5(_0x2f7a88){const _0x1eb551=_0x543151;_0x166512=_0x2f7a88,_0x13cfcf['classList']['add'](_0x1eb551(0x279));const _0x5e7e36=_0x2f7a88['note']?''[_0x1eb551(0x1ba)](_0x2f7a88[_0x1eb551(0x1d1)],'\x20(')[_0x1eb551(0x1ba)](_0x2f7a88['category'],')'):_0x2f7a88[_0x1eb551(0x1a3)];_0x25cfb0[_0x1eb551(0x175)]=_0x1eb551(0x28a)[_0x1eb551(0x1ba)](_0x5e7e36),_0x48797[_0x1eb551(0x175)]=''['concat'](_0x2f7a88[_0x1eb551(0x178)],_0x1eb551(0x150))[_0x1eb551(0x1ba)](formatINR(_0x2f7a88[_0x1eb551(0x2a5)]),'\x20(won\x27t\x20change)'),_0xc41f94[_0x1eb551(0x1ec)]=_0x2f7a88['amount'],_0x2e8dfd[_0x1eb551(0x1cc)][_0x1eb551(0x16a)]('hidden'),setTimeout(()=>{const _0x344274=_0x1eb551;_0xc41f94[_0x344274(0x211)](),_0xc41f94[_0x344274(0x1c3)]();},0x28);}async function _0x2d98db(_0x523382,_0x17d436){const _0xacc12e=_0x543151,_0x4db539=Number(_0x17d436);if(isNaN(_0x4db539)||_0x4db539<=0x0){_0xc41f94[_0xacc12e(0x211)]();return;}const _0x962df9=getTodayISO(),_0x2c2908={'id':Date[_0xacc12e(0x201)](),'amount':_0x4db539,'category':_0x523382[_0xacc12e(0x1a3)],'mode':_0x523382[_0xacc12e(0x178)],'date':_0x962df9,'note':_0x523382[_0xacc12e(0x1d1)]||''};appData[_0xacc12e(0x136)][_0xacc12e(0x1e7)](_0x2c2908);const _0x4f711e=_0x962df9[_0xacc12e(0x1a5)](0x0,0x7);_0x4f711e!==activeMonth&&(activeMonth=_0x4f711e,activeMonthInput[_0xacc12e(0x1ec)]=activeMonth),_0x382c66(),renderAll(),await StorageService[_0xacc12e(0x251)](appData),showAppToast(_0xacc12e(0x1c0)[_0xacc12e(0x1ba)](formatINR(_0x2c2908[_0xacc12e(0x2a5)]),'\x20—\x20Undo'),_0x2c2908['id']);}_0x1117f3&&_0x1117f3['addEventListener'](_0x543151(0x12f),()=>_0xa5d9bb(![]));_0x170b44&&_0x170b44[_0x543151(0x152)]('click',_0x468581);_0x195a4f['addEventListener'](_0x543151(0x12f),_0x382c66),_0x193d69[_0x543151(0x152)](_0x543151(0x12f),_0x382c66),_0x53abdd[_0x543151(0x152)](_0x543151(0x12f),async()=>{const _0x14489f=_0x543151;if(!_0x166512)return;await _0x2d98db(_0x166512,_0xc41f94[_0x14489f(0x1ec)]);}),_0x5f5427[_0x543151(0x152)](_0x543151(0x12f),()=>{const _0xfb2ec=_0x543151;_0x166512=null,_0x2e8dfd[_0xfb2ec(0x1cc)][_0xfb2ec(0x1b6)](_0xfb2ec(0x279));}),_0xc41f94[_0x543151(0x152)](_0x543151(0x186),_0x5984cc=>{const _0x463208=_0x543151;_0x5984cc['key']===_0x463208(0x165)&&(_0x5984cc[_0x463208(0x1dc)](),_0x53abdd[_0x463208(0x12f)]());});_0x5bb55c&&_0x5bb55c[_0x543151(0x152)](_0x543151(0x12f),async()=>{const _0x346cfa=_0x543151,_0x30a881=parseFloat(amountInput['value']);if(isNaN(_0x30a881)||_0x30a881<=0x0){amountInput[_0x346cfa(0x211)](),showAppToast(_0x346cfa(0x200));return;}const _0x2443bc=selectedMode==='Cash'?_0x346cfa(0x15f):selectedUpiType,_0x35a52c={'id':Date[_0x346cfa(0x201)](),'amount':_0x30a881,'category':categoryInput['value'],'mode':_0x2443bc,'note':noteInput[_0x346cfa(0x1ec)][_0x346cfa(0x2a0)]()};appData[_0x346cfa(0x2aa)][_0x346cfa(0x21b)](_0x35a52c),await StorageService['saveData'](appData),_0x126b54(),showAppToast('Saved\x20shortcut:\x20'[_0x346cfa(0x1ba)](formatINR(_0x30a881)));});_0x47fe62[_0x543151(0x152)](_0x543151(0x12f),()=>{const _0x1735f1=_0x543151;_0x490c7c=null,_0x13cfcf[_0x1735f1(0x1cc)]['add'](_0x1735f1(0x279));}),_0x5a766a[_0x543151(0x152)]('click',async()=>{const _0x41ac22=_0x543151,_0x4576e1=parseFloat(_0x500fab['value']);if(isNaN(_0x4576e1)||_0x4576e1<=0x0){_0x500fab[_0x41ac22(0x211)]();return;}if(_0x490c7c===null)appData['shortcuts'][_0x41ac22(0x21b)]({'id':Date[_0x41ac22(0x201)](),'amount':_0x4576e1,'category':_0x34d8fe[_0x41ac22(0x1ec)],'mode':_0x50e3cd['value'],'note':_0x12fa83['value'][_0x41ac22(0x2a0)]()}),await StorageService[_0x41ac22(0x251)](appData),showAppToast(_0x41ac22(0x163)[_0x41ac22(0x1ba)](formatINR(_0x4576e1)));else{const _0x4d186a=appData['shortcuts'][_0x41ac22(0x262)](_0x3f46e5=>_0x3f46e5['id']===_0x490c7c);_0x4d186a!==-0x1&&(appData[_0x41ac22(0x2aa)][_0x4d186a]={...appData[_0x41ac22(0x2aa)][_0x4d186a],'amount':_0x4576e1,'category':_0x34d8fe[_0x41ac22(0x1ec)],'mode':_0x50e3cd['value'],'note':_0x12fa83[_0x41ac22(0x1ec)]['trim']()},await StorageService[_0x41ac22(0x251)](appData),showAppToast(_0x41ac22(0x19b)));}_0x490c7c=null,_0x13cfcf['classList']['add'](_0x41ac22(0x279)),_0x56ae95(),_0x126b54();});function _0x56ae95(){const _0x3d2d5f=_0x543151;if(!appData[_0x3d2d5f(0x2aa)]||appData[_0x3d2d5f(0x2aa)]['length']===0x0){_0x2fdabe[_0x3d2d5f(0x245)]='<p\x20class=\x22empty-state\x22>No\x20shortcuts\x20yet.\x20Tap\x20<strong>+\x20Add</strong>\x20above\x20or\x20<strong>☆\x20Save\x20shortcut</strong>\x20on\x20Home.</p>';return;}_0x2fdabe[_0x3d2d5f(0x245)]=appData[_0x3d2d5f(0x2aa)][_0x3d2d5f(0x1b7)]((_0x34e68a,_0x3f1738)=>{const _0x1885f7=_0x3d2d5f,_0x16e1b3=_0x34e68a[_0x1885f7(0x178)]==='Cash',_0x5dc978=_0x34e68a[_0x1885f7(0x178)]==='UPI\x20Lite',_0x2e64f4=_0x16e1b3?'badge-cash':_0x5dc978?_0x1885f7(0x1ce):'badge-bank',_0x437c7f=_0x16e1b3?_0x1885f7(0x15f):_0x5dc978?'UPI\x20•\x20Lite':_0x1885f7(0x249),_0x2d79a2=_0x34e68a[_0x1885f7(0x1d1)]?escapeHtml(_0x34e68a[_0x1885f7(0x1d1)]):escapeHtml(_0x34e68a[_0x1885f7(0x1a3)]),_0x148044=_0x34e68a[_0x1885f7(0x1d1)]?''['concat'](escapeHtml(_0x34e68a['category']),_0x1885f7(0x139)):'';return _0x1885f7(0x184)[_0x1885f7(0x1ba)](_0x34e68a['id'],_0x1885f7(0x195))[_0x1885f7(0x1ba)](_0x2d79a2,_0x1885f7(0x1c5))['concat'](formatINR(_0x34e68a['amount']),'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22shortcut-sub\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>')[_0x1885f7(0x1ba)](_0x148044,'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22badge\x20')[_0x1885f7(0x1ba)](_0x2e64f4,'\x22>')[_0x1885f7(0x1ba)](_0x437c7f,_0x1885f7(0x191))[_0x1885f7(0x1ba)](_0x3f1738===0x0?_0x1885f7(0x1bc):'','\x20title=\x22Move\x20up\x22>↑</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22sc-icon-btn\x22\x20data-sc-action=\x22down\x22\x20')[_0x1885f7(0x1ba)](_0x3f1738===appData[_0x1885f7(0x2aa)][_0x1885f7(0x14a)]-0x1?'disabled':'','\x20title=\x22Move\x20down\x22>↓</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22sc-icon-btn\x22\x20data-sc-action=\x22edit\x22\x20title=\x22Edit\x22>✎</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20type=\x22button\x22\x20class=\x22sc-icon-btn\x20sc-del\x22\x20data-sc-action=\x22delete\x22\x20title=\x22Delete\x22>✕</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20');})[_0x3d2d5f(0x1af)]('');}_0x2fdabe[_0x543151(0x152)](_0x543151(0x12f),async _0x4c70a9=>{const _0x3adf88=_0x543151,_0x46e684=_0x4c70a9[_0x3adf88(0x19c)][_0x3adf88(0x1d4)](_0x3adf88(0x270)),_0x5d24db=_0x4c70a9[_0x3adf88(0x19c)][_0x3adf88(0x1d4)]('.shortcut-row');if(!_0x46e684||!_0x5d24db)return;const _0x4dfdcb=Number(_0x5d24db['dataset'][_0x3adf88(0x258)]),_0x2ab16a=appData[_0x3adf88(0x2aa)]['findIndex'](_0x45358e=>_0x45358e['id']===_0x4dfdcb);if(_0x2ab16a===-0x1)return;const _0x4ee2e1=_0x46e684[_0x3adf88(0x144)]['scAction'];if(_0x4ee2e1===_0x3adf88(0x1bd))_0x3e7ac5(appData[_0x3adf88(0x2aa)][_0x2ab16a]);else{if(_0x4ee2e1===_0x3adf88(0x24e))_0x64a5b(appData['shortcuts'][_0x2ab16a]);else{if(_0x4ee2e1==='delete')appData[_0x3adf88(0x2aa)][_0x3adf88(0x233)](_0x2ab16a,0x1),await StorageService[_0x3adf88(0x251)](appData),_0x56ae95(),_0x126b54(),showAppToast('Shortcut\x20deleted');else{if(_0x4ee2e1==='up'&&_0x2ab16a>0x0){const _0x4c8caa=appData['shortcuts'][_0x2ab16a-0x1];appData[_0x3adf88(0x2aa)][_0x2ab16a-0x1]=appData[_0x3adf88(0x2aa)][_0x2ab16a],appData['shortcuts'][_0x2ab16a]=_0x4c8caa,await StorageService[_0x3adf88(0x251)](appData),_0x56ae95();}else{if(_0x4ee2e1==='down'&&_0x2ab16a<appData[_0x3adf88(0x2aa)][_0x3adf88(0x14a)]-0x1){const _0x28e480=appData['shortcuts'][_0x2ab16a+0x1];appData[_0x3adf88(0x2aa)][_0x2ab16a+0x1]=appData[_0x3adf88(0x2aa)][_0x2ab16a],appData[_0x3adf88(0x2aa)][_0x2ab16a]=_0x28e480,await StorageService['saveData'](appData),_0x56ae95();}}}}}});function _0x36c36a(){const _0x4723f2=_0x543151;try{const _0x3c9cb5=localStorage[_0x4723f2(0x22a)](_0x41ed9f);return _0x2bc83e[_0x4723f2(0x177)](_0x3c9cb5)?_0x3c9cb5:_0x4723f2(0x1c1);}catch{return _0x4723f2(0x1c1);}}function _0x1aa265(_0xf1520e,_0x1c0c69){const _0x470656=_0x543151;if(!_0x2bc83e[_0x470656(0x177)](_0xf1520e))_0xf1520e='home';document[_0x470656(0x281)][_0x470656(0x2b3)](_0x470656(0x286),_0xf1520e),_0x333678[_0x470656(0x22d)](_0x564225=>{const _0xf00735=_0x470656,_0x137b8f=_0x564225['dataset'][_0xf00735(0x2a3)]===_0xf1520e;_0x564225[_0xf00735(0x1cc)][_0xf00735(0x1fb)]('active',_0x137b8f);if(_0x137b8f)_0x564225[_0xf00735(0x2b3)](_0xf00735(0x29e),_0xf00735(0x1a8));else _0x564225[_0xf00735(0x18c)](_0xf00735(0x29e));});try{localStorage[_0x470656(0x2a4)](_0x41ed9f,_0xf1520e);}catch{}if(_0x1c0c69)window['scrollTo'](0x0,0x0);}_0x515e5a[_0x543151(0x152)](_0x543151(0x12f),_0x5b2c90=>{const _0x22a591=_0x543151,_0x1c623d=_0x5b2c90[_0x22a591(0x19c)][_0x22a591(0x1d4)](_0x22a591(0x246));if(_0x1c623d)_0x1aa265(_0x1c623d[_0x22a591(0x144)]['tab'],!![]);}),_0x22c762['addEventListener'](_0x543151(0x12f),()=>_0x1aa265(_0x543151(0x1c8),!![]));function _0x5cf862(_0x772ea){const _0x21319d=_0x543151;if(!_0x772ea||!_0x772ea[_0x21319d(0x1a4)])return![];if(_0x772ea['closest'](_0x21319d(0x2c3)))return![];if(_0x772ea[_0x21319d(0x1a4)]===_0x21319d(0x1f6))return!![];if(_0x772ea[_0x21319d(0x1a4)]!=='INPUT')return![];return _0x4636ac[_0x21319d(0x177)]((_0x772ea[_0x21319d(0x2ae)](_0x21319d(0x244))||_0x21319d(0x14d))[_0x21319d(0x250)]());}function _0x39b5a2(){const _0x44fd03=_0x543151;document[_0x44fd03(0x281)][_0x44fd03(0x1cc)][_0x44fd03(0x1fb)](_0x44fd03(0x1d7),_0x5cf862(document[_0x44fd03(0x1ad)]));}document['addEventListener'](_0x543151(0x267),_0x39b5a2),document['addEventListener']('focusout',()=>setTimeout(_0x39b5a2,0x0));function _0x58c117(){const _0x1dfbf4=_0x543151;return appData['expenses'][_0x1dfbf4(0x259)](_0xb41b67=>_0xb41b67['date'][_0x1dfbf4(0x170)](activeMonth))[_0x1dfbf4(0x17d)]((_0x1afccf,_0xc40574)=>_0xc40574[_0x1dfbf4(0x265)][_0x1dfbf4(0x145)](_0x1afccf['date'])||_0xc40574['id']-_0x1afccf['id']);}function _0x1aab5f(_0x42103c){const _0x3c1b6a=_0x543151,_0x2d2eb5=_0x42103c[_0x3c1b6a(0x178)]===_0x3c1b6a(0x15f),_0x339dd6=_0x42103c[_0x3c1b6a(0x178)]===_0x3c1b6a(0x27f),_0x1acd32=_0x2d2eb5?_0x3c1b6a(0x20f):_0x339dd6?_0x3c1b6a(0x1ce):'badge-bank',_0x5dd2d3=_0x2d2eb5?_0x3c1b6a(0x15f):_0x339dd6?_0x3c1b6a(0x1a6):_0x3c1b6a(0x249),_0xbafd92=_0x42103c[_0x3c1b6a(0x1d1)]?_0x3c1b6a(0x139)[_0x3c1b6a(0x1ba)](escapeHtml(_0x42103c['note'])):'';return'\x0a\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-left\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-title-row\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22tx-category\x22>'[_0x3c1b6a(0x1ba)](escapeHtml(_0x42103c['category']),_0x3c1b6a(0x2c0))[_0x3c1b6a(0x1ba)](_0x1acd32,'\x22>')[_0x3c1b6a(0x1ba)](_0x5dd2d3,'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22tx-meta\x22>')[_0x3c1b6a(0x1ba)](formatDateReadable(_0x42103c[_0x3c1b6a(0x265)]))['concat'](_0xbafd92,_0x3c1b6a(0x23e))[_0x3c1b6a(0x1ba)](formatINR(_0x42103c[_0x3c1b6a(0x2a5)]),_0x3c1b6a(0x181))['concat'](_0x42103c['id'],_0x3c1b6a(0x26e));}function _0x54357e(){const _0x10d48b=_0x543151,_0x58e35a=_0x58c117();if(_0x58e35a[_0x10d48b(0x14a)]===0x0){_0x31abf4[_0x10d48b(0x175)]=_0x10d48b(0x2bd)[_0x10d48b(0x1ba)](formatMonthLabel(activeMonth)),_0x3892a4[_0x10d48b(0x245)]='<p\x20class=\x22empty-state\x22>No\x20expenses\x20in\x20this\x20month\x20yet.</p>',_0x22c762[_0x10d48b(0x1cc)][_0x10d48b(0x1b6)](_0x10d48b(0x279));return;}const _0xb35793=_0x58e35a['slice'](0x0,_0x42f87c);_0x31abf4[_0x10d48b(0x175)]='Latest\x20'[_0x10d48b(0x1ba)](_0xb35793[_0x10d48b(0x14a)],_0x10d48b(0x1c7))[_0x10d48b(0x1ba)](_0x58e35a[_0x10d48b(0x14a)]),_0x3892a4['innerHTML']=_0xb35793[_0x10d48b(0x1b7)](_0x1aab5f)[_0x10d48b(0x1af)](''),_0x22c762[_0x10d48b(0x1cc)][_0x10d48b(0x16a)]('hidden');}function _0x117c58(){const _0x2070bd=_0x543151,_0x2dadc6=0x30,_0x1a6dcc=0x2*Math['PI']*_0x2dadc6,_0x58ea84=_0x58c117(),_0x58148f=_0x58ea84[_0x2070bd(0x293)]((_0x40ae29,_0x3a640d)=>_0x40ae29+Number(_0x3a640d[_0x2070bd(0x2a5)]),0x0),_0x2c5ce8={};_0x58ea84['forEach'](_0x14f50c=>{const _0x12cf86=_0x2070bd;_0x2c5ce8[_0x14f50c[_0x12cf86(0x1a3)]]=(_0x2c5ce8[_0x14f50c['category']]||0x0)+Number(_0x14f50c['amount']);});const _0x3c718d=Object['entries'](_0x2c5ce8)[_0x2070bd(0x17d)]((_0x309ed7,_0xaf8033)=>_0xaf8033[0x1]-_0x309ed7[0x1]);let _0x5baf59='';if(_0x58148f>0x0){const _0x3ded24=_0x3c718d['length']>0x1?1.2:0x0;let _0x1540bf=0x0;_0x5baf59=_0x3c718d[_0x2070bd(0x1b7)](([_0x3fc828,_0x2fad55])=>{const _0x2bf721=_0x2070bd,_0x724ee=_0x2fad55/_0x58148f*_0x1a6dcc,_0x31b2a1=Math[_0x2bf721(0x223)](_0x724ee-_0x3ded24,0.01),_0x587657=_0x2bf721(0x1d9)[_0x2bf721(0x1ba)](_0x1dd488[_0x3fc828]||_0x2bf721(0x162),'\x22\x20cx=\x2260\x22\x20cy=\x2260\x22\x20r=\x22')['concat'](_0x2dadc6,_0x2bf721(0x24a))[_0x2bf721(0x1ba)](_0x31b2a1,'\x20')[_0x2bf721(0x1ba)](_0x1a6dcc-_0x31b2a1,_0x2bf721(0x25a))[_0x2bf721(0x1ba)](-_0x1540bf,_0x2bf721(0x166));return _0x1540bf+=_0x724ee,_0x587657;})[_0x2070bd(0x1af)]('');}else _0x5baf59='<circle\x20class=\x22donut-track\x22\x20cx=\x2260\x22\x20cy=\x2260\x22\x20r=\x22'[_0x2070bd(0x1ba)](_0x2dadc6,'\x22></circle>');const _0x43ea30=formatINR(_0x58148f),_0x4808f3=_0x58148f>0x0?'<ul\x20class=\x22donut-legend\x22>'['concat'](_0x3c718d[_0x2070bd(0x1b7)](([_0x104ce7,_0x358c0c])=>{const _0xc548e2=_0x2070bd,_0x163152=Math[_0xc548e2(0x1c9)](_0x358c0c/_0x58148f*0x64);return'<li\x20class=\x22donut-legend-item\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22donut-dot\x20'['concat'](_0x1dd488[_0x104ce7]||_0xc548e2(0x162),_0xc548e2(0x21c))[_0xc548e2(0x1ba)](escapeHtml(_0x104ce7),'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22donut-legend-amt\x22>')[_0xc548e2(0x1ba)](formatINR(_0x358c0c),'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22donut-legend-pct\x22>')[_0xc548e2(0x1ba)](_0x163152,_0xc548e2(0x19f));})['join'](''),'</ul>'):_0x2070bd(0x143);_0x332c1d[_0x2070bd(0x245)]=_0x2070bd(0x25d)['concat'](_0x43ea30,'\x20spent\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<g\x20transform=\x22rotate(-90\x2060\x2060)\x22>')[_0x2070bd(0x1ba)](_0x5baf59,'</g>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22donut-center\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<strong\x20class=\x22')[_0x2070bd(0x1ba)](_0x43ea30[_0x2070bd(0x14a)]>0x9?_0x2070bd(0x2a1):'','\x22>')['concat'](_0x43ea30,_0x2070bd(0x2b4))[_0x2070bd(0x1ba)](_0x4808f3,_0x2070bd(0x1ac));}function _0x220843(_0x1cab82){const _0x303150=_0x543151;return _0x303150(0x12c)[_0x303150(0x1ba)](_0x10db52[_0x1cab82]||'',_0x303150(0x1a1));}function _0x5434f0(){const _0x1b5742=_0x543151,_0x612c9=(appData['shortcuts']||[])['length'];return[{'icon':_0x1b5742(0x133),'title':_0x1b5742(0x218),'desc':'Add,\x20edit,\x20or\x20quick-log\x20your\x20saved\x20expenses','tag':''[_0x1b5742(0x1ba)](_0x612c9),'action':()=>_0xa5d9bb(![])},{'icon':'bulb','title':'Request\x20a\x20feature','desc':_0x1b5742(0x141),'action':()=>{const _0x484545=_0x1b5742;if(FEATURE_REQUEST_URL)window['open'](FEATURE_REQUEST_URL,'_blank',_0x484545(0x16b));else showAppToast(_0x484545(0x253));}},{'icon':_0x1b5742(0x2a9),'title':'App\x20Info\x20&\x20Privacy','desc':_0x1b5742(0x207),'action':()=>openGuideBtn[_0x1b5742(0x12f)]()}];}function _0x126b54(){const _0x492543=_0x543151,_0xcdf816=_0x5434f0();_0x571369[_0x492543(0x245)]=_0xcdf816['map']((_0x4db9ad,_0x7cecf1)=>_0x492543(0x24c)[_0x492543(0x1ba)](_0x7cecf1,_0x492543(0x243))[_0x492543(0x1ba)](_0x220843(_0x4db9ad[_0x492543(0x135)]),_0x492543(0x1d8))[_0x492543(0x1ba)](escapeHtml(_0x4db9ad['title']))['concat'](_0x4db9ad[_0x492543(0x283)]?_0x492543(0x29c)['concat'](escapeHtml(_0x4db9ad['tag']),'</span>'):'','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22more-desc\x22>')[_0x492543(0x1ba)](escapeHtml(_0x4db9ad['desc']),'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22more-chevron\x22>')['concat'](_0x220843(_0x492543(0x15c)),_0x492543(0x297)))[_0x492543(0x1af)]('');}_0x571369[_0x543151(0x152)](_0x543151(0x12f),_0x292859=>{const _0x81c41b=_0x543151,_0x2ab09a=_0x292859['target'][_0x81c41b(0x1d4)](_0x81c41b(0x231));if(!_0x2ab09a)return;const _0xd4bce0=_0x5434f0(),_0xf0177a=_0xd4bce0[Number(_0x2ab09a['dataset'][_0x81c41b(0x154)])];if(_0xf0177a&&_0xf0177a['action'])_0xf0177a['action']();});function _0x3102e7(){const _0x2b7744=_0x543151;try{_0x54357e(),_0x117c58();}catch(_0x3d69bd){console[_0x2b7744(0x12d)](_0x2b7744(0x28d),_0x3d69bd);}}const _0x2333fc=renderAll;renderAll=function(){_0x2333fc(),_0x3102e7();},_0x126b54(),_0x1aa265(_0x36c36a(),![]),_0x3102e7();}());
+/**
+ * ============================================================================
+ * GOOGLE CLOUD OAUTH CLIENT ID
+ * ============================================================================
+ */
+const GOOGLE_CLIENT_ID = '381251059137-hkv6bjlmcjg0i32qqblt0h0dubemdgap.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILE_NAME = 'expense.json';
+
+/**
+ * StorageService
+ * - Primary storage is localStorage (instant, offline, zero sign-in required).
+ * - Google Drive sync is 100% opt-in via restricted drive.file scope.
+ * - Keeps internal localStorage keys unchanged so existing data remains intact.
+ */
+const StorageService = {
+  STORAGE_KEY: 'expenseflow_data_v3',
+  FILE_ID_KEY: 'expenseflow_drive_file_id',
+  DRIVE_PREF_KEY: 'expenseflow_drive_pref',
+  THEME_KEY: 'expenseflow_theme',
+  WELCOME_SEEN_KEY: 'expenseflow_welcome_seen',
+  BUDGET_REMINDER_KEY: 'expenseflow_budget_reminder',
+  accessToken: null,
+  tokenClient: null,
+  driveFileId: localStorage.getItem('expenseflow_drive_file_id') || null,
+
+  packData(data) {
+    return JSON.stringify({
+      v: 1,
+      b: data.budgets || {},
+      e: (data.expenses || []).map((x) => ({
+        i: x.id,
+        a: x.amount,
+        c: x.category,
+        m: x.mode,
+        d: x.date,
+        n: x.note || ''
+      })),
+      s: (data.shortcuts || []).map((x) => ({
+        i: x.id,
+        a: x.amount,
+        c: x.category,
+        m: x.mode,
+        n: x.note || ''
+      }))
+    });
+  },
+
+  unpackData(raw) {
+    if (!raw || typeof raw !== 'object') return { budgets: {}, expenses: [], shortcuts: [] };
+    if (raw.b !== undefined || raw.e !== undefined) {
+      return {
+        budgets: raw.b || {},
+        expenses: (raw.e || []).map((x) => ({
+          id: x.i || Date.now() + Math.random(),
+          amount: Number(x.a) || 0,
+          category: x.c || 'Other',
+          mode: x.m || 'Cash',
+          date: x.d || getTodayISO(),
+          note: x.n || ''
+        })),
+        shortcuts: Array.isArray(raw.s)
+          ? raw.s.map((x) => ({
+              id: x.i || Date.now() + Math.random(),
+              amount: Number(x.a) || 0,
+              category: x.c || 'Other',
+              mode: x.m || 'Cash',
+              note: x.n || ''
+            }))
+          : []
+      };
+    }
+    return {
+      budgets: raw.budgets || {},
+      expenses: Array.isArray(raw.expenses) ? raw.expenses : [],
+      shortcuts: Array.isArray(raw.shortcuts) ? raw.shortcuts : []
+    };
+  },
+
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (!raw) return { budgets: {}, expenses: [], shortcuts: [] };
+      return this.unpackData(JSON.parse(raw));
+    } catch {
+      return { budgets: {}, expenses: [], shortcuts: [] };
+    }
+  },
+
+  saveLocal(data) {
+    localStorage.setItem(this.STORAGE_KEY, this.packData(data));
+  },
+
+  isDriveOptedIn() {
+    return localStorage.getItem(this.DRIVE_PREF_KEY) === 'enabled';
+  },
+
+  isConfigured() {
+    return GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.startsWith('YOUR_GOOGLE_CLIENT_ID');
+  },
+
+  initTokenClient(callback) {
+    if (!this.isConfigured() || typeof google === 'undefined' || !google.accounts) {
+      return false;
+    }
+    if (!this.tokenClient) {
+      this.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: DRIVE_SCOPE,
+        callback
+      });
+    } else {
+      this.tokenClient.callback = callback;
+    }
+    return true;
+  },
+
+  requestToken(promptMode = 'consent') {
+    return new Promise((resolve, reject) => {
+      const ready = this.initTokenClient((response) => {
+        if (response.error) {
+          reject(new Error(response.error));
+          return;
+        }
+        this.accessToken = response.access_token;
+        localStorage.setItem(this.DRIVE_PREF_KEY, 'enabled');
+        resolve(this.accessToken);
+      });
+      if (!ready) {
+        reject(new Error('Google Identity Services not ready or Client ID missing.'));
+        return;
+      }
+      this.tokenClient.requestAccessToken({ prompt: promptMode });
+    });
+  },
+
+  async driveFetch(url, options = {}) {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        ...(options.headers || {})
+      }
+    });
+    if (res.status === 401) {
+      this.accessToken = null;
+      throw new Error('AUTH_EXPIRED');
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Drive API (${res.status}): ${text}`);
+    }
+    return res;
+  },
+
+  async findOrCreateDriveFile(initialData) {
+    if (this.driveFileId) {
+      try {
+        await this.driveFetch(
+          `https://www.googleapis.com/drive/v3/files/${this.driveFileId}?fields=id,trashed`
+        );
+        return this.driveFileId;
+      } catch {
+        this.driveFileId = null;
+        localStorage.removeItem(this.FILE_ID_KEY);
+      }
+    }
+
+    const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+    const searchRes = await this.driveFetch(
+      `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&spaces=drive`
+    );
+    const searchJson = await searchRes.json();
+
+    if (searchJson.files && searchJson.files.length > 0) {
+      this.driveFileId = searchJson.files[0].id;
+      localStorage.setItem(this.FILE_ID_KEY, this.driveFileId);
+      return this.driveFileId;
+    }
+
+    const boundary = 'expenseflow_multipart_boundary';
+    const metadata = { name: DRIVE_FILE_NAME, mimeType: 'application/json' };
+    const body =
+      `--${boundary}\r\n` +
+      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+      `${JSON.stringify(metadata)}\r\n` +
+      `--${boundary}\r\n` +
+      `Content-Type: application/json\r\n\r\n` +
+      `${this.packData(initialData)}\r\n` +
+      `--${boundary}--`;
+
+    const createRes = await this.driveFetch(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body
+      }
+    );
+    const created = await createRes.json();
+    this.driveFileId = created.id;
+    localStorage.setItem(this.FILE_ID_KEY, this.driveFileId);
+    return this.driveFileId;
+  },
+
+  async readDriveData() {
+    if (!this.driveFileId) return null;
+    const res = await this.driveFetch(
+      `https://www.googleapis.com/drive/v3/files/${this.driveFileId}?alt=media`
+    );
+    const json = await res.json();
+    return this.unpackData(json);
+  },
+
+  async writeDriveData(data) {
+    if (!this.accessToken) return false;
+    await this.findOrCreateDriveFile(data);
+    await this.driveFetch(
+      `https://www.googleapis.com/upload/drive/v3/files/${this.driveFileId}?uploadType=media`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: this.packData(data)
+      }
+    );
+    return true;
+  },
+
+  async saveData(data) {
+    this.saveLocal(data);
+    if (!this.isDriveOptedIn()) {
+      updateSyncUI('Saved on Device', 'default');
+      return;
+    }
+    if (!this.accessToken) {
+      updateSyncUI('Saved Locally (Click Sync Drive)', 'default');
+      return;
+    }
+    try {
+      updateSyncUI('Syncing to Drive...', 'syncing');
+      await this.writeDriveData(data);
+      updateSyncUI('Device + Drive Synced', 'connected');
+    } catch (err) {
+      console.error(err);
+      updateSyncUI('Saved Locally (Drive paused)', 'error');
+    }
+  }
+};
+
+/* ============================================================================
+   APP STATE & DOM REFERENCES
+   ============================================================================ */
+let appData = StorageService.loadLocal();
+if (!Array.isArray(appData.shortcuts)) appData.shortcuts = [];
+
+let selectedMode = 'Cash';
+let selectedUpiType = 'UPI Lite';
+let activeMonth = getCurrentMonth();
+let pendingExpenseEntry = null;
+let currentDailyFormulaText = 'Auto-set: Remaining balance ÷ days left in the month';
+
+// Modals
+const welcomeModal = document.getElementById('welcomeModal');
+const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
+const openGuideBtn = document.getElementById('openGuideBtn');
+
+const budgetPromptModal = document.getElementById('budgetPromptModal');
+const budgetPromptTitle = document.getElementById('budgetPromptTitle');
+const budgetPromptMessage = document.getElementById('budgetPromptMessage');
+const promptBudgetAmount = document.getElementById('promptBudgetAmount');
+const reminderDateBox = document.getElementById('reminderDateBox');
+const budgetReminderDate = document.getElementById('budgetReminderDate');
+const savePromptBudgetBtn = document.getElementById('savePromptBudgetBtn');
+const notNowBudgetBtn = document.getElementById('notNowBudgetBtn');
+const confirmReminderBtn = document.getElementById('confirmReminderBtn');
+
+// Topbar & Drive Banner
+const monthCalendarBox = document.getElementById('monthCalendarBox');
+const activeMonthInput = document.getElementById('activeMonthInput');
+const storageStatus = document.getElementById('storageStatus');
+const driveAuthBtn = document.getElementById('driveAuthBtn');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const exportCsvBtn = document.getElementById('exportCsvBtn');
+const drivePromptBanner = document.getElementById('drivePromptBanner');
+const promptConnectBtn = document.getElementById('promptConnectBtn');
+const promptDismissBtn = document.getElementById('promptDismissBtn');
+
+// Summary Modules (Wallet, Spending, Payment Split)
+const walletModule = document.getElementById('walletModule');
+const monthStatusBadge = document.getElementById('monthStatusBadge');
+const budgetCardLabel = document.getElementById('budgetCardLabel');
+const editBudgetBtn = document.getElementById('editBudgetBtn');
+const budgetTotal = document.getElementById('budgetTotal');
+const budgetStatusSub = document.getElementById('budgetStatusSub');
+const budgetReminderChip = document.getElementById('budgetReminderChip');
+const budgetReminderText = document.getElementById('budgetReminderText');
+const deleteReminderBtn = document.getElementById('deleteReminderBtn');
+
+const remainingBalanceValue = document.getElementById('remainingBalanceValue');
+const budgetBarFill = document.getElementById('budgetBarFill');
+const remainingBalanceSub = document.getElementById('remainingBalanceSub');
+
+const spentMonthLabel = document.getElementById('spentMonthLabel');
+const monthTotal = document.getElementById('monthTotal');
+const monthCount = document.getElementById('monthCount');
+const todayTotal = document.getElementById('todayTotal');
+const todayDateLabel = document.getElementById('todayDateLabel');
+const todayStatusBadge = document.getElementById('todayStatusBadge');
+const dailyAllowanceSub = document.getElementById('dailyAllowanceSub');
+
+const cashTotal = document.getElementById('cashTotal');
+const upiLiteTotal = document.getElementById('upiLiteTotal');
+const upiBankTotal = document.getElementById('upiBankTotal');
+
+// Inline Budget Drawer
+const budgetDrawer = document.getElementById('budgetDrawer');
+const budgetDrawerTitle = document.getElementById('budgetDrawerTitle');
+const budgetInput = document.getElementById('budgetInput');
+const addFundsBtn = document.getElementById('addFundsBtn');
+const replaceBudgetBtn = document.getElementById('replaceBudgetBtn');
+const scheduleReminderDrawerBtn = document.getElementById('scheduleReminderDrawerBtn');
+const resetBudgetBtn = document.getElementById('resetBudgetBtn');
+const cancelBudgetBtn = document.getElementById('cancelBudgetBtn');
+
+// Add Expense Form
+const expenseForm = document.getElementById('expenseForm');
+const amountInput = document.getElementById('amount');
+const categoryInput = document.getElementById('category');
+const paymentModeGroup = document.getElementById('paymentModeGroup');
+const upiSubGroup = document.getElementById('upiSubGroup');
+const upiTypeGroup = document.getElementById('upiTypeGroup');
+const dateInput = document.getElementById('date');
+const noteInput = document.getElementById('note');
+
+// History & Breakdown
+const historyCount = document.getElementById('historyCount');
+const searchInput = document.getElementById('searchInput');
+const filterCategory = document.getElementById('filterCategory');
+const filterPayment = document.getElementById('filterPayment');
+const transactionList = document.getElementById('transactionList');
+const breakdownMonthLabel = document.getElementById('breakdownMonthLabel');
+const categoryBars = document.getElementById('categoryBars');
+
+// Shared Toast (Undo + Today's Limit Explanation)
+const toastEl = document.getElementById('mobileToast');
+const toastTextEl = document.getElementById('mobileToastText');
+const toastUndoBtn = document.getElementById('mobileToastUndoBtn');
+let lastUndoExpenseId = null;
+let toastTimer = null;
+
+function showAppToast(message, undoExpenseId = null, durationMs = 2600) {
+  if (!toastEl || !toastTextEl) return;
+  toastTextEl.textContent = message;
+  lastUndoExpenseId = undoExpenseId;
+  if (toastUndoBtn) {
+    if (undoExpenseId) {
+      toastUndoBtn.classList.remove('hidden');
+    } else {
+      toastUndoBtn.classList.add('hidden');
+    }
+  }
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(
+    () => {
+      toastEl.classList.remove('show');
+      lastUndoExpenseId = null;
+    },
+    undoExpenseId ? 4500 : durationMs
+  );
+}
+
+if (toastUndoBtn) {
+  toastUndoBtn.addEventListener('click', async () => {
+    if (!lastUndoExpenseId) return;
+    const idToRemove = lastUndoExpenseId;
+    lastUndoExpenseId = null;
+    toastEl.classList.remove('show');
+    await window.deleteExpense(idToRemove);
+    showAppToast('Expense undone');
+  });
+}
+
+/* ============================================================================
+   HELPERS & FORMATTING
+   ============================================================================ */
+function getTodayISO() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  return new Date(now.getTime() - offset * 60000).toISOString().split('T')[0];
+}
+
+function getCurrentMonth() {
+  return getTodayISO().slice(0, 7);
+}
+
+function formatINR(num) {
+  return '₹' + Number(num || 0).toLocaleString('en-IN', {
+    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function formatMonthLabel(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const dt = new Date(y, m - 1, 1);
+  return dt.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+}
+
+function formatDateReadable(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function getRemainingDaysInMonth(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const totalDays = new Date(y, m, 0).getDate();
+  const todayIso = getTodayISO();
+  const currentYm = todayIso.slice(0, 7);
+  if (ym === currentYm) {
+    const todayDay = Number(todayIso.slice(8, 10));
+    return Math.max(1, totalDays - todayDay + 1);
+  }
+  return Math.max(1, totalDays);
+}
+
+function setStatusClass(el, status) {
+  if (!el) return;
+  el.classList.remove('status-green', 'status-yellow', 'status-red');
+  el.classList.add(`status-${status}`);
+}
+
+function updateSyncUI(text, state = 'default') {
+  storageStatus.textContent = text;
+  storageStatus.className = 'storage-badge';
+  if (state === 'connected') storageStatus.classList.add('connected');
+  if (state === 'syncing') storageStatus.classList.add('syncing');
+  if (state === 'error') storageStatus.classList.add('error');
+}
+
+/* ============================================================================
+   THEME MANAGEMENT
+   ============================================================================ */
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  if (isDark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeToggleBtn.textContent = 'Light Mode';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    themeToggleBtn.textContent = 'Dark Mode';
+  }
+  localStorage.setItem(StorageService.THEME_KEY, isDark ? 'dark' : 'light');
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+/* ============================================================================
+   GOOGLE DRIVE OPT-IN SYNC FLOW (TEMPORARILY UNAVAILABLE IN TEST MODE)
+   ============================================================================ */
+async function triggerDriveSync(promptMode = 'consent') {
+  alert('Google Drive Backup is temporarily unavailable while the app is in testing mode. Your expenses remain safely saved on this device.');
+  return;
+
+  if (!StorageService.isConfigured()) {
+    alert('Google Client ID missing in app.js.');
+    return;
+  }
+
+  try {
+    updateSyncUI('Connecting Drive...', 'syncing');
+    await StorageService.requestToken(promptMode);
+    await StorageService.findOrCreateDriveFile(appData);
+
+    const cloudData = await StorageService.readDriveData();
+    if (cloudData) {
+      const mergedMap = new Map();
+      [...(cloudData.expenses || []), ...(appData.expenses || [])].forEach((tx) => {
+        mergedMap.set(tx.id, tx);
+      });
+      appData.expenses = Array.from(mergedMap.values()).sort(
+        (a, b) => b.date.localeCompare(a.date) || b.id - a.id
+      );
+      appData.budgets = { ...(cloudData.budgets || {}), ...(appData.budgets || {}) };
+      if ((!appData.shortcuts || appData.shortcuts.length === 0) && Array.isArray(cloudData.shortcuts)) {
+        appData.shortcuts = cloudData.shortcuts;
+      }
+    }
+
+    StorageService.saveLocal(appData);
+    await StorageService.writeDriveData(appData);
+    drivePromptBanner.classList.add('hidden');
+    driveAuthBtn.textContent = 'Sync Drive Now';
+    driveAuthBtn.classList.add('connected');
+    updateSyncUI('Device + Drive Synced', 'connected');
+    renderAll();
+  } catch (err) {
+    console.error(err);
+    updateSyncUI('Saved on Device (Drive cancelled)', 'error');
+  }
+}
+
+driveAuthBtn.addEventListener('click', () => {
+  triggerDriveSync(StorageService.accessToken ? '' : 'consent');
+});
+
+promptConnectBtn.addEventListener('click', () => {
+  triggerDriveSync('consent');
+});
+
+promptDismissBtn.addEventListener('click', () => {
+  localStorage.setItem(StorageService.DRIVE_PREF_KEY, 'dismissed');
+  drivePromptBanner.classList.add('hidden');
+});
+
+function maybeShowDrivePrompt() {
+  return;
+}
+
+/* ============================================================================
+   BUDGET & ROLLOVER LOGIC
+   ============================================================================ */
+function calculateMonthMetrics(targetYm) {
+  const allMonths = new Set([
+    ...Object.keys(appData.budgets),
+    ...appData.expenses.map((e) => e.date.slice(0, 7)),
+    targetYm
+  ]);
+  const sortedMonths = Array.from(allMonths).sort();
+
+  let carryForward = 0;
+  let targetMonthAdded = 0;
+  let targetMonthSpent = 0;
+  let targetRolloverIn = 0;
+
+  for (const ym of sortedMonths) {
+    if (ym > targetYm) break;
+    const added = Number(appData.budgets[ym] || 0);
+    const spent = appData.expenses
+      .filter((e) => e.date.startsWith(ym))
+      .reduce((sum, e) => sum + Number(e.amount), 0);
+
+    if (ym === targetYm) {
+      targetRolloverIn = carryForward;
+      targetMonthAdded = added;
+      targetMonthSpent = spent;
+    }
+    carryForward = carryForward + added - spent;
+  }
+
+  return {
+    addedThisMonth: targetMonthAdded,
+    rolloverIn: targetRolloverIn,
+    totalAvailablePool: targetRolloverIn + targetMonthAdded,
+    spentThisMonth: targetMonthSpent,
+    remainingBalance: carryForward
+  };
+}
+
+/* ============================================================================
+   SMART MONTHLY BUDGET PROMPT, REMINDER VIEW & DELETE
+   ============================================================================ */
+function getSavedReminder() {
+  try {
+    const raw = localStorage.getItem(StorageService.BUDGET_REMINDER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearSavedReminder() {
+  localStorage.removeItem(StorageService.BUDGET_REMINDER_KEY);
+  renderReminderChip();
+}
+
+function renderReminderChip() {
+  const reminder = getSavedReminder();
+  if (reminder && reminder.month === activeMonth && reminder.remindOn) {
+    budgetReminderText.textContent = `Reminder: ${formatDateReadable(reminder.remindOn)}`;
+    budgetReminderChip.classList.remove('hidden');
+  } else {
+    budgetReminderChip.classList.add('hidden');
+  }
+}
+
+deleteReminderBtn.addEventListener('click', () => {
+  clearSavedReminder();
+});
+
+function openBudgetPrompt(targetMonth, reasonText, pendingEntry = null, showDateImmediately = false) {
+  pendingExpenseEntry = pendingEntry;
+  const label = formatMonthLabel(targetMonth);
+  budgetPromptTitle.textContent = `Set ${label} Budget`;
+  budgetPromptMessage.textContent = reasonText;
+  promptBudgetAmount.value = '';
+
+  const today = getTodayISO();
+  const existingReminder = getSavedReminder();
+  budgetReminderDate.min = today;
+  budgetReminderDate.value =
+    existingReminder && existingReminder.month === targetMonth && existingReminder.remindOn >= today
+      ? existingReminder.remindOn
+      : today;
+
+  if (showDateImmediately) {
+    reminderDateBox.classList.remove('hidden');
+  } else {
+    reminderDateBox.classList.add('hidden');
+  }
+
+  budgetPromptModal.classList.remove('hidden');
+  setTimeout(() => {
+    if (showDateImmediately) {
+      budgetReminderDate.focus();
+    } else {
+      promptBudgetAmount.focus();
+      promptBudgetAmount.select();
+    }
+  }, 50);
+}
+
+function checkMonthlyBudgetPrompt() {
+  const today = getTodayISO();
+  const currentYm = today.slice(0, 7);
+  const hasCurrentBudget = (Number(appData.budgets[currentYm]) || 0) > 0;
+
+  if (hasCurrentBudget) return;
+
+  const savedReminder = getSavedReminder();
+
+  if (savedReminder && savedReminder.month === currentYm && savedReminder.remindOn) {
+    if (today >= savedReminder.remindOn) {
+      openBudgetPrompt(
+        currentYm,
+        `Reminder: You scheduled ${formatDateReadable(savedReminder.remindOn)} to add your ${formatMonthLabel(currentYm)} budget.`
+      );
+    }
+    return;
+  }
+
+  openBudgetPrompt(
+    currentYm,
+    `Welcome to ${formatMonthLabel(currentYm)}! Set your monthly budget now to track your balance.`
+  );
+}
+
+async function finalizePendingExpense() {
+  if (!pendingExpenseEntry) return;
+  const entry = pendingExpenseEntry;
+  pendingExpenseEntry = null;
+
+  appData.expenses.unshift(entry);
+  const entryMonth = entry.date.slice(0, 7);
+  if (entryMonth !== activeMonth) {
+    activeMonth = entryMonth;
+    activeMonthInput.value = activeMonth;
+  }
+  amountInput.value = '';
+  noteInput.value = '';
+  renderAll();
+  await StorageService.saveData(appData);
+  maybeShowDrivePrompt();
+}
+
+savePromptBudgetBtn.addEventListener('click', async () => {
+  const val = parseFloat(promptBudgetAmount.value);
+  if (isNaN(val) || val <= 0) {
+    promptBudgetAmount.focus();
+    return;
+  }
+
+  const targetMonth = pendingExpenseEntry ? pendingExpenseEntry.date.slice(0, 7) : activeMonth;
+  appData.budgets[targetMonth] = (Number(appData.budgets[targetMonth]) || 0) + val;
+  clearSavedReminder();
+
+  budgetPromptModal.classList.add('hidden');
+  renderAll();
+  await StorageService.saveData(appData);
+  await finalizePendingExpense();
+});
+
+notNowBudgetBtn.addEventListener('click', () => {
+  reminderDateBox.classList.remove('hidden');
+  budgetReminderDate.focus();
+});
+
+confirmReminderBtn.addEventListener('click', async () => {
+  const chosenDate = budgetReminderDate.value;
+  if (!chosenDate) {
+    budgetReminderDate.focus();
+    return;
+  }
+
+  const targetMonth = pendingExpenseEntry ? pendingExpenseEntry.date.slice(0, 7) : activeMonth;
+  localStorage.setItem(
+    StorageService.BUDGET_REMINDER_KEY,
+    JSON.stringify({ month: targetMonth, remindOn: chosenDate })
+  );
+
+  budgetPromptModal.classList.add('hidden');
+  renderReminderChip();
+  await finalizePendingExpense();
+});
+
+promptBudgetAmount.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    savePromptBudgetBtn.click();
+  }
+});
+
+budgetReminderDate.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    confirmReminderBtn.click();
+  }
+});
+
+budgetInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addFundsBtn.click();
+  }
+});
+
+/* ============================================================================
+   UI INTERACTIONS: PILLS, MODALS, INLINE BUDGET DRAWER & TODAY'S LIMIT INFO
+   ============================================================================ */
+paymentModeGroup.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  paymentModeGroup.querySelectorAll('.pill').forEach((p) => p.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMode = btn.dataset.mode;
+  upiSubGroup.classList.toggle('hidden', selectedMode !== 'UPI');
+});
+
+upiTypeGroup.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  upiTypeGroup.querySelectorAll('.pill').forEach((p) => p.classList.remove('active'));
+  btn.classList.add('active');
+  selectedUpiType = btn.dataset.upi;
+});
+
+activeMonthInput.addEventListener('change', (e) => {
+  if (e.target.value) {
+    activeMonth = e.target.value;
+    renderAll();
+  }
+});
+
+// Welcome / Privacy Modal
+closeWelcomeBtn.addEventListener('click', () => {
+  localStorage.setItem(StorageService.WELCOME_SEEN_KEY, 'true');
+  welcomeModal.classList.add('hidden');
+  checkMonthlyBudgetPrompt();
+});
+
+openGuideBtn.addEventListener('click', () => {
+  welcomeModal.classList.remove('hidden');
+});
+
+// Tappable Today's Limit Formula Explanation
+if (dailyAllowanceSub) {
+  dailyAllowanceSub.addEventListener('click', () => {
+    showAppToast(currentDailyFormulaText, null, 3800);
+  });
+}
+
+// Inline Budget Drawer with Fast 150ms Auto-Scroll Above Mobile Keypad + Auto-Select
+editBudgetBtn.addEventListener('click', () => {
+  budgetDrawerTitle.textContent = `Manage ${formatMonthLabel(activeMonth)} Budget (₹)`;
+  budgetInput.value = '';
+  budgetDrawer.classList.toggle('hidden');
+  if (!budgetDrawer.classList.contains('hidden')) {
+    budgetInput.focus();
+    budgetInput.select();
+    setTimeout(() => {
+      budgetDrawer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  }
+});
+
+scheduleReminderDrawerBtn.addEventListener('click', () => {
+  budgetDrawer.classList.add('hidden');
+  openBudgetPrompt(
+    activeMonth,
+    `Pick a reminder date for your ${formatMonthLabel(activeMonth)} budget:`,
+    null,
+    true
+  );
+});
+
+cancelBudgetBtn.addEventListener('click', () => {
+  budgetDrawer.classList.add('hidden');
+});
+
+addFundsBtn.addEventListener('click', async () => {
+  const val = parseFloat(budgetInput.value);
+  if (isNaN(val) || val <= 0) {
+    budgetInput.focus();
+    return;
+  }
+  appData.budgets[activeMonth] = Number(appData.budgets[activeMonth] || 0) + val;
+  clearSavedReminder();
+  budgetDrawer.classList.add('hidden');
+  renderAll();
+  await StorageService.saveData(appData);
+});
+
+replaceBudgetBtn.addEventListener('click', async () => {
+  const val = parseFloat(budgetInput.value);
+  if (isNaN(val) || val < 0) {
+    budgetInput.focus();
+    return;
+  }
+  appData.budgets[activeMonth] = val;
+  if (val > 0) {
+    clearSavedReminder();
+  }
+  budgetDrawer.classList.add('hidden');
+  renderAll();
+  await StorageService.saveData(appData);
+});
+
+resetBudgetBtn.addEventListener('click', async () => {
+  const confirmed = confirm(
+    `Reset ${formatMonthLabel(activeMonth)} budget to ₹0? Your recorded expenses will not be deleted.`
+  );
+  if (!confirmed) return;
+  delete appData.budgets[activeMonth];
+  budgetDrawer.classList.add('hidden');
+  renderAll();
+  await StorageService.saveData(appData);
+});
+
+/* ============================================================================
+   EXPENSE CRUD & CSV EXPORT
+   ============================================================================ */
+expenseForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const amount = parseFloat(amountInput.value);
+  if (isNaN(amount) || amount <= 0) return;
+
+  const mode = selectedMode === 'Cash' ? 'Cash' : selectedUpiType;
+  const entryDate = dateInput.value || getTodayISO();
+
+  const entry = {
+    id: Date.now(),
+    amount,
+    category: categoryInput.value,
+    mode,
+    date: entryDate,
+    note: noteInput.value.trim()
+  };
+
+  const entryMonth = entryDate.slice(0, 7);
+  const hasAnyBudget = Object.values(appData.budgets).some((b) => Number(b) > 0);
+  const reminder = getSavedReminder();
+  const hasDeferredThisMonth = reminder && reminder.month === entryMonth;
+
+  if (!hasAnyBudget && !hasDeferredThisMonth) {
+    openBudgetPrompt(
+      entryMonth,
+      `Before recording ₹${amount}, would you like to set your ${formatMonthLabel(entryMonth)} budget first?`,
+      entry
+    );
+    return;
+  }
+
+  appData.expenses.unshift(entry);
+  if (entryMonth !== activeMonth) {
+    activeMonth = entryMonth;
+    activeMonthInput.value = activeMonth;
+  }
+
+  amountInput.value = '';
+  noteInput.value = '';
+  renderAll();
+  await StorageService.saveData(appData);
+  maybeShowDrivePrompt();
+});
+
+window.deleteExpense = async function (id) {
+  appData.expenses = appData.expenses.filter((item) => item.id !== id);
+  renderAll();
+  await StorageService.saveData(appData);
+};
+
+exportCsvBtn.addEventListener('click', () => {
+  const monthExpenses = appData.expenses.filter((e) => e.date.startsWith(activeMonth));
+  if (monthExpenses.length === 0) {
+    alert(`No expenses recorded in ${formatMonthLabel(activeMonth)} to export.`);
+    return;
+  }
+
+  const headers = ['Date', 'Category', 'Payment Mode', 'Amount (INR)', 'Note'];
+  const rows = monthExpenses.map((e) => [
+    e.date,
+    `"${e.category}"`,
+    `"${e.mode}"`,
+    e.amount,
+    `"${(e.note || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvString = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `TrackYourRupee_${activeMonth}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+});
+
+filterCategory.addEventListener('change', renderTransactions);
+filterPayment.addEventListener('change', renderTransactions);
+searchInput.addEventListener('input', renderTransactions);
+
+/* ============================================================================
+   RENDERING ENGINE (PHASE 2: 3 MODULES & STATUS COLORS)
+   ============================================================================ */
+function renderAll() {
+  renderSummaryAndSplit();
+  renderReminderChip();
+  renderCategoryBreakdown();
+  renderTransactions();
+}
+
+function renderSummaryAndSplit() {
+  const metrics = calculateMonthMetrics(activeMonth);
+  const label = formatMonthLabel(activeMonth);
+  const today = getTodayISO();
+
+  // 1. Wallet Module
+  budgetCardLabel.textContent = `${label} Allowance`;
+  budgetTotal.textContent = formatINR(metrics.addedThisMonth);
+  budgetStatusSub.textContent =
+    metrics.addedThisMonth > 0
+      ? 'Allowance added'
+      : 'Click "+ Add / Edit" to set';
+
+  remainingBalanceValue.textContent = formatINR(metrics.remainingBalance);
+  remainingBalanceValue.classList.toggle('text-danger', metrics.remainingBalance < 0);
+
+  // Month status color: > 50% left = green, 20-50% left = yellow, < 20% left = red
+  let monthStatus = 'green';
+  let monthStatusWord = 'On track';
+  let barFillPct = 0;
+
+  if (metrics.totalAvailablePool > 0) {
+    const leftPct = (metrics.remainingBalance / metrics.totalAvailablePool) * 100;
+    barFillPct = Math.min(100, Math.max(0, Math.round(leftPct)));
+
+    if (leftPct > 50) {
+      monthStatus = 'green';
+      monthStatusWord = 'On track';
+    } else if (leftPct >= 20) {
+      monthStatus = 'yellow';
+      monthStatusWord = 'Careful';
+    } else {
+      monthStatus = 'red';
+      monthStatusWord = 'Over';
+    }
+  } else if (metrics.remainingBalance < 0) {
+    monthStatus = 'red';
+    monthStatusWord = 'Over';
+    barFillPct = 100;
+  }
+
+  budgetBarFill.style.width = `${barFillPct}%`;
+  setStatusClass(budgetBarFill, monthStatus);
+  setStatusClass(walletModule, monthStatus);
+  setStatusClass(monthCalendarBox, monthStatus);
+  setStatusClass(monthStatusBadge, monthStatus);
+  monthStatusBadge.textContent = monthStatusWord;
+
+  if (metrics.rolloverIn > 0) {
+    remainingBalanceSub.textContent = `Includes +${formatINR(metrics.rolloverIn)} rollover`;
+  } else if (metrics.rolloverIn < 0) {
+    remainingBalanceSub.textContent = `Includes ${formatINR(metrics.rolloverIn)} deficit`;
+  } else {
+    remainingBalanceSub.textContent = 'Includes prev. month rollover';
+  }
+
+  // 2. Spending Module
+  const monthExpenses = appData.expenses.filter((e) => e.date.startsWith(activeMonth));
+  spentMonthLabel.textContent = `Spent (${label})`;
+  monthTotal.textContent = formatINR(metrics.spentThisMonth);
+  monthCount.textContent = `${monthExpenses.length} ${monthExpenses.length === 1 ? 'transaction' : 'transactions'}`;
+
+  const todayExpenses = appData.expenses.filter((e) => e.date === today);
+  const todaySum = todayExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  todayTotal.textContent = formatINR(todaySum);
+  todayDateLabel.textContent = formatDateReadable(today);
+
+  // Today's limit = current balance left ÷ remaining days in month
+  const daysLeft = getRemainingDaysInMonth(activeMonth);
+  const currentBalance = metrics.remainingBalance;
+  const todaysLimit = currentBalance > 0 ? currentBalance / daysLeft : 0;
+
+  let todayStatus = 'green';
+  let todayStatusWord = 'On track';
+
+  if (todaysLimit > 0) {
+    const todayRatio = (todaySum / todaysLimit) * 100;
+    if (todayRatio < 70) {
+      todayStatus = 'green';
+      todayStatusWord = 'On track';
+    } else if (todayRatio <= 100) {
+      todayStatus = 'yellow';
+      todayStatusWord = 'Careful';
+    } else {
+      todayStatus = 'red';
+      todayStatusWord = 'Over';
+    }
+    dailyAllowanceSub.textContent = `Today's limit: ${formatINR(Math.round(todaysLimit))} ⓘ`;
+    currentDailyFormulaText = `Auto-set: ${formatINR(currentBalance)} balance left ÷ ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`;
+  } else if (todaySum > 0) {
+    todayStatus = 'red';
+    todayStatusWord = 'Over';
+    dailyAllowanceSub.textContent = 'No allowance left ⓘ';
+    currentDailyFormulaText = 'Auto-set: ₹0 balance remaining for the rest of this month';
+  } else {
+    dailyAllowanceSub.textContent = "Set budget for today's limit ⓘ";
+    currentDailyFormulaText = 'Auto-set: Balance left ÷ days remaining once a monthly budget is added';
+  }
+
+  setStatusClass(todayStatusBadge, todayStatus);
+  todayStatusBadge.textContent = todayStatusWord;
+
+  // 3. Payment Split Module
+  let cashSum = 0;
+  let upiLiteSum = 0;
+  let upiBankSum = 0;
+
+  monthExpenses.forEach((e) => {
+    if (e.mode === 'Cash') cashSum += Number(e.amount);
+    else if (e.mode === 'UPI Lite') upiLiteSum += Number(e.amount);
+    else if (e.mode === 'Bank Account' || e.mode === 'UPI Bank') upiBankSum += Number(e.amount);
+  });
+
+  cashTotal.textContent = formatINR(cashSum);
+  upiLiteTotal.textContent = formatINR(upiLiteSum);
+  upiBankTotal.textContent = formatINR(upiBankSum);
+}
+
+function renderCategoryBreakdown() {
+  const monthExpenses = appData.expenses.filter((e) => e.date.startsWith(activeMonth));
+  const totalSpent = monthExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  breakdownMonthLabel.textContent = formatMonthLabel(activeMonth);
+
+  if (monthExpenses.length === 0 || totalSpent === 0) {
+    categoryBars.innerHTML = '<p class="empty-state">No expenses recorded yet.</p>';
+    return;
+  }
+
+  const totals = {};
+  monthExpenses.forEach((e) => {
+    totals[e.category] = (totals[e.category] || 0) + Number(e.amount);
+  });
+
+  const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  categoryBars.innerHTML = sorted
+    .map(([cat, val]) => {
+      const pct = Math.round((val / totalSpent) * 100);
+      return `
+        <div class="bar-item">
+          <div class="bar-top">
+            <span>${escapeHtml(cat)}</span>
+            <span>${formatINR(val)} (${pct}%)</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${pct}%"></div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function renderTransactions() {
+  const catFilter = filterCategory.value;
+  const modeFilter = filterPayment.value;
+  const query = searchInput.value.trim().toLowerCase();
+
+  const filtered = appData.expenses
+    .filter((e) => e.date.startsWith(activeMonth))
+    .filter((e) => (catFilter === 'ALL' ? true : e.category === catFilter))
+    .filter((e) => (modeFilter === 'ALL' ? true : e.mode === modeFilter))
+    .filter((e) => {
+      if (!query) return true;
+      return (
+        (e.note && e.note.toLowerCase().includes(query)) ||
+        e.category.toLowerCase().includes(query) ||
+        e.mode.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+  historyCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
+
+  if (filtered.length === 0) {
+    transactionList.innerHTML =
+      '<p class="empty-state">No matching expenses for this month.</p>';
+    return;
+  }
+
+  transactionList.innerHTML = filtered
+    .map((e) => {
+      const isCash = e.mode === 'Cash';
+      const isLite = e.mode === 'UPI Lite';
+      const badgeClass = isCash ? 'badge-cash' : isLite ? 'badge-lite' : 'badge-bank';
+      const modeLabel = isCash ? 'Cash' : isLite ? 'UPI • Lite' : 'UPI • Bank';
+      const noteHtml = e.note ? ` • ${escapeHtml(e.note)}` : '';
+
+      return `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-title-row">
+              <span class="tx-category">${escapeHtml(e.category)}</span>
+              <span class="badge ${badgeClass}">${modeLabel}</span>
+            </div>
+            <div class="tx-meta">
+              ${formatDateReadable(e.date)}${noteHtml}
+            </div>
+          </div>
+          <div class="tx-right">
+            <span class="tx-amount">${formatINR(e.amount)}</span>
+            <button type="button" class="delete-btn" title="Delete expense" onclick="deleteExpense(${e.id})">✕</button>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ============================================================================
+   BOOTSTRAPPING (OFFLINE-FIRST, DEFAULT LIGHT MODE)
+   ============================================================================ */
+function init() {
+  const savedTheme = localStorage.getItem(StorageService.THEME_KEY) || 'light';
+  applyTheme(savedTheme);
+
+  activeMonthInput.value = activeMonth;
+  dateInput.value = getTodayISO();
+
+  if (localStorage.getItem(StorageService.WELCOME_SEEN_KEY) !== 'true') {
+    welcomeModal.classList.remove('hidden');
+  } else {
+    checkMonthlyBudgetPrompt();
+  }
+
+  if (StorageService.isDriveOptedIn()) {
+    updateSyncUI('Saved Locally (Click Sync Drive)', 'default');
+    driveAuthBtn.textContent = 'Sync Drive';
+  } else {
+    updateSyncUI('Saved on Device', 'default');
+  }
+
+  renderAll();
+  maybeShowDrivePrompt();
+}
+
+init();
+
+/* ============================================================================
+   TRACKYOURRUPEE • PHASE 1: MOBILE SHORTCUTS & BOTTOM TABS (phones ≤ 640px)
+   ============================================================================ */
+const FEATURE_REQUEST_URL = '';
+
+(function () {
+  const TAB_KEY = 'expenseflow_mobile_tab';
+  const TABS = ['home', 'transactions', 'insights', 'more'];
+  const RECENT_LIMIT = 3;
+  const KEYBOARD_INPUT_TYPES = ['text', 'number', 'search', 'email', 'tel', 'url', 'password'];
+
+  const CATEGORY_CLASS = {
+    Food: 'cat-food',
+    Travel: 'cat-travel',
+    'Room/Hostel': 'cat-room',
+    Study: 'cat-study',
+    Shopping: 'cat-shopping',
+    Other: 'cat-other'
+  };
+
+  const ICONS = {
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    bulb: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/>',
+    info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><path d="M12 7.5h.01"/>',
+    chevron: '<path d="m9 6 6 6-6 6"/>'
+  };
+
+  const tabbar = document.getElementById('mobileTabbar');
+  const tabButtons = Array.from(tabbar.querySelectorAll('.mobile-tab'));
+
+  const recentList = document.getElementById('recentList');
+  const recentCount = document.getElementById('recentCount');
+  const recentSeeAllBtn = document.getElementById('recentSeeAllBtn');
+  const categoryDonut = document.getElementById('categoryDonut');
+  const moreList = document.getElementById('moreList');
+
+  // Shortcut DOM elements
+  const openQuickAddBtn = document.getElementById('openQuickAddBtn');
+  const saveAsShortcutBtn = document.getElementById('saveAsShortcutBtn');
+  const shortcutsModal = document.getElementById('shortcutsModal');
+  const addNewShortcutModalBtn = document.getElementById('addNewShortcutModalBtn');
+  const closeShortcutsBtn = document.getElementById('closeShortcutsBtn');
+  const closeShortcutsFooterBtn = document.getElementById('closeShortcutsFooterBtn');
+  const shortcutsList = document.getElementById('shortcutsList');
+
+  // One-time quick-log amount adjuster DOM elements
+  const quickLogConfirmBox = document.getElementById('quickLogConfirmBox');
+  const quickLogConfirmTitle = document.getElementById('quickLogConfirmTitle');
+  const quickLogConfirmMeta = document.getElementById('quickLogConfirmMeta');
+  const quickLogAmountInput = document.getElementById('quickLogAmountInput');
+  const confirmQuickLogBtn = document.getElementById('confirmQuickLogBtn');
+  const cancelQuickLogBtn = document.getElementById('cancelQuickLogBtn');
+
+  // Shortcut creator / editor DOM elements
+  const shortcutEditorBox = document.getElementById('shortcutEditorBox');
+  const shortcutEditorTitle = document.getElementById('shortcutEditorTitle');
+  const scAmount = document.getElementById('scAmount');
+  const scCategory = document.getElementById('scCategory');
+  const scMode = document.getElementById('scMode');
+  const scNote = document.getElementById('scNote');
+  const saveShortcutEditBtn = document.getElementById('saveShortcutEditBtn');
+  const cancelShortcutEditBtn = document.getElementById('cancelShortcutEditBtn');
+
+  let editingShortcutId = null;
+  let pendingQuickLogShortcut = null;
+
+  /* ---------- Phase 1: Create, Save, Use (with Non-Destructive Amount Edit), Edit, Delete, Reorder ---------- */
+  function openShortcutsModal(startInCreateMode = false) {
+    editingShortcutId = null;
+    pendingQuickLogShortcut = null;
+    quickLogConfirmBox.classList.add('hidden');
+    renderShortcutsList();
+    shortcutsModal.classList.remove('hidden');
+
+    if (startInCreateMode) {
+      startCreateShortcut();
+    } else {
+      shortcutEditorBox.classList.add('hidden');
+    }
+  }
+
+  function closeShortcutsModal() {
+    shortcutsModal.classList.add('hidden');
+    shortcutEditorBox.classList.add('hidden');
+    quickLogConfirmBox.classList.add('hidden');
+    editingShortcutId = null;
+    pendingQuickLogShortcut = null;
+  }
+
+  function startCreateShortcut() {
+    editingShortcutId = null;
+    pendingQuickLogShortcut = null;
+    quickLogConfirmBox.classList.add('hidden');
+    shortcutEditorTitle.textContent = 'New Shortcut';
+    scAmount.value = '';
+    scCategory.value = 'Food';
+    scMode.value = 'Cash';
+    scNote.value = '';
+    shortcutEditorBox.classList.remove('hidden');
+    setTimeout(() => scAmount.focus(), 40);
+  }
+
+  function startEditShortcut(sc) {
+    editingShortcutId = sc.id;
+    pendingQuickLogShortcut = null;
+    quickLogConfirmBox.classList.add('hidden');
+    shortcutEditorTitle.textContent = 'Edit Shortcut';
+    scAmount.value = sc.amount;
+    scCategory.value = sc.category;
+    scMode.value = sc.mode;
+    scNote.value = sc.note || '';
+    shortcutEditorBox.classList.remove('hidden');
+    setTimeout(() => {
+      scAmount.focus();
+      scAmount.select();
+    }, 40);
+  }
+
+  function promptShortcutAmount(sc) {
+    pendingQuickLogShortcut = sc;
+    shortcutEditorBox.classList.add('hidden');
+    const title = sc.note ? `${sc.note} (${sc.category})` : sc.category;
+    quickLogConfirmTitle.textContent = `Add ${title}`;
+    quickLogConfirmMeta.textContent = `${sc.mode} • Saved default: ${formatINR(sc.amount)} (won't change)`;
+    quickLogAmountInput.value = sc.amount;
+    quickLogConfirmBox.classList.remove('hidden');
+    setTimeout(() => {
+      quickLogAmountInput.focus();
+      quickLogAmountInput.select();
+    }, 40);
+  }
+
+  async function commitShortcutExpense(sc, overrideAmount) {
+    const finalAmount = Number(overrideAmount);
+    if (isNaN(finalAmount) || finalAmount <= 0) {
+      quickLogAmountInput.focus();
+      return;
+    }
+
+    const today = getTodayISO();
+    const entry = {
+      id: Date.now(),
+      amount: finalAmount,
+      category: sc.category,
+      mode: sc.mode,
+      date: today,
+      note: sc.note || ''
+    };
+
+    appData.expenses.unshift(entry);
+    const entryMonth = today.slice(0, 7);
+    if (entryMonth !== activeMonth) {
+      activeMonth = entryMonth;
+      activeMonthInput.value = activeMonth;
+    }
+
+    closeShortcutsModal();
+    renderAll();
+    await StorageService.saveData(appData);
+    showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
+  }
+
+  if (openQuickAddBtn) {
+    openQuickAddBtn.addEventListener('click', () => openShortcutsModal(false));
+  }
+  if (addNewShortcutModalBtn) {
+    addNewShortcutModalBtn.addEventListener('click', startCreateShortcut);
+  }
+  closeShortcutsBtn.addEventListener('click', closeShortcutsModal);
+  closeShortcutsFooterBtn.addEventListener('click', closeShortcutsModal);
+
+  confirmQuickLogBtn.addEventListener('click', async () => {
+    if (!pendingQuickLogShortcut) return;
+    await commitShortcutExpense(pendingQuickLogShortcut, quickLogAmountInput.value);
+  });
+
+  cancelQuickLogBtn.addEventListener('click', () => {
+    pendingQuickLogShortcut = null;
+    quickLogConfirmBox.classList.add('hidden');
+  });
+
+  quickLogAmountInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      confirmQuickLogBtn.click();
+    }
+  });
+
+  if (saveAsShortcutBtn) {
+    saveAsShortcutBtn.addEventListener('click', async () => {
+      const amount = parseFloat(amountInput.value);
+      if (isNaN(amount) || amount <= 0) {
+        amountInput.focus();
+        showAppToast('Enter an amount first');
+        return;
+      }
+
+      const mode = selectedMode === 'Cash' ? 'Cash' : selectedUpiType;
+      const shortcut = {
+        id: Date.now(),
+        amount,
+        category: categoryInput.value,
+        mode,
+        note: noteInput.value.trim()
+      };
+
+      appData.shortcuts.push(shortcut);
+      await StorageService.saveData(appData);
+      renderMoreList();
+      showAppToast(`Saved shortcut: ${formatINR(amount)}`);
+    });
+  }
+
+  cancelShortcutEditBtn.addEventListener('click', () => {
+    editingShortcutId = null;
+    shortcutEditorBox.classList.add('hidden');
+  });
+
+  saveShortcutEditBtn.addEventListener('click', async () => {
+    const val = parseFloat(scAmount.value);
+    if (isNaN(val) || val <= 0) {
+      scAmount.focus();
+      return;
+    }
+
+    if (editingShortcutId === null) {
+      appData.shortcuts.push({
+        id: Date.now(),
+        amount: val,
+        category: scCategory.value,
+        mode: scMode.value,
+        note: scNote.value.trim()
+      });
+      await StorageService.saveData(appData);
+      showAppToast(`Saved shortcut: ${formatINR(val)}`);
+    } else {
+      const idx = appData.shortcuts.findIndex((s) => s.id === editingShortcutId);
+      if (idx !== -1) {
+        appData.shortcuts[idx] = {
+          ...appData.shortcuts[idx],
+          amount: val,
+          category: scCategory.value,
+          mode: scMode.value,
+          note: scNote.value.trim()
+        };
+        await StorageService.saveData(appData);
+        showAppToast('Shortcut updated');
+      }
+    }
+
+    editingShortcutId = null;
+    shortcutEditorBox.classList.add('hidden');
+    renderShortcutsList();
+    renderMoreList();
+  });
+
+  function renderShortcutsList() {
+    if (!appData.shortcuts || appData.shortcuts.length === 0) {
+      shortcutsList.innerHTML =
+        '<p class="empty-state">No shortcuts yet. Tap <strong>+ Add</strong> above or <strong>☆ Save shortcut</strong> on Home.</p>';
+      return;
+    }
+
+    shortcutsList.innerHTML = appData.shortcuts
+      .map((sc, idx) => {
+        const isCash = sc.mode === 'Cash';
+        const isLite = sc.mode === 'UPI Lite';
+        const badgeClass = isCash ? 'badge-cash' : isLite ? 'badge-lite' : 'badge-bank';
+        const modeLabel = isCash ? 'Cash' : isLite ? 'UPI • Lite' : 'UPI • Bank';
+        const titleText = sc.note ? escapeHtml(sc.note) : escapeHtml(sc.category);
+        const subText = sc.note ? `${escapeHtml(sc.category)} • ` : '';
+
+        return `
+          <div class="shortcut-row" data-sc-id="${sc.id}">
+            <button type="button" class="shortcut-tap-area" data-sc-action="use">
+              <div class="shortcut-main">
+                <strong>${titleText}</strong>
+                <span class="shortcut-amt">${formatINR(sc.amount)}</span>
+              </div>
+              <div class="shortcut-sub">
+                <span>${subText}</span>
+                <span class="badge ${badgeClass}">${modeLabel}</span>
+              </div>
+            </button>
+            <div class="shortcut-controls">
+              <button type="button" class="sc-icon-btn" data-sc-action="up" ${idx === 0 ? 'disabled' : ''} title="Move up">↑</button>
+              <button type="button" class="sc-icon-btn" data-sc-action="down" ${idx === appData.shortcuts.length - 1 ? 'disabled' : ''} title="Move down">↓</button>
+              <button type="button" class="sc-icon-btn" data-sc-action="edit" title="Edit">✎</button>
+              <button type="button" class="sc-icon-btn sc-del" data-sc-action="delete" title="Delete">✕</button>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+  }
+
+  shortcutsList.addEventListener('click', async (e) => {
+    const actionBtn = e.target.closest('[data-sc-action]');
+    const row = e.target.closest('.shortcut-row');
+    if (!actionBtn || !row) return;
+
+    const id = Number(row.dataset.scId);
+    const idx = appData.shortcuts.findIndex((s) => s.id === id);
+    if (idx === -1) return;
+
+    const action = actionBtn.dataset.scAction;
+    if (action === 'use') {
+      promptShortcutAmount(appData.shortcuts[idx]);
+    } else if (action === 'edit') {
+      startEditShortcut(appData.shortcuts[idx]);
+    } else if (action === 'delete') {
+      appData.shortcuts.splice(idx, 1);
+      await StorageService.saveData(appData);
+      renderShortcutsList();
+      renderMoreList();
+      showAppToast('Shortcut deleted');
+    } else if (action === 'up' && idx > 0) {
+      const temp = appData.shortcuts[idx - 1];
+      appData.shortcuts[idx - 1] = appData.shortcuts[idx];
+      appData.shortcuts[idx] = temp;
+      await StorageService.saveData(appData);
+      renderShortcutsList();
+    } else if (action === 'down' && idx < appData.shortcuts.length - 1) {
+      const temp = appData.shortcuts[idx + 1];
+      appData.shortcuts[idx + 1] = appData.shortcuts[idx];
+      appData.shortcuts[idx] = temp;
+      await StorageService.saveData(appData);
+      renderShortcutsList();
+    }
+  });
+
+  /* ---------- Tabs ---------- */
+  function readSavedTab() {
+    try {
+      const t = localStorage.getItem(TAB_KEY);
+      return TABS.includes(t) ? t : 'home';
+    } catch {
+      return 'home';
+    }
+  }
+
+  function setTab(tab, scrollTop) {
+    if (!TABS.includes(tab)) tab = 'home';
+    document.body.setAttribute('data-mobile-tab', tab);
+    tabButtons.forEach((btn) => {
+      const on = btn.dataset.tab === tab;
+      btn.classList.toggle('active', on);
+      if (on) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
+    });
+    try {
+      localStorage.setItem(TAB_KEY, tab);
+    } catch {
+      /* ignore */
+    }
+    if (scrollTop) window.scrollTo(0, 0);
+  }
+
+  tabbar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mobile-tab');
+    if (btn) setTab(btn.dataset.tab, true);
+  });
+
+  recentSeeAllBtn.addEventListener('click', () => setTab('transactions', true));
+
+  /* ---------- Hide tab bar while typing ---------- */
+  function isKeyboardField(el) {
+    if (!el || !el.tagName) return false;
+    if (el.closest('.modal-backdrop')) return false;
+    if (el.tagName === 'TEXTAREA') return true;
+    if (el.tagName !== 'INPUT') return false;
+    return KEYBOARD_INPUT_TYPES.includes((el.getAttribute('type') || 'text').toLowerCase());
+  }
+
+  function syncKeyboardState() {
+    document.body.classList.toggle('mtab-kb-open', isKeyboardField(document.activeElement));
+  }
+
+  document.addEventListener('focusin', syncKeyboardState);
+  document.addEventListener('focusout', () => setTimeout(syncKeyboardState, 0));
+
+  /* ---------- Shared helpers ---------- */
+  function monthExpensesSorted() {
+    return appData.expenses
+      .filter((e) => e.date.startsWith(activeMonth))
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+  }
+
+  function txItemHtml(e) {
+    const isCash = e.mode === 'Cash';
+    const isLite = e.mode === 'UPI Lite';
+    const badgeClass = isCash ? 'badge-cash' : isLite ? 'badge-lite' : 'badge-bank';
+    const modeLabel = isCash ? 'Cash' : isLite ? 'UPI • Lite' : 'UPI • Bank';
+    const noteHtml = e.note ? ` • ${escapeHtml(e.note)}` : '';
+    return `
+      <div class="tx-item">
+        <div class="tx-left">
+          <div class="tx-title-row">
+            <span class="tx-category">${escapeHtml(e.category)}</span>
+            <span class="badge ${badgeClass}">${modeLabel}</span>
+          </div>
+          <div class="tx-meta">${formatDateReadable(e.date)}${noteHtml}</div>
+        </div>
+        <div class="tx-right">
+          <span class="tx-amount">${formatINR(e.amount)}</span>
+          <button type="button" class="delete-btn" title="Delete expense" onclick="deleteExpense(${e.id})">✕</button>
+        </div>
+      </div>
+    `;
+  }
+
+  /* ---------- Home: Recent ---------- */
+  function renderRecent() {
+    const all = monthExpensesSorted();
+    if (all.length === 0) {
+      recentCount.textContent = `No entries in ${formatMonthLabel(activeMonth)}`;
+      recentList.innerHTML = '<p class="empty-state">No expenses in this month yet.</p>';
+      recentSeeAllBtn.classList.add('hidden');
+      return;
+    }
+    const latest = all.slice(0, RECENT_LIMIT);
+    recentCount.textContent = `Latest ${latest.length} of ${all.length}`;
+    recentList.innerHTML = latest.map(txItemHtml).join('');
+    recentSeeAllBtn.classList.remove('hidden');
+  }
+
+  /* ---------- Insights: Donut ---------- */
+  function renderDonut() {
+    const R = 48;
+    const C = 2 * Math.PI * R;
+    const items = monthExpensesSorted();
+    const total = items.reduce((s, e) => s + Number(e.amount), 0);
+
+    const totals = {};
+    items.forEach((e) => {
+      totals[e.category] = (totals[e.category] || 0) + Number(e.amount);
+    });
+    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+    let segments = '';
+    if (total > 0) {
+      const gap = sorted.length > 1 ? 1.2 : 0;
+      let offset = 0;
+      segments = sorted
+        .map(([cat, val]) => {
+          const len = (val / total) * C;
+          const dash = Math.max(len - gap, 0.01);
+          const seg = `<circle class="donut-seg ${CATEGORY_CLASS[cat] || 'cat-other'}" cx="60" cy="60" r="${R}"
+            stroke-dasharray="${dash} ${C - dash}" stroke-dashoffset="${-offset}"></circle>`;
+          offset += len;
+          return seg;
+        })
+        .join('');
+    } else {
+      segments = `<circle class="donut-track" cx="60" cy="60" r="${R}"></circle>`;
+    }
+
+    const totalText = formatINR(total);
+    const legend =
+      total > 0
+        ? `<ul class="donut-legend">${sorted
+            .map(([cat, val]) => {
+              const pct = Math.round((val / total) * 100);
+              return `<li class="donut-legend-item">
+                <span class="donut-dot ${CATEGORY_CLASS[cat] || 'cat-other'}"></span>
+                <span class="donut-legend-name">${escapeHtml(cat)}</span>
+                <span class="donut-legend-amt">${formatINR(val)}</span>
+                <span class="donut-legend-pct">${pct}%</span>
+              </li>`;
+            })
+            .join('')}</ul>`
+        : '<p class="empty-state">No expenses recorded yet.</p>';
+
+    categoryDonut.innerHTML = `
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 120 120" role="img" aria-label="Category breakdown: ${totalText} spent">
+          <g transform="rotate(-90 60 60)">${segments}</g>
+        </svg>
+        <div class="donut-center">
+          <strong class="${totalText.length > 9 ? 'is-long' : ''}">${totalText}</strong>
+          <span>spent</span>
+        </div>
+      </div>
+      ${legend}
+    `;
+  }
+
+  /* ---------- More ---------- */
+  function svgIcon(name) {
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+  }
+
+  function getMoreItems() {
+    const count = (appData.shortcuts || []).length;
+    return [
+      {
+        icon: 'bolt',
+        title: 'Shortcuts',
+        desc: 'Add, edit, or quick-log your saved expenses',
+        tag: `${count}`,
+        action: () => openShortcutsModal(false)
+      },
+      {
+        icon: 'bulb',
+        title: 'Request a feature',
+        desc: 'Tell us what you would like to see next',
+        action: () => {
+          if (FEATURE_REQUEST_URL) window.open(FEATURE_REQUEST_URL, '_blank', 'noopener');
+          else showAppToast('Feature requests will open here soon');
+        }
+      },
+      {
+        icon: 'info',
+        title: 'App Info & Privacy',
+        desc: 'How your data is stored and kept private',
+        action: () => openGuideBtn.click()
+      }
+    ];
+  }
+
+  function renderMoreList() {
+    const items = getMoreItems();
+    moreList.innerHTML = items
+      .map(
+        (item, i) => `
+      <button type="button" class="more-row" data-more-index="${i}">
+        <span class="more-icon">${svgIcon(item.icon)}</span>
+        <span class="more-text">
+          <span class="more-title">${escapeHtml(item.title)}${
+            item.tag ? ` <span class="more-tag">${escapeHtml(item.tag)}</span>` : ''
+          }</span>
+          <span class="more-desc">${escapeHtml(item.desc)}</span>
+        </span>
+        <span class="more-chevron">${svgIcon('chevron')}</span>
+      </button>`
+      )
+      .join('');
+  }
+
+  moreList.addEventListener('click', (e) => {
+    const row = e.target.closest('.more-row');
+    if (!row) return;
+    const items = getMoreItems();
+    const item = items[Number(row.dataset.moreIndex)];
+    if (item && item.action) item.action();
+  });
+
+  /* ---------- Hook into renderAll ---------- */
+  function renderMobileExtras() {
+    try {
+      renderRecent();
+      renderDonut();
+    } catch (err) {
+      console.error('Mobile tabs render failed', err);
+    }
+  }
+
+  const originalRenderAll = renderAll;
+  renderAll = function () {
+    originalRenderAll();
+    renderMobileExtras();
+  };
+
+  renderMoreList();
+  setTab(readSavedTab(), false);
+  renderMobileExtras();
+})();
