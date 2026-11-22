@@ -1,28 +1,30 @@
-/* Default: Crisp Light Mode + Release C Frosted Glass Variables */
+/* OriginOS 7 Inspired Frosted Glass Theme Variables */
 :root {
-  --bg-page: #f1f5f9;
-  --bg-mesh-1: rgba(2, 132, 199, 0.08);
-  --bg-mesh-2: rgba(124, 58, 237, 0.07);
+  --bg-page: #e8eef7;
+  --bg-mesh-1: rgba(2, 132, 199, 0.22);
+  --bg-mesh-2: rgba(124, 58, 237, 0.18);
+  --bg-mesh-3: rgba(16, 185, 129, 0.15);
   --bg-card: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.84);
-  --bg-glass-strong: rgba(255, 255, 255, 0.92);
-  --bg-elevated: #f8fafc;
-  --bg-well: #e2e8f0;
-  --border-subtle: #cbd5e1;
-  --border-glass: rgba(203, 213, 225, 0.72);
+  --bg-glass: rgba(255, 255, 255, 0.58);
+  --bg-glass-strong: rgba(255, 255, 255, 0.84);
+  --bg-elevated: rgba(248, 250, 252, 0.72);
+  --bg-well: rgba(226, 232, 240, 0.78);
+  --border-subtle: rgba(203, 213, 225, 0.82);
+  --border-glass: rgba(255, 255, 255, 0.78);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 1px 0 0 rgba(255, 255, 255, 0.55);
   --text-primary: #0f172a;
   --text-muted: #475569;
   --accent-cyan: #0284c7;
   --accent-violet: #7c3aed;
   --accent-emerald: #059669;
-  /* AUD-08: Darkened light-mode amber for >4.6:1 WCAG AA contrast */
   --accent-amber: #b45309;
   --accent-danger: #e11d48;
   --btn-primary-text: #ffffff;
-  --shadow-card: 0 4px 16px rgba(15, 23, 42, 0.05);
+  --shadow-card: 0 8px 28px rgba(15, 23, 42, 0.07);
   --scheme: light;
-  --radius-lg: 16px;
-  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-md: 11px;
+  --bar-w: 0%;
   --cat-food: #0ea5e9;
   --cat-travel: #7c3aed;
   --cat-room: #0d9488;
@@ -31,18 +33,20 @@
   --cat-other: #64748b;
 }
 
-/* Dark Mode Theme Override */
+/* Dark Mode OriginOS 7 Frosted Glass Override */
 [data-theme="dark"] {
-  --bg-page: #0b0f19;
-  --bg-mesh-1: rgba(34, 211, 238, 0.07);
-  --bg-mesh-2: rgba(139, 92, 246, 0.08);
+  --bg-page: #070b14;
+  --bg-mesh-1: rgba(34, 211, 238, 0.16);
+  --bg-mesh-2: rgba(139, 92, 246, 0.2);
+  --bg-mesh-3: rgba(16, 185, 129, 0.12);
   --bg-card: #131a2a;
-  --bg-glass: rgba(19, 26, 42, 0.82);
-  --bg-glass-strong: rgba(19, 26, 42, 0.92);
-  --bg-elevated: #192236;
-  --bg-well: #0b0f19;
-  --border-subtle: #1f293d;
-  --border-glass: rgba(51, 65, 85, 0.58);
+  --bg-glass: rgba(19, 26, 44, 0.54);
+  --bg-glass-strong: rgba(17, 24, 39, 0.86);
+  --bg-elevated: rgba(27, 37, 58, 0.68);
+  --bg-well: rgba(11, 15, 25, 0.72);
+  --border-subtle: rgba(51, 65, 85, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.14);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 1px 0 0 rgba(255, 255, 255, 0.08);
   --text-primary: #f1f5f9;
   --text-muted: #94a3b8;
   --accent-cyan: #22d3ee;
@@ -51,7 +55,7 @@
   --accent-amber: #f59e0b;
   --accent-danger: #f43f5e;
   --btn-primary-text: #060913;
-  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.28);
+  --shadow-card: 0 10px 32px rgba(0, 0, 0, 0.36);
   --scheme: dark;
   --cat-food: #38bdf8;
   --cat-travel: #a78bfa;
@@ -71,29 +75,28 @@
 body {
   background-color: var(--bg-page);
   background-image:
-    radial-gradient(circle at 12% 8%, var(--bg-mesh-1), transparent 42%),
-    radial-gradient(circle at 88% 18%, var(--bg-mesh-2), transparent 44%);
+    radial-gradient(circle at 10% 10%, var(--bg-mesh-1), transparent 40%),
+    radial-gradient(circle at 90% 15%, var(--bg-mesh-2), transparent 44%),
+    radial-gradient(circle at 50% 90%, var(--bg-mesh-3), transparent 46%);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.5;
   transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-/* AUD-07: Scope user-select: none strictly to interactive button/tab controls */
-.btn,
-.pill,
-.mobile-tab,
-.mini-edit-btn,
-.delete-btn,
-.sc-icon-btn,
-.icon-close-btn,
-.footer-link-btn,
-.toast-undo-btn {
+  /* Block accidental text selection & long-press popups across the entire UI */
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+/* Allow text selection ONLY on the web brand name and editable inputs */
+.selectable-brand,
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 .sr-only {
@@ -102,6 +105,23 @@ body {
   height: 1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+}
+
+/* Utility layout helpers (replaces inline styles for strict CSP) */
+.mt-8 {
+  margin-top: 8px;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.prompt-msg-space {
+  margin-bottom: 10px;
 }
 
 .app-shell {
@@ -113,14 +133,14 @@ body {
 }
 
 /* ============================================================================
-   MODALS (Release C: Frosted Glass Backdrop + Non-Nested Card Surface)
+   MODALS (Frosted Glass Backdrop + Non-Nested Specular Card)
    ============================================================================ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.58);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,12 +149,11 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-/* Zero nested blurs: modal-card uses solid/translucent surface without second backdrop-filter */
 .modal-card {
   background: var(--bg-glass-strong);
   border: 1px solid var(--border-glass);
+  box-shadow: var(--glass-specular), 0 24px 48px rgba(0, 0, 0, 0.28);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
   max-width: 560px;
   width: 100%;
   max-height: min(88dvh, 720px);
@@ -195,8 +214,51 @@ body {
   font-size: 0.82rem;
 }
 
+/* Recurring Bills Prompt Checklist */
+.recurring-prompt-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  margin-bottom: 8px;
+}
+
+.recurring-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recurring-check-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.recurring-check-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.recurring-check-left input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
 /* ============================================================================
-   TOP HEADER & CUSTOM WALLET + RUPEE LOGO (Release C)
+   TOP HEADER & CUSTOM WALLET + RUPEE LOGO
    ============================================================================ */
 .topbar {
   display: flex;
@@ -205,11 +267,11 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-specular), var(--shadow-card);
   padding: 16px 22px;
 }
 
@@ -250,10 +312,9 @@ body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 9px;
+  gap: 8px;
 }
 
-/* Custom Status-Driven Month Calendar Control */
 .month-picker-wrap {
   display: inline-flex;
   align-items: center;
@@ -329,47 +390,46 @@ body {
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(5, 150, 105, 0.14);
   color: var(--accent-emerald);
   border: 1px solid rgba(5, 150, 105, 0.28);
   transition: all 0.2s ease;
 }
 
 .storage-badge.connected {
-  background: rgba(2, 132, 199, 0.12);
+  background: rgba(2, 132, 199, 0.14);
   color: var(--accent-cyan);
   border-color: rgba(2, 132, 199, 0.3);
 }
 
 .storage-badge.syncing {
-  background: rgba(124, 58, 237, 0.12);
+  background: rgba(124, 58, 237, 0.14);
   color: var(--accent-violet);
   border-color: rgba(124, 58, 237, 0.3);
 }
 
 .storage-badge.error {
-  background: rgba(225, 29, 72, 0.12);
+  background: rgba(225, 29, 72, 0.14);
   color: var(--accent-danger);
   border-color: rgba(225, 29, 72, 0.3);
 }
 
 .btn-drive {
-  background: rgba(2, 132, 199, 0.1);
+  background: rgba(2, 132, 199, 0.12);
   color: var(--accent-cyan);
   border: 1px solid rgba(2, 132, 199, 0.35);
 }
 
 .btn-drive:hover {
-  background: rgba(2, 132, 199, 0.2);
+  background: rgba(2, 132, 199, 0.22);
 }
 
 .btn-drive.connected {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(5, 150, 105, 0.14);
   color: var(--accent-emerald);
   border-color: rgba(5, 150, 105, 0.35);
 }
 
-/* Optional Drive Prompt Banner */
 .drive-prompt-banner {
   display: flex;
   justify-content: space-between;
@@ -377,7 +437,7 @@ body {
   flex-wrap: wrap;
   gap: 14px;
   border-color: rgba(2, 132, 199, 0.35);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(2, 132, 199, 0.06));
+  background: linear-gradient(135deg, var(--bg-glass), rgba(2, 132, 199, 0.08));
   animation: fadeIn 0.25s ease;
 }
 
@@ -404,15 +464,15 @@ body {
 }
 
 /* ============================================================================
-   CARDS & 3 MERGED SUMMARY MODULES (Release C: Frosted Glass <= 14px)
+   CARDS & 3 MERGED SUMMARY MODULES (OriginOS 7 Frosted Glass)
    ============================================================================ */
 .card {
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-specular), var(--shadow-card);
   padding: 18px;
 }
 
@@ -481,7 +541,6 @@ body {
   gap: 8px;
 }
 
-/* Status Pills (On track / Careful / Over) */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -507,7 +566,6 @@ body {
   border: 1px solid rgba(5, 150, 105, 0.3);
 }
 
-/* AUD-08: High-contrast amber text in both Light (#b45309) and Dark (#f59e0b) */
 .status-pill.status-yellow {
   background: rgba(180, 83, 9, 0.12);
   color: var(--accent-amber);
@@ -553,7 +611,6 @@ body {
   background: rgba(5, 150, 105, 0.14);
 }
 
-/* Active Reminder Chip inside Wallet Card */
 .reminder-chip {
   display: inline-flex;
   align-items: center;
@@ -631,7 +688,7 @@ body {
 /* Inline Budget Drawer */
 .budget-drawer {
   border-color: rgba(5, 150, 105, 0.35);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.06));
+  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.08));
   animation: fadeIn 0.2s ease;
 }
 
@@ -691,7 +748,7 @@ body {
 .tag-bank { color: var(--accent-violet); }
 
 /* ============================================================================
-   RELEASE B: UNIFIED 2-COLUMN LAYOUT (>640px: Left 400px, Right Fluid)
+   ADAPTIVE 2-COLUMN LAYOUT (>640px)
    ============================================================================ */
 .main-grid {
   display: grid;
@@ -783,14 +840,14 @@ input:focus, select:focus {
 }
 
 .pill.active {
-  background: var(--bg-card);
+  background: var(--bg-glass-strong);
   color: var(--accent-cyan);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   border-color: rgba(2, 132, 199, 0.35);
 }
 
 .upi-sub-box {
-  background: rgba(124, 58, 237, 0.06);
+  background: rgba(124, 58, 237, 0.08);
   border: 1px dashed rgba(124, 58, 237, 0.35);
   padding: 10px;
   border-radius: var(--radius-md);
@@ -832,7 +889,7 @@ input:focus, select:focus {
 }
 
 .btn-outline-emerald {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(5, 150, 105, 0.14);
   color: var(--accent-emerald);
   border: 1px solid rgba(5, 150, 105, 0.4);
 }
@@ -842,7 +899,7 @@ input:focus, select:focus {
 }
 
 .btn-danger-outline {
-  background: rgba(225, 29, 72, 0.1);
+  background: rgba(225, 29, 72, 0.12);
   color: var(--accent-danger);
   border: 1px solid rgba(225, 29, 72, 0.35);
 }
@@ -865,14 +922,14 @@ input:focus, select:focus {
 .btn-quick-add {
   padding: 6px 12px;
   font-size: 0.8rem;
-  background: rgba(2, 132, 199, 0.12);
+  background: rgba(2, 132, 199, 0.14);
   color: var(--accent-cyan);
   border: 1px solid rgba(2, 132, 199, 0.35);
   border-radius: 999px;
 }
 
 .btn-quick-add:hover {
-  background: rgba(2, 132, 199, 0.22);
+  background: rgba(2, 132, 199, 0.24);
 }
 
 .full-width {
@@ -892,7 +949,7 @@ input:focus, select:focus {
   padding: 10px 10px;
 }
 
-/* Status Progress Strip */
+/* Status Progress Strip (uses CSS var --bar-w instead of inline style) */
 .bar-track {
   width: 100%;
   height: 7px;
@@ -902,6 +959,7 @@ input:focus, select:focus {
 }
 
 .bar-fill {
+  width: var(--bar-w, 0%);
   height: 100%;
   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
   border-radius: 999px;
@@ -921,7 +979,7 @@ input:focus, select:focus {
   background: var(--accent-danger);
 }
 
-/* SVG Donut Breakdown (Shared Desktop + Mobile) */
+/* SVG Donut Breakdown */
 .category-donut {
   display: flex;
   flex-direction: column;
@@ -1129,7 +1187,7 @@ input:focus, select:focus {
 }
 
 .delete-btn {
-  background: rgba(225, 29, 72, 0.1);
+  background: rgba(225, 29, 72, 0.12);
   color: var(--accent-danger);
   border: 1px solid rgba(225, 29, 72, 0.28);
   border-radius: 8px;
@@ -1152,7 +1210,7 @@ input:focus, select:focus {
 }
 
 /* ============================================================================
-   SHORTCUTS MODAL & LIST (Shared Desktop + Mobile)
+   SHORTCUTS & RECURRING BILLS MODALS
    ============================================================================ */
 .shortcuts-modal-header {
   display: flex;
@@ -1170,7 +1228,6 @@ input:focus, select:focus {
   min-width: 0;
 }
 
-/* AUD-09: Truncate cleanly on narrow 320px screens without horizontal overflow */
 .shortcuts-modal-header h2 {
   font-size: 1.06rem;
   overflow: hidden;
@@ -1346,9 +1403,10 @@ input:focus, select:focus {
   flex-wrap: wrap;
   gap: 10px;
   background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
   border: 1px solid var(--border-glass);
+  box-shadow: var(--glass-specular);
   border-radius: var(--radius-lg);
   padding: 14px 22px;
   font-size: 0.82rem;
@@ -1378,7 +1436,7 @@ input:focus, select:focus {
   background: rgba(2, 132, 199, 0.08);
 }
 
-/* Interactive Toast (Desktop & Mobile) */
+/* Interactive Toast */
 .mobile-toast {
   position: fixed;
   left: 50%;
@@ -1435,7 +1493,6 @@ input:focus, select:focus {
     display: none !important;
   }
 
-  /* On desktop, Recent 3 sits at top of Right Column, so hide redundant See All button */
   .recent-see-all {
     display: none !important;
   }
@@ -1449,6 +1506,18 @@ input:focus, select:focus {
   .main-grid {
     grid-template-columns: 400px 1fr;
     gap: 22px;
+  }
+
+  /* When Category Breakdown docks in Right Column (low entries <= 3), render Donut & Legend side-by-side */
+  .right-column .breakdown-card .category-donut {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    gap: 24px;
+  }
+
+  .right-column .breakdown-card .donut-legend {
+    max-width: 360px;
   }
 }
 
@@ -1490,11 +1559,19 @@ input:focus, select:focus {
 }
 
 /* ============================================================================
-   MOBILE LAYOUT & BOTTOM TAB BAR (<= 640px)
+   MOBILE LAYOUT & GPU-OPTIMIZED GLASS (<= 640px)
    ============================================================================ */
 @media (max-width: 640px) {
   :root {
     --tabbar-h: 64px;
+    /* High-translucency solid-composite card surface on mobile to avoid per-card blur GPU overdraw */
+    --bg-glass: rgba(255, 255, 255, 0.88);
+    --bg-glass-strong: rgba(255, 255, 255, 0.94);
+  }
+
+  [data-theme="dark"] {
+    --bg-glass: rgba(19, 26, 44, 0.88);
+    --bg-glass-strong: rgba(17, 24, 39, 0.94);
   }
 
   .desktop-only {
@@ -1521,12 +1598,14 @@ input:focus, select:focus {
     min-width: 0;
   }
 
+  /* Keep backdrop-filter strictly on topbar, tabbar, and modals; keep scrolling cards crisp at 60fps */
   .card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     padding: 12px;
     border-radius: 14px;
   }
 
-  /* Tab visibility */
   body[data-mobile-tab="home"] [data-mtab]:not([data-mtab~="home"]),
   body[data-mobile-tab="transactions"] [data-mtab]:not([data-mtab~="transactions"]),
   body[data-mobile-tab="insights"] [data-mtab]:not([data-mtab~="insights"]),
@@ -1608,7 +1687,6 @@ input:focus, select:focus {
     overflow: hidden;
   }
 
-  /* 3 Summary Modules on Mobile */
   .summary-three-grid {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -1631,7 +1709,6 @@ input:focus, select:focus {
     font-size: 1.12rem;
   }
 
-  /* Budget drawer */
   .budget-form-inline {
     flex-direction: column;
     align-items: stretch;
@@ -1657,7 +1734,6 @@ input:focus, select:focus {
     font-size: 0.8rem;
   }
 
-  /* Main Grid & Form */
   .main-grid {
     grid-template-columns: 1fr;
     gap: 10px;
@@ -1718,7 +1794,6 @@ input:focus, select:focus {
     font-size: 0.9rem;
   }
 
-  /* History & Filters */
   .history-header {
     flex-direction: column;
     align-items: stretch;
@@ -1754,7 +1829,7 @@ input:focus, select:focus {
     min-height: 44px;
   }
 
-  /* Bottom Tab Bar (Release C: Frosted Glass <= 14px) */
+  /* Bottom Tab Bar (Frosted Glass) */
   .mobile-tabbar {
     position: fixed;
     left: 0;
@@ -1766,8 +1841,8 @@ input:focus, select:focus {
     gap: 4px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     background: var(--bg-glass-strong);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
     border-top: 1px solid var(--border-glass);
     box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
     transition: transform 0.2s ease;
@@ -1807,7 +1882,7 @@ input:focus, select:focus {
 
   .mobile-tab.active {
     color: var(--accent-cyan);
-    background: rgba(2, 132, 199, 0.12);
+    background: rgba(2, 132, 199, 0.14);
   }
 
   .mobile-toast {
@@ -1851,7 +1926,7 @@ input:focus, select:focus {
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: rgba(2, 132, 199, 0.1);
+    background: rgba(2, 132, 199, 0.12);
     color: var(--accent-cyan);
   }
 
@@ -1889,7 +1964,7 @@ input:focus, select:focus {
   .more-tag {
     padding: 1px 8px;
     border-radius: 999px;
-    background: rgba(124, 58, 237, 0.12);
+    background: rgba(124, 58, 237, 0.14);
     color: var(--accent-violet);
     font-size: 0.75rem;
     font-weight: 700;

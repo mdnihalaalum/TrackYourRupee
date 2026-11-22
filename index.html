@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
   <title>TrackYourRupee • Personal Daily Ledger</title>
-  <!-- Release C: Custom Geometric Wallet & Rupee (₹) Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%230284c7'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='6' width='28' height='21' rx='6' fill='url(%23g)'/%3E%3Cpath d='M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2' fill='none' stroke='%230284c7' stroke-width='2.2'/%3E%3Crect x='21' y='13' width='9' height='7' rx='2.5' fill='%23ffffff' fill-opacity='0.22'/%3E%3Ccircle cx='24.5' cy='16.5' r='1.3' fill='%23ffffff'/%3E%3Cpath d='M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,19 +31,19 @@
         <ul class="welcome-list">
           <li>
             <strong>1. Welcome &amp; About TrackYourRupee:</strong><br />
-            TrackYourRupee is a lightweight personal finance tracker designed to help you manage your monthly allowance, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month[cite: 1].
+            TrackYourRupee is a lightweight personal finance tracker designed to help you manage your monthly allowance, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month.
           </li>
           <li>
             <strong>2. How Your Data Is Stored (Local &amp; Google Drive):</strong><br />
-            Everything you enter is saved immediately inside your own browser's <code>LocalStorage</code> so the app works completely offline[cite: 1]. If you opt in to <strong>Google Drive Backup</strong>, it creates and syncs only one compact <code>expense.json</code> file inside your personal Drive—we cannot see, access, or read any other files in your Drive[cite: 1].
+            Everything you enter is saved immediately inside your own browser's <code>LocalStorage</code> so the app works completely offline. If you opt in to <strong>Google Drive Backup</strong>, it creates and syncs only one compact <code>expense.json</code> file inside your personal Drive—we cannot see, access, or read any other files in your Drive.
           </li>
           <li>
             <strong>3. 100% Privacy &amp; Zero-Server Security:</strong><br />
-            TrackYourRupee runs on a zero-server architecture[cite: 1]. No developer server, database, or third-party tracker ever collects, reads, or sells your financial data—your numbers stay strictly between your device and your own Google account[cite: 1]. <em><br /><strong>TIP: To keep your local data safe, avoid clearing your browser's site data/cache unless you have backed up to Google Drive or exported a CSV[cite: 1].</strong></em>
+            TrackYourRupee runs on a zero-server architecture. No developer server, database, or third-party tracker ever collects, reads, or sells your financial data—your numbers stay strictly between your device and your own Google account. <em><br /><strong>TIP: To keep your local data safe, avoid clearing your browser's site data/cache unless you have backed up to Google Drive or exported a CSV.</strong></em>
           </li>
           <li>
             <strong>4. Coming in Future Updates:</strong><br />
-            *Support for bank statement linking may be added in future versions to make expense tracking even faster[cite: 1].<br />*Also support to manage your budget and guide to spend less may be added[cite: 1].
+            *Support for bank statement linking may be added in future versions to make expense tracking even faster.<br />*Also support to manage your budget and guide to spend less may be added.
           </li>
         </ul>
       </div>
@@ -54,7 +53,7 @@
     </div>
   </div>
 
-  <!-- Smart Monthly Budget Prompt Modal -->
+  <!-- Smart Monthly Budget & Recurring Bills Prompt Modal -->
   <div class="modal-backdrop hidden" id="budgetPromptModal" role="dialog" aria-modal="true" aria-labelledby="budgetPromptTitle">
     <div class="modal-card">
       <div class="modal-header">
@@ -69,26 +68,38 @@
         </div>
       </div>
       <div class="modal-body">
-        <p class="muted-text" id="budgetPromptMessage" style="margin-bottom: 12px;">
-          You haven't set a budget for this month yet[cite: 1]. Adding a budget helps track your remaining balance automatically[cite: 1].
+        <p class="muted-text prompt-msg-space" id="budgetPromptMessage">
+          You haven't set a budget for this month yet. Adding a budget helps track your remaining balance automatically.
         </p>
         <div class="form-group">
           <label for="promptBudgetAmount">Monthly Budget Amount (₹)</label>
           <input type="number" id="promptBudgetAmount" placeholder="e.g. 3000" min="1" max="100000000" step="1" />
         </div>
 
-        <div class="upi-sub-box hidden" id="reminderDateBox" style="margin-top: 12px;">
+        <!-- Recurring Fixed Bills Checklist (Shown automatically when saved recurring items exist) -->
+        <div class="upi-sub-box mt-12 hidden" id="promptRecurringBox">
+          <div class="recurring-prompt-head">
+            <strong>Include Monthly Fixed / Recurring Bills</strong>
+            <span class="muted-text" id="promptRecurringTotal">Total: ₹0</span>
+          </div>
+          <div id="promptRecurringChecklist" class="recurring-checklist"></div>
+          <button type="button" class="btn btn-outline-emerald full-width mt-8 hidden" id="applyRecurringOnlyBtn">
+            Add Checked Bills Only (Skip Budget)
+          </button>
+        </div>
+
+        <div class="upi-sub-box mt-12 hidden" id="reminderDateBox">
           <div class="form-group">
             <label for="budgetReminderDate">When will you add your budget?</label>
             <input type="date" id="budgetReminderDate" />
           </div>
-          <button type="button" class="btn btn-secondary full-width" id="confirmReminderBtn" style="margin-top: 8px;">
+          <button type="button" class="btn btn-secondary full-width mt-8" id="confirmReminderBtn">
             Save Reminder Date
           </button>
         </div>
       </div>
       <div class="modal-footer modal-footer-row">
-        <button type="button" class="btn btn-primary" id="savePromptBudgetBtn" style="flex: 1;">Save Budget</button>
+        <button type="button" class="btn btn-primary flex-1" id="savePromptBudgetBtn">Save Budget</button>
         <button type="button" class="btn btn-secondary" id="notNowBudgetBtn">Not Now / Remind Later</button>
       </div>
     </div>
@@ -113,10 +124,9 @@
         </div>
       </div>
       <div class="modal-body">
-        <!-- Inline One-Time Amount Adjuster (Does NOT overwrite saved shortcut) -->
         <div class="quick-log-confirm-box hidden" id="quickLogConfirmBox">
           <h4 id="quickLogConfirmTitle">Log Shortcut Expense</h4>
-          <p class="muted-text" id="quickLogConfirmMeta" style="margin-bottom: 8px;">Adjust amount for this entry only (saved shortcut stays unchanged)[cite: 1]</p>
+          <p class="muted-text prompt-msg-space" id="quickLogConfirmMeta">Adjust amount for this entry only (saved shortcut stays unchanged)</p>
           <div class="quick-log-confirm-row">
             <input type="number" id="quickLogAmountInput" min="1" max="100000000" step="0.01" placeholder="Amount (₹)" aria-label="Shortcut expense amount" />
             <button type="button" class="btn btn-primary" id="confirmQuickLogBtn">Add Now</button>
@@ -124,7 +134,6 @@
           </div>
         </div>
 
-        <!-- Inline Shortcut Creator / Editor -->
         <div class="shortcut-editor-box hidden" id="shortcutEditorBox">
           <h4 id="shortcutEditorTitle">New Shortcut</h4>
           <div class="form-row">
@@ -137,7 +146,7 @@
               <select id="scCategory"></select>
             </div>
           </div>
-          <div class="form-row" style="margin-top: 8px;">
+          <div class="form-row mt-8">
             <div class="form-group">
               <label for="scMode">Payment Mode</label>
               <select id="scMode">
@@ -152,7 +161,7 @@
             </div>
           </div>
           <div class="shortcut-editor-actions">
-            <button type="button" class="btn btn-primary" id="saveShortcutEditBtn" style="flex: 1;">Save Shortcut</button>
+            <button type="button" class="btn btn-primary flex-1" id="saveShortcutEditBtn">Save Shortcut</button>
             <button type="button" class="btn btn-secondary" id="cancelShortcutEditBtn">Cancel</button>
           </div>
         </div>
@@ -165,6 +174,66 @@
     </div>
   </div>
 
+  <!-- Monthly Fixed / Recurring Expenses Manager Modal -->
+  <div class="modal-backdrop hidden" id="recurringModal" role="dialog" aria-modal="true" aria-labelledby="recurringModalTitle">
+    <div class="modal-card">
+      <div class="modal-header shortcuts-modal-header">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad4)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h2 id="recurringModalTitle">Monthly Fixed Bills</h2>
+            <p class="subtitle">Prompted automatically when a new month starts</p>
+          </div>
+        </div>
+        <div class="shortcuts-header-actions">
+          <button type="button" class="btn btn-primary btn-sm" id="addNewRecurringBtn" aria-label="Add monthly recurring bill">+ Add</button>
+          <button type="button" class="icon-close-btn" id="closeRecurringBtn" aria-label="Close recurring bills dialog">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-editor-box hidden" id="recurringEditorBox">
+          <h4 id="recurringEditorTitle">New Monthly Bill</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="recAmount">Monthly Amount (₹)</label>
+              <input type="number" id="recAmount" min="1" max="100000000" step="0.01" placeholder="e.g. 3500" />
+            </div>
+            <div class="form-group">
+              <label for="recCategory">Category</label>
+              <select id="recCategory"></select>
+            </div>
+          </div>
+          <div class="form-row mt-8">
+            <div class="form-group">
+              <label for="recMode">Payment Mode</label>
+              <select id="recMode">
+                <option value="Bank Account">UPI • Bank</option>
+                <option value="UPI Lite">UPI • Lite</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="recNote">Bill Name (e.g. Rent / Wi-Fi)</label>
+              <input type="text" id="recNote" maxlength="40" placeholder="e.g. Room Rent" />
+            </div>
+          </div>
+          <div class="shortcut-editor-actions">
+            <button type="button" class="btn btn-primary flex-1" id="saveRecurringEditBtn">Save Bill</button>
+            <button type="button" class="btn btn-secondary" id="cancelRecurringEditBtn">Cancel</button>
+          </div>
+        </div>
+
+        <div id="recurringList" class="shortcuts-list"></div>
+      </div>
+      <div class="modal-footer modal-footer-row">
+        <button type="button" class="btn btn-outline-emerald flex-1" id="applyRecurringNowBtn">Add All to Current Month</button>
+        <button type="button" class="btn btn-secondary" id="closeRecurringFooterBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
   <div class="app-shell">
     <!-- Top Header -->
     <header class="topbar">
@@ -173,7 +242,7 @@
           <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGradMain" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGradMain)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div>
-          <h1>TrackYourRupee</h1>
+          <h1 class="selectable-brand">TrackYourRupee</h1>
           <p class="subtitle">Personal Daily Ledger</p>
         </div>
       </div>
@@ -191,6 +260,7 @@
         </div>
         <span class="storage-badge" id="storageStatus" data-mtab="home">Saved on Device</span>
         <button type="button" class="btn btn-secondary desktop-only" id="headerShortcutsBtn" title="Manage Quick Add Shortcuts">⚡ Shortcuts</button>
+        <button type="button" class="btn btn-secondary desktop-only" id="headerRecurringBtn" title="Manage Monthly Fixed Bills">🔁 Recurring</button>
         <button type="button" class="btn btn-secondary desktop-only" id="soundToggleBtn" title="Toggle Sound Effects">🔊 Sound: On</button>
         <button type="button" class="btn btn-drive" id="driveAuthBtn" data-mtab="home">Backup to Drive</button>
         <button type="button" class="btn btn-secondary" id="themeToggleBtn" data-mtab="home" title="Switch Light / Dark Theme">Dark Mode</button>
@@ -202,7 +272,7 @@
     <section class="card drive-prompt-banner hidden" id="drivePromptBanner" data-mtab="home">
       <div class="drive-prompt-text">
         <strong>Want to back up your expenses to Google Drive?</strong>
-        <span class="muted-text">Your data is already saved safely on this device[cite: 1]. Connect Drive only if you want cross-device sync via a single private <code>expense.json</code> file[cite: 1].</span>
+        <span class="muted-text">Your data is already saved safely on this device. Connect Drive only if you want cross-device sync via a single private <code>expense.json</code> file.</span>
       </div>
       <div class="drive-prompt-actions">
         <button type="button" class="btn btn-primary" id="promptConnectBtn">Sign in &amp; Sync Drive</button>
@@ -240,11 +310,10 @@
 
         <div class="budget-progress-wrap">
           <div class="bar-track">
-            <div class="bar-fill status-green" id="budgetBarFill" style="width: 0%"></div>
+            <div class="bar-fill status-green" id="budgetBarFill"></div>
           </div>
         </div>
 
-        <!-- Active Reminder Pill with One-Click Delete -->
         <div class="reminder-chip hidden" id="budgetReminderChip">
           <span id="budgetReminderText">Reminder: --</span>
           <button type="button" class="reminder-del-btn" id="deleteReminderBtn" title="Delete Reminder" aria-label="Delete budget reminder">✕</button>
@@ -305,7 +374,7 @@
       <form id="budgetForm" class="budget-form-inline" autocomplete="off">
         <div class="budget-form-text">
           <strong id="budgetDrawerTitle">Manage Monthly Budget (₹)</strong>
-          <span class="muted-text" id="rolloverPreviewText">Add extra funds on top of your current budget, replace the base limit, reset to ₹0, or schedule a reminder[cite: 1].</span>
+          <span class="muted-text" id="rolloverPreviewText">Add extra funds on top of your current budget, replace the base limit, reset to ₹0, or schedule a reminder.</span>
         </div>
         <div class="budget-form-controls">
           <input type="number" id="budgetInput" placeholder="e.g. 2000" min="0" max="100000000" step="1" aria-label="Monthly budget amount" />
@@ -318,10 +387,10 @@
       </form>
     </section>
 
-    <!-- Release B: Unified 2-Column Main Grid (Left 400px: Add Expense + Donut; Right Fluid: Recent 3 + History) -->
-    <main class="main-grid" data-mtab="home transactions insights">
-      <!-- Left Column: Add Expense + Category Breakdown Donut -->
-      <div class="left-column" data-mtab="home insights">
+    <!-- Adaptive 2-Column Main Grid -->
+    <main class="main-grid" id="mainGrid" data-mtab="home transactions insights">
+      <!-- Left Column: Add Expense (+ Category Breakdown when transactions >= 4) -->
+      <div class="left-column" id="leftColumn" data-mtab="home insights">
         <section class="card form-card" data-mtab="home">
           <div class="card-header">
             <h3>Add Expense</h3>
@@ -339,7 +408,6 @@
               </div>
             </div>
 
-            <!-- Payment Mode Toggle -->
             <div class="form-group">
               <label>Payment Mode</label>
               <div class="pill-group" id="paymentModeGroup">
@@ -348,7 +416,6 @@
               </div>
             </div>
 
-            <!-- Conditional UPI Sub-Option -->
             <div class="form-group upi-sub-box hidden" id="upiSubGroup">
               <label>UPI Channel</label>
               <div class="pill-group" id="upiTypeGroup">
@@ -375,8 +442,8 @@
           </form>
         </section>
 
-        <!-- Category Breakdown Donut Module (Left column on desktop, Insights tab on mobile) -->
-        <section class="card breakdown-card" data-mtab="insights">
+        <!-- Category Breakdown Donut Module (Docks below History on laptop when entries <= 3, moves here when >= 4) -->
+        <section class="card breakdown-card" id="breakdownCard" data-mtab="insights">
           <div class="card-header">
             <h3>Category Breakdown</h3>
             <span class="muted-text" id="breakdownMonthLabel">This Month</span>
@@ -385,9 +452,8 @@
         </section>
       </div>
 
-      <!-- Right Column: Recent 3 on Top + Full Transaction History Below -->
-      <div class="right-column" data-mtab="home transactions">
-        <!-- Recent 3 entries (Home on mobile, Top of Right Column on desktop) -->
+      <!-- Right Column: Recent 3 + Transaction History (+ Category Breakdown when entries <= 3 on desktop) -->
+      <div class="right-column" id="rightColumn" data-mtab="home transactions">
         <section class="card recent-card" data-mtab="home">
           <div class="card-header recent-header">
             <div>
@@ -399,7 +465,6 @@
           <div id="recentList" class="transaction-list"></div>
         </section>
 
-        <!-- Full Filterable Transaction History -->
         <section class="card history-card" data-mtab="transactions">
           <div class="card-header history-header">
             <div>
@@ -419,7 +484,7 @@
           </div>
 
           <div id="transactionList" class="transaction-list">
-            <p class="empty-state">Add your first expense on the left to start tracking[cite: 1].</p>
+            <p class="empty-state">Add your first expense on the left to start tracking.</p>
           </div>
         </section>
       </div>
@@ -435,7 +500,7 @@
 
     <!-- Developer & Privacy Footer -->
     <footer class="app-footer" data-mtab="more">
-      <span>&copy; 2026 <strong>TrackYourRupee</strong> &bull; Developed by <strong>Muhammed Nihal Aalum</strong>[cite: 1]</span>
+      <span>&copy; 2026 <strong>TrackYourRupee</strong> &bull; Developed by <strong>Muhammed Nihal Aalum</strong></span>
       <div class="footer-links">
         <button type="button" class="footer-link-btn" id="exportAllBackupBtn" title="Export all months to CSV">Backup All Months (CSV)</button>
         <button type="button" class="footer-link-btn" id="openGuideBtn">App Info &amp; Privacy</button>
@@ -463,7 +528,7 @@
     </button>
   </nav>
 
-  <!-- Interactive Toast (Works on Mobile & Desktop for Undo + Storage Warnings + Daily Limit Info) -->
+  <!-- Interactive Toast -->
   <div class="mobile-toast" id="mobileToast" role="status" aria-live="polite">
     <span id="mobileToastText"></span>
     <button type="button" class="toast-undo-btn hidden" id="mobileToastUndoBtn">Undo</button>
