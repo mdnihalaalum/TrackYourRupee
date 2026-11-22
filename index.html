@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
   <title>TrackYourRupee • Personal Daily Ledger</title>
-  <link rel="icon" href="data:," />
+  <!-- Release C: Custom Geometric Wallet & Rupee (₹) Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%230284c7'/%3E%3Cstop offset='100%25' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='6' width='28' height='21' rx='6' fill='url(%23g)'/%3E%3Cpath d='M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2' fill='none' stroke='%230284c7' stroke-width='2.2'/%3E%3Crect x='21' y='13' width='9' height='7' rx='2.5' fill='%23ffffff' fill-opacity='0.22'/%3E%3Ccircle cx='24.5' cy='16.5' r='1.3' fill='%23ffffff'/%3E%3Cpath d='M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,7 +19,9 @@
     <div class="modal-card">
       <div class="modal-header">
         <div class="brand">
-          <div class="brand-dot"></div>
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad1)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
           <div>
             <h2 id="welcomeTitle">Welcome to TrackYourRupee! 👋</h2>
             <p class="subtitle">Your Personal, Offline-First Daily Ledger</p>
@@ -28,19 +32,19 @@
         <ul class="welcome-list">
           <li>
             <strong>1. Welcome &amp; About TrackYourRupee:</strong><br />
-            TrackYourRupee is a lightweight personal finance tracker designed to help you manage your monthly allowance, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month.
+            TrackYourRupee is a lightweight personal finance tracker designed to help you manage your monthly allowance, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month[cite: 1].
           </li>
           <li>
             <strong>2. How Your Data Is Stored (Local &amp; Google Drive):</strong><br />
-            Everything you enter is saved immediately inside your own browser's <code>LocalStorage</code> so the app works completely offline. If you opt in to <strong>Google Drive Backup</strong>, it creates and syncs only one compact <code>expense.json</code> file inside your personal Drive—we cannot see, access, or read any other files in your Drive.
+            Everything you enter is saved immediately inside your own browser's <code>LocalStorage</code> so the app works completely offline[cite: 1]. If you opt in to <strong>Google Drive Backup</strong>, it creates and syncs only one compact <code>expense.json</code> file inside your personal Drive—we cannot see, access, or read any other files in your Drive[cite: 1].
           </li>
           <li>
             <strong>3. 100% Privacy &amp; Zero-Server Security:</strong><br />
-            TrackYourRupee runs on a zero-server architecture. No developer server, database, or third-party tracker ever collects, reads, or sells your financial data—your numbers stay strictly between your device and your own Google account. <em><br /><strong>TIP: To keep your local data safe, avoid clearing your browser's site data/cache unless you have backed up to Google Drive or exported a CSV.</strong></em>
+            TrackYourRupee runs on a zero-server architecture[cite: 1]. No developer server, database, or third-party tracker ever collects, reads, or sells your financial data—your numbers stay strictly between your device and your own Google account[cite: 1]. <em><br /><strong>TIP: To keep your local data safe, avoid clearing your browser's site data/cache unless you have backed up to Google Drive or exported a CSV[cite: 1].</strong></em>
           </li>
           <li>
             <strong>4. Coming in Future Updates:</strong><br />
-            *Support for bank statement linking may be added in future versions to make expense tracking even faster.<br />*Also support to manage your budget and guide to spend less may be added.
+            *Support for bank statement linking may be added in future versions to make expense tracking even faster[cite: 1].<br />*Also support to manage your budget and guide to spend less may be added[cite: 1].
           </li>
         </ul>
       </div>
@@ -55,7 +59,9 @@
     <div class="modal-card">
       <div class="modal-header">
         <div class="brand">
-          <div class="brand-dot"></div>
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad2)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
           <div>
             <h2 id="budgetPromptTitle">Set Your Monthly Budget</h2>
             <p class="subtitle" id="budgetPromptSubtitle">Plan your allowance before tracking expenses</p>
@@ -64,11 +70,11 @@
       </div>
       <div class="modal-body">
         <p class="muted-text" id="budgetPromptMessage" style="margin-bottom: 12px;">
-          You haven't set a budget for this month yet. Adding a budget helps track your remaining balance automatically.
+          You haven't set a budget for this month yet[cite: 1]. Adding a budget helps track your remaining balance automatically[cite: 1].
         </p>
         <div class="form-group">
           <label for="promptBudgetAmount">Monthly Budget Amount (₹)</label>
-          <input type="number" id="promptBudgetAmount" placeholder="e.g. 3000" min="1" step="1" />
+          <input type="number" id="promptBudgetAmount" placeholder="e.g. 3000" min="1" max="100000000" step="1" />
         </div>
 
         <div class="upi-sub-box hidden" id="reminderDateBox" style="margin-top: 12px;">
@@ -88,31 +94,33 @@
     </div>
   </div>
 
-  <!-- Phase 1 (Mobile Only): Quick Add & Manage Shortcuts Modal -->
-  <div class="modal-backdrop hidden mobile-only" id="shortcutsModal" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+  <!-- Quick Add & Manage Shortcuts Modal (Desktop + Mobile) -->
+  <div class="modal-backdrop hidden" id="shortcutsModal" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
     <div class="modal-card">
       <div class="modal-header shortcuts-modal-header">
         <div class="brand">
-          <div class="brand-dot"></div>
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad3)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
           <div>
             <h2 id="shortcutsModalTitle">Quick Add Shortcuts</h2>
             <p class="subtitle">Tap a shortcut to log or adjust amount</p>
           </div>
         </div>
         <div class="shortcuts-header-actions">
-          <button type="button" class="btn btn-primary btn-sm" id="addNewShortcutModalBtn">+ Add</button>
-          <button type="button" class="icon-close-btn" id="closeShortcutsBtn" aria-label="Close Shortcuts">✕</button>
+          <button type="button" class="btn btn-primary btn-sm" id="addNewShortcutModalBtn" aria-label="Add new shortcut">+ Add</button>
+          <button type="button" class="icon-close-btn" id="closeShortcutsBtn" aria-label="Close shortcuts dialog">✕</button>
         </div>
       </div>
       <div class="modal-body">
         <!-- Inline One-Time Amount Adjuster (Does NOT overwrite saved shortcut) -->
         <div class="quick-log-confirm-box hidden" id="quickLogConfirmBox">
           <h4 id="quickLogConfirmTitle">Log Shortcut Expense</h4>
-          <p class="muted-text" id="quickLogConfirmMeta" style="margin-bottom: 8px;">Adjust amount for this entry only (saved shortcut stays unchanged)</p>
+          <p class="muted-text" id="quickLogConfirmMeta" style="margin-bottom: 8px;">Adjust amount for this entry only (saved shortcut stays unchanged)[cite: 1]</p>
           <div class="quick-log-confirm-row">
-            <input type="number" id="quickLogAmountInput" min="1" step="0.01" placeholder="Amount (₹)" />
+            <input type="number" id="quickLogAmountInput" min="1" max="100000000" step="0.01" placeholder="Amount (₹)" aria-label="Shortcut expense amount" />
             <button type="button" class="btn btn-primary" id="confirmQuickLogBtn">Add Now</button>
-            <button type="button" class="btn btn-secondary" id="cancelQuickLogBtn">✕</button>
+            <button type="button" class="btn btn-secondary" id="cancelQuickLogBtn" aria-label="Cancel quick log">✕</button>
           </div>
         </div>
 
@@ -122,18 +130,11 @@
           <div class="form-row">
             <div class="form-group">
               <label for="scAmount">Amount (₹)</label>
-              <input type="number" id="scAmount" min="1" step="0.01" placeholder="e.g. 20" />
+              <input type="number" id="scAmount" min="1" max="100000000" step="0.01" placeholder="e.g. 20" />
             </div>
             <div class="form-group">
               <label for="scCategory">Category</label>
-              <select id="scCategory">
-                <option value="Food">Food</option>
-                <option value="Travel">Travel</option>
-                <option value="Room/Hostel">Room / Hostel</option>
-                <option value="Study">Study</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Other">Other</option>
-              </select>
+              <select id="scCategory"></select>
             </div>
           </div>
           <div class="form-row" style="margin-top: 8px;">
@@ -168,7 +169,9 @@
     <!-- Top Header -->
     <header class="topbar">
       <div class="brand">
-        <div class="brand-dot"></div>
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGradMain" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0284c7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGradMain)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#0284c7" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
           <h1>TrackYourRupee</h1>
           <p class="subtitle">Personal Daily Ledger</p>
@@ -187,9 +190,11 @@
           <input type="month" id="activeMonthInput" title="Switch Month" />
         </div>
         <span class="storage-badge" id="storageStatus" data-mtab="home">Saved on Device</span>
+        <button type="button" class="btn btn-secondary desktop-only" id="headerShortcutsBtn" title="Manage Quick Add Shortcuts">⚡ Shortcuts</button>
+        <button type="button" class="btn btn-secondary desktop-only" id="soundToggleBtn" title="Toggle Sound Effects">🔊 Sound: On</button>
         <button type="button" class="btn btn-drive" id="driveAuthBtn" data-mtab="home">Backup to Drive</button>
         <button type="button" class="btn btn-secondary" id="themeToggleBtn" data-mtab="home" title="Switch Light / Dark Theme">Dark Mode</button>
-        <button type="button" class="btn btn-secondary" id="exportCsvBtn" data-mtab="home">Export CSV</button>
+        <button type="button" class="btn btn-secondary" id="exportCsvBtn" data-mtab="home" title="Export active month CSV (Shift+Click for All Months)">Export CSV</button>
       </div>
     </header>
 
@@ -197,7 +202,7 @@
     <section class="card drive-prompt-banner hidden" id="drivePromptBanner" data-mtab="home">
       <div class="drive-prompt-text">
         <strong>Want to back up your expenses to Google Drive?</strong>
-        <span class="muted-text">Your data is already saved safely on this device. Connect Drive only if you want cross-device sync via a single private <code>expense.json</code> file.</span>
+        <span class="muted-text">Your data is already saved safely on this device[cite: 1]. Connect Drive only if you want cross-device sync via a single private <code>expense.json</code> file[cite: 1].</span>
       </div>
       <div class="drive-prompt-actions">
         <button type="button" class="btn btn-primary" id="promptConnectBtn">Sign in &amp; Sync Drive</button>
@@ -205,7 +210,7 @@
       </div>
     </section>
 
-    <!-- Phase 2: 3 Merged Summary Modules (Wallet, Spending, Payment Split) -->
+    <!-- 3 Merged Summary Modules (Wallet, Spending, Payment Split) -->
     <section class="summary-three-grid" data-mtab="home insights">
       <!-- Module 1: Wallet (Budget Left, Balance Right) -->
       <article class="card summary-module wallet-module status-green" id="walletModule" data-mtab="home">
@@ -242,7 +247,7 @@
         <!-- Active Reminder Pill with One-Click Delete -->
         <div class="reminder-chip hidden" id="budgetReminderChip">
           <span id="budgetReminderText">Reminder: --</span>
-          <button type="button" class="reminder-del-btn" id="deleteReminderBtn" title="Delete Reminder">✕</button>
+          <button type="button" class="reminder-del-btn" id="deleteReminderBtn" title="Delete Reminder" aria-label="Delete budget reminder">✕</button>
         </div>
       </article>
 
@@ -265,7 +270,7 @@
           <div class="stat-block stat-block-right">
             <span class="metric-label">Spent Today</span>
             <h2 class="metric-value metric-value-secondary" id="todayTotal">₹0</h2>
-            <button type="button" class="metric-sub daily-limit-trigger" id="dailyAllowanceSub" title="Tap to see how Today's Limit is calculated">Today's limit: ₹0 ⓘ</button>
+            <button type="button" class="metric-sub daily-limit-trigger" id="dailyAllowanceSub" title="Tap to see how Today's Limit is calculated" aria-label="Explain how today's daily spending limit is calculated">Today's limit: ₹0 ⓘ</button>
           </div>
         </div>
       </article>
@@ -300,10 +305,10 @@
       <form id="budgetForm" class="budget-form-inline" autocomplete="off">
         <div class="budget-form-text">
           <strong id="budgetDrawerTitle">Manage Monthly Budget (₹)</strong>
-          <span class="muted-text" id="rolloverPreviewText">Add extra funds on top of your current budget, replace the base limit, reset to ₹0, or schedule a reminder.</span>
+          <span class="muted-text" id="rolloverPreviewText">Add extra funds on top of your current budget, replace the base limit, reset to ₹0, or schedule a reminder[cite: 1].</span>
         </div>
         <div class="budget-form-controls">
-          <input type="number" id="budgetInput" placeholder="e.g. 2000" min="0" step="1" />
+          <input type="number" id="budgetInput" placeholder="e.g. 2000" min="0" max="100000000" step="1" aria-label="Monthly budget amount" />
           <button type="button" class="btn btn-primary" id="addFundsBtn">+ Add to Existing</button>
           <button type="button" class="btn btn-outline-emerald" id="replaceBudgetBtn">Set / Replace</button>
           <button type="button" class="btn btn-secondary" id="scheduleReminderDrawerBtn">Remind Later</button>
@@ -313,32 +318,24 @@
       </form>
     </section>
 
-    <!-- Main Modular Grid -->
+    <!-- Release B: Unified 2-Column Main Grid (Left 400px: Add Expense + Donut; Right Fluid: Recent 3 + History) -->
     <main class="main-grid" data-mtab="home transactions insights">
-      <!-- Left Column: Quick Add Expense -->
-      <div class="left-column" data-mtab="home">
+      <!-- Left Column: Add Expense + Category Breakdown Donut -->
+      <div class="left-column" data-mtab="home insights">
         <section class="card form-card" data-mtab="home">
           <div class="card-header">
             <h3>Add Expense</h3>
-            <!-- Phase 1 (Mobile Only): Quick Add Button -->
-            <button type="button" class="btn btn-quick-add mobile-only" id="openQuickAddBtn">⚡ Quick add</button>
+            <button type="button" class="btn btn-quick-add" id="openQuickAddBtn" aria-label="Open Quick Add Shortcuts">⚡ Quick add</button>
           </div>
           <form id="expenseForm" autocomplete="off">
             <div class="form-row">
               <div class="form-group">
                 <label for="amount">Amount (₹)</label>
-                <input type="number" id="amount" placeholder="e.g. 120" min="1" step="0.01" required />
+                <input type="number" id="amount" placeholder="e.g. 120" min="1" max="100000000" step="0.01" required />
               </div>
               <div class="form-group">
                 <label for="category">Category</label>
-                <select id="category" required>
-                  <option value="Food">Food</option>
-                  <option value="Travel">Travel</option>
-                  <option value="Room/Hostel">Room / Hostel</option>
-                  <option value="Study">Study</option>
-                  <option value="Shopping">Shopping</option>
-                  <option value="Other">Other</option>
-                </select>
+                <select id="category" required></select>
               </div>
             </div>
 
@@ -373,14 +370,25 @@
 
             <div class="form-submit-row">
               <button type="submit" class="btn btn-primary submit-expense-btn">+ Record Expense</button>
-              <!-- Phase 1 (Mobile Only): Save as Shortcut Button -->
-              <button type="button" class="btn btn-secondary save-shortcut-btn mobile-only" id="saveAsShortcutBtn" title="Save as 1-tap shortcut">☆ Save shortcut</button>
+              <button type="button" class="btn btn-secondary save-shortcut-btn" id="saveAsShortcutBtn" title="Save as 1-tap shortcut">☆ Save shortcut</button>
             </div>
           </form>
         </section>
 
-        <!-- Phone only: latest 3 transactions -->
-        <section class="card recent-card mobile-only" data-mtab="home">
+        <!-- Category Breakdown Donut Module (Left column on desktop, Insights tab on mobile) -->
+        <section class="card breakdown-card" data-mtab="insights">
+          <div class="card-header">
+            <h3>Category Breakdown</h3>
+            <span class="muted-text" id="breakdownMonthLabel">This Month</span>
+          </div>
+          <div id="categoryDonut" class="category-donut"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Recent 3 on Top + Full Transaction History Below -->
+      <div class="right-column" data-mtab="home transactions">
+        <!-- Recent 3 entries (Home on mobile, Top of Right Column on desktop) -->
+        <section class="card recent-card" data-mtab="home">
           <div class="card-header recent-header">
             <div>
               <h3>Recent</h3>
@@ -390,10 +398,8 @@
           </div>
           <div id="recentList" class="transaction-list"></div>
         </section>
-      </div>
 
-      <!-- Right Column: Transaction History + Category Breakdown Below -->
-      <div class="right-column" data-mtab="transactions insights">
+        <!-- Full Filterable Transaction History -->
         <section class="card history-card" data-mtab="transactions">
           <div class="card-header history-header">
             <div>
@@ -401,17 +407,9 @@
               <p class="muted-text" id="historyCount">Showing 0 entries</p>
             </div>
             <div class="filters-bar">
-              <input type="search" id="searchInput" placeholder="Search note or ₹..." />
-              <select id="filterCategory">
-                <option value="ALL">All Categories</option>
-                <option value="Food">Food</option>
-                <option value="Travel">Travel</option>
-                <option value="Room/Hostel">Room / Hostel</option>
-                <option value="Study">Study</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Other">Other</option>
-              </select>
-              <select id="filterPayment">
+              <input type="search" id="searchInput" placeholder="Search note or ₹..." aria-label="Search transactions" />
+              <select id="filterCategory" aria-label="Filter by category"></select>
+              <select id="filterPayment" aria-label="Filter by payment mode">
                 <option value="ALL">All Modes</option>
                 <option value="Cash">Cash</option>
                 <option value="UPI Lite">UPI • Lite</option>
@@ -421,20 +419,8 @@
           </div>
 
           <div id="transactionList" class="transaction-list">
-            <p class="empty-state">Add your first expense on the left to start tracking.</p>
+            <p class="empty-state">Add your first expense on the left to start tracking[cite: 1].</p>
           </div>
-        </section>
-
-        <!-- Category Breakdown Module -->
-        <section class="card breakdown-card" data-mtab="insights">
-          <div class="card-header">
-            <h3>Category Breakdown</h3>
-            <span class="muted-text" id="breakdownMonthLabel">This Month</span>
-          </div>
-          <div id="categoryBars" class="category-bars">
-            <p class="empty-state">No expenses recorded yet.</p>
-          </div>
-          <div id="categoryDonut" class="category-donut mobile-only"></div>
         </section>
       </div>
     </main>
@@ -449,8 +435,9 @@
 
     <!-- Developer & Privacy Footer -->
     <footer class="app-footer" data-mtab="more">
-      <span>&copy; 2026 <strong>TrackYourRupee</strong> &bull; Developed by <strong>Muhammed Nihal Aalum</strong></span>
+      <span>&copy; 2026 <strong>TrackYourRupee</strong> &bull; Developed by <strong>Muhammed Nihal Aalum</strong>[cite: 1]</span>
       <div class="footer-links">
+        <button type="button" class="footer-link-btn" id="exportAllBackupBtn" title="Export all months to CSV">Backup All Months (CSV)</button>
         <button type="button" class="footer-link-btn" id="openGuideBtn">App Info &amp; Privacy</button>
       </div>
     </footer>
@@ -476,7 +463,7 @@
     </button>
   </nav>
 
-  <!-- Interactive Toast (Works on Mobile & Desktop for Undo + Daily Limit Info) -->
+  <!-- Interactive Toast (Works on Mobile & Desktop for Undo + Storage Warnings + Daily Limit Info) -->
   <div class="mobile-toast" id="mobileToast" role="status" aria-live="polite">
     <span id="mobileToastText"></span>
     <button type="button" class="toast-undo-btn hidden" id="mobileToastUndoBtn">Undo</button>
