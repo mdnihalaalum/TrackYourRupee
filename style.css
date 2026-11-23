@@ -1,68 +1,68 @@
-/* OriginOS 7 Inspired Frosted Glass Theme Variables */
+/* Human-Crafted Fintech Slate & Emerald Theme Variables */
 :root {
-  --bg-page: #e8eef7;
-  --bg-mesh-1: rgba(2, 132, 199, 0.22);
-  --bg-mesh-2: rgba(124, 58, 237, 0.18);
-  --bg-mesh-3: rgba(16, 185, 129, 0.15);
+  --bg-page: #f2f4f7;
+  --bg-mesh-1: rgba(5, 150, 105, 0.08);
+  --bg-mesh-2: rgba(37, 99, 235, 0.06);
+  --bg-mesh-3: rgba(15, 23, 42, 0.04);
   --bg-card: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.58);
-  --bg-glass-strong: rgba(255, 255, 255, 0.84);
-  --bg-elevated: rgba(248, 250, 252, 0.72);
-  --bg-well: rgba(226, 232, 240, 0.78);
-  --border-subtle: rgba(203, 213, 225, 0.82);
-  --border-glass: rgba(255, 255, 255, 0.78);
-  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 1px 0 0 rgba(255, 255, 255, 0.55);
-  --text-primary: #0f172a;
-  --text-muted: #475569;
-  --accent-cyan: #0284c7;
-  --accent-violet: #7c3aed;
+  --bg-glass: rgba(255, 255, 255, 0.78);
+  --bg-glass-strong: rgba(255, 255, 255, 0.94);
+  --bg-elevated: rgba(248, 250, 252, 0.88);
+  --bg-well: rgba(226, 232, 240, 0.72);
+  --border-subtle: rgba(203, 213, 225, 0.85);
+  --border-glass: rgba(226, 232, 240, 0.95);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --text-primary: #111827;
+  --text-muted: #4b5563;
+  --accent-cyan: #047857;
+  --accent-violet: #1d4ed8;
   --accent-emerald: #059669;
   --accent-amber: #b45309;
-  --accent-danger: #e11d48;
+  --accent-danger: #dc2626;
   --btn-primary-text: #ffffff;
-  --shadow-card: 0 8px 28px rgba(15, 23, 42, 0.07);
+  --shadow-card: 0 4px 20px rgba(17, 24, 39, 0.05);
   --scheme: light;
   --radius-lg: 18px;
   --radius-md: 11px;
   --bar-w: 0%;
-  --cat-food: #0ea5e9;
-  --cat-travel: #7c3aed;
+  --cat-food: #0284c7;
+  --cat-travel: #2563eb;
   --cat-room: #0d9488;
-  --cat-study: #db2777;
-  --cat-shopping: #ea580c;
+  --cat-study: #d97706;
+  --cat-shopping: #e11d48;
   --cat-other: #64748b;
 }
 
-/* Dark Mode OriginOS 7 Frosted Glass Override */
+/* Dark Mode Carbon Slate & Mint Emerald Override */
 [data-theme="dark"] {
-  --bg-page: #070b14;
-  --bg-mesh-1: rgba(34, 211, 238, 0.16);
-  --bg-mesh-2: rgba(139, 92, 246, 0.2);
-  --bg-mesh-3: rgba(16, 185, 129, 0.12);
-  --bg-card: #131a2a;
-  --bg-glass: rgba(19, 26, 44, 0.54);
-  --bg-glass-strong: rgba(17, 24, 39, 0.86);
-  --bg-elevated: rgba(27, 37, 58, 0.68);
-  --bg-well: rgba(11, 15, 25, 0.72);
-  --border-subtle: rgba(51, 65, 85, 0.65);
-  --border-glass: rgba(255, 255, 255, 0.14);
-  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 1px 0 0 rgba(255, 255, 255, 0.08);
-  --text-primary: #f1f5f9;
-  --text-muted: #94a3b8;
-  --accent-cyan: #22d3ee;
-  --accent-violet: #8b5cf6;
+  --bg-page: #0c0f14;
+  --bg-mesh-1: rgba(16, 185, 129, 0.08);
+  --bg-mesh-2: rgba(59, 130, 246, 0.07);
+  --bg-mesh-3: rgba(15, 23, 42, 0.05);
+  --bg-card: #151921;
+  --bg-glass: rgba(21, 25, 33, 0.78);
+  --bg-glass-strong: rgba(24, 29, 38, 0.94);
+  --bg-elevated: rgba(30, 36, 48, 0.85);
+  --bg-well: rgba(13, 16, 22, 0.82);
+  --border-subtle: rgba(55, 65, 81, 0.65);
+  --border-glass: rgba(255, 255, 255, 0.09);
+  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --text-primary: #f3f4f6;
+  --text-muted: #9ca3af;
+  --accent-cyan: #10b981;
+  --accent-violet: #60a5fa;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
-  --accent-danger: #f43f5e;
-  --btn-primary-text: #060913;
-  --shadow-card: 0 10px 32px rgba(0, 0, 0, 0.36);
+  --accent-danger: #f87171;
+  --btn-primary-text: #06130e;
+  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.32);
   --scheme: dark;
   --cat-food: #38bdf8;
-  --cat-travel: #a78bfa;
+  --cat-travel: #60a5fa;
   --cat-room: #2dd4bf;
-  --cat-study: #f472b6;
-  --cat-shopping: #fb923c;
-  --cat-other: #94a3b8;
+  --cat-study: #fbbf24;
+  --cat-shopping: #fb7185;
+  --cat-other: #9ca3af;
 }
 
 * {
@@ -75,15 +75,15 @@
 body {
   background-color: var(--bg-page);
   background-image:
-    radial-gradient(circle at 10% 10%, var(--bg-mesh-1), transparent 40%),
-    radial-gradient(circle at 90% 15%, var(--bg-mesh-2), transparent 44%),
-    radial-gradient(circle at 50% 90%, var(--bg-mesh-3), transparent 46%);
+    radial-gradient(circle at 12% 8%, var(--bg-mesh-1), transparent 42%),
+    radial-gradient(circle at 88% 14%, var(--bg-mesh-2), transparent 44%);
   background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.5;
   transition: background-color 0.2s ease, color 0.2s ease;
+  font-variant-numeric: tabular-nums;
   /* Block accidental text selection & long-press popups across the entire UI */
   -webkit-user-select: none;
   user-select: none;
@@ -133,7 +133,7 @@ textarea {
 }
 
 /* ============================================================================
-   MODALS (Frosted Glass Backdrop + Non-Nested Specular Card)
+   MODALS (Frosted Glass Backdrop + Clean Elevated Card)
    ============================================================================ */
 .modal-backdrop {
   position: fixed;
@@ -152,7 +152,7 @@ textarea {
 .modal-card {
   background: var(--bg-glass-strong);
   border: 1px solid var(--border-glass);
-  box-shadow: var(--glass-specular), 0 24px 48px rgba(0, 0, 0, 0.28);
+  box-shadow: var(--glass-specular), 0 24px 48px rgba(0, 0, 0, 0.24);
   border-radius: var(--radius-lg);
   max-width: 560px;
   width: 100%;
@@ -267,8 +267,8 @@ textarea {
   flex-wrap: wrap;
   gap: 12px;
   background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-specular), var(--shadow-card);
@@ -288,7 +288,7 @@ textarea {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 6px rgba(2, 132, 199, 0.28));
+  filter: drop-shadow(0 2px 5px rgba(5, 150, 105, 0.22));
 }
 
 .brand-logo svg {
@@ -335,7 +335,7 @@ textarea {
 }
 
 .month-picker-wrap.status-red {
-  border-color: rgba(225, 29, 72, 0.5);
+  border-color: rgba(220, 38, 38, 0.5);
 }
 
 .custom-cal-icon {
@@ -390,38 +390,38 @@ textarea {
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(5, 150, 105, 0.12);
   color: var(--accent-emerald);
   border: 1px solid rgba(5, 150, 105, 0.28);
   transition: all 0.2s ease;
 }
 
 .storage-badge.connected {
-  background: rgba(2, 132, 199, 0.14);
+  background: rgba(5, 150, 105, 0.14);
   color: var(--accent-cyan);
-  border-color: rgba(2, 132, 199, 0.3);
+  border-color: rgba(5, 150, 105, 0.32);
 }
 
 .storage-badge.syncing {
-  background: rgba(124, 58, 237, 0.14);
+  background: rgba(37, 99, 235, 0.12);
   color: var(--accent-violet);
-  border-color: rgba(124, 58, 237, 0.3);
+  border-color: rgba(37, 99, 235, 0.28);
 }
 
 .storage-badge.error {
-  background: rgba(225, 29, 72, 0.14);
+  background: rgba(220, 38, 38, 0.12);
   color: var(--accent-danger);
-  border-color: rgba(225, 29, 72, 0.3);
+  border-color: rgba(220, 38, 38, 0.28);
 }
 
 .btn-drive {
-  background: rgba(2, 132, 199, 0.12);
+  background: rgba(5, 150, 105, 0.1);
   color: var(--accent-cyan);
-  border: 1px solid rgba(2, 132, 199, 0.35);
+  border: 1px solid rgba(5, 150, 105, 0.32);
 }
 
 .btn-drive:hover {
-  background: rgba(2, 132, 199, 0.22);
+  background: rgba(5, 150, 105, 0.18);
 }
 
 .btn-drive.connected {
@@ -436,8 +436,8 @@ textarea {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  border-color: rgba(2, 132, 199, 0.35);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(2, 132, 199, 0.08));
+  border-color: rgba(5, 150, 105, 0.32);
+  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.06));
   animation: fadeIn 0.25s ease;
 }
 
@@ -464,12 +464,12 @@ textarea {
 }
 
 /* ============================================================================
-   CARDS & 3 MERGED SUMMARY MODULES (OriginOS 7 Frosted Glass)
+   CARDS & 3 MERGED SUMMARY MODULES
    ============================================================================ */
 .card {
   background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(145%);
-  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  backdrop-filter: blur(14px) saturate(135%);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-specular), var(--shadow-card);
@@ -561,21 +561,21 @@ textarea {
 }
 
 .status-pill.status-green {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(5, 150, 105, 0.12);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.3);
+  border: 1px solid rgba(5, 150, 105, 0.28);
 }
 
 .status-pill.status-yellow {
   background: rgba(180, 83, 9, 0.12);
   color: var(--accent-amber);
-  border: 1px solid rgba(180, 83, 9, 0.35);
+  border: 1px solid rgba(180, 83, 9, 0.32);
 }
 
 .status-pill.status-red {
-  background: rgba(225, 29, 72, 0.14);
+  background: rgba(220, 38, 38, 0.12);
   color: var(--accent-danger);
-  border: 1px solid rgba(225, 29, 72, 0.35);
+  border: 1px solid rgba(220, 38, 38, 0.32);
 }
 
 .module-split-two {
@@ -608,7 +608,7 @@ textarea {
 }
 
 .mini-edit-btn:hover {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(5, 150, 105, 0.12);
 }
 
 .reminder-chip {
@@ -677,7 +677,7 @@ textarea {
   font-family: inherit;
   text-align: right;
   cursor: pointer;
-  text-decoration: underline dotted rgba(148, 163, 184, 0.55);
+  text-decoration: underline dotted rgba(107, 114, 128, 0.55);
   text-underline-offset: 3px;
 }
 
@@ -687,8 +687,8 @@ textarea {
 
 /* Inline Budget Drawer */
 .budget-drawer {
-  border-color: rgba(5, 150, 105, 0.35);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.08));
+  border-color: rgba(5, 150, 105, 0.32);
+  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.06));
   animation: fadeIn 0.2s ease;
 }
 
@@ -744,7 +744,7 @@ textarea {
 }
 
 .tag-cash { color: var(--accent-emerald); }
-.tag-lite { color: var(--accent-cyan); }
+.tag-lite { color: #0284c7; }
 .tag-bank { color: var(--accent-violet); }
 
 /* ============================================================================
@@ -842,13 +842,13 @@ input:focus, select:focus {
 .pill.active {
   background: var(--bg-glass-strong);
   color: var(--accent-cyan);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  border-color: rgba(2, 132, 199, 0.35);
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.08);
+  border-color: rgba(5, 150, 105, 0.35);
 }
 
 .upi-sub-box {
-  background: rgba(124, 58, 237, 0.08);
-  border: 1px dashed rgba(124, 58, 237, 0.35);
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px dashed rgba(37, 99, 235, 0.32);
   padding: 10px;
   border-radius: var(--radius-md);
   animation: fadeIn 0.2s ease;
@@ -856,7 +856,7 @@ input:focus, select:focus {
 
 .upi-sub-box .pill.active {
   color: var(--accent-violet);
-  border-color: rgba(124, 58, 237, 0.45);
+  border-color: rgba(37, 99, 235, 0.4);
 }
 
 .hidden {
@@ -884,24 +884,29 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+  background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
   color: var(--btn-primary-text);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.22);
+}
+
+.btn-primary:hover {
+  opacity: 0.94;
 }
 
 .btn-outline-emerald {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(5, 150, 105, 0.12);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.4);
+  border: 1px solid rgba(5, 150, 105, 0.38);
 }
 
 .btn-outline-emerald:hover {
-  background: rgba(5, 150, 105, 0.22);
+  background: rgba(5, 150, 105, 0.2);
 }
 
 .btn-danger-outline {
-  background: rgba(225, 29, 72, 0.12);
+  background: rgba(220, 38, 38, 0.1);
   color: var(--accent-danger);
-  border: 1px solid rgba(225, 29, 72, 0.35);
+  border: 1px solid rgba(220, 38, 38, 0.32);
 }
 
 .btn-danger-outline:hover {
@@ -922,14 +927,14 @@ input:focus, select:focus {
 .btn-quick-add {
   padding: 6px 12px;
   font-size: 0.8rem;
-  background: rgba(2, 132, 199, 0.14);
+  background: rgba(5, 150, 105, 0.1);
   color: var(--accent-cyan);
-  border: 1px solid rgba(2, 132, 199, 0.35);
+  border: 1px solid rgba(5, 150, 105, 0.3);
   border-radius: 999px;
 }
 
 .btn-quick-add:hover {
-  background: rgba(2, 132, 199, 0.24);
+  background: rgba(5, 150, 105, 0.18);
 }
 
 .full-width {
@@ -961,7 +966,7 @@ input:focus, select:focus {
 .bar-fill {
   width: var(--bar-w, 0%);
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
+  background: var(--accent-emerald);
   border-radius: 999px;
   transition: width 0.3s ease, background-color 0.2s ease;
 }
@@ -1156,17 +1161,17 @@ input:focus, select:focus {
 }
 
 .badge-cash {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(5, 150, 105, 0.12);
   color: var(--accent-emerald);
 }
 
 .badge-lite {
-  background: rgba(2, 132, 199, 0.14);
-  color: var(--accent-cyan);
+  background: rgba(2, 132, 199, 0.12);
+  color: #0284c7;
 }
 
 .badge-bank {
-  background: rgba(124, 58, 237, 0.14);
+  background: rgba(37, 99, 235, 0.12);
   color: var(--accent-violet);
 }
 
@@ -1187,9 +1192,9 @@ input:focus, select:focus {
 }
 
 .delete-btn {
-  background: rgba(225, 29, 72, 0.12);
+  background: rgba(220, 38, 38, 0.1);
   color: var(--accent-danger);
-  border: 1px solid rgba(225, 29, 72, 0.28);
+  border: 1px solid rgba(220, 38, 38, 0.25);
   border-radius: 8px;
   padding: 5px 9px;
   font-size: 0.78rem;
@@ -1263,7 +1268,7 @@ input:focus, select:focus {
 
 .quick-log-confirm-box {
   background: var(--bg-elevated);
-  border: 1px solid rgba(5, 150, 105, 0.45);
+  border: 1px solid rgba(5, 150, 105, 0.42);
   border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 12px;
@@ -1366,12 +1371,12 @@ input:focus, select:focus {
 
 .sc-icon-btn.sc-del {
   color: var(--accent-danger);
-  border-color: rgba(225, 29, 72, 0.3);
+  border-color: rgba(220, 38, 38, 0.28);
 }
 
 .shortcut-editor-box {
   background: var(--bg-elevated);
-  border: 1px solid rgba(2, 132, 199, 0.35);
+  border: 1px solid rgba(5, 150, 105, 0.32);
   border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 12px;
@@ -1403,8 +1408,8 @@ input:focus, select:focus {
   flex-wrap: wrap;
   gap: 10px;
   background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(145%);
-  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  backdrop-filter: blur(14px) saturate(135%);
+  -webkit-backdrop-filter: blur(14px) saturate(135%);
   border: 1px solid var(--border-glass);
   box-shadow: var(--glass-specular);
   border-radius: var(--radius-lg);
@@ -1433,7 +1438,7 @@ input:focus, select:focus {
 
 .footer-link-btn:hover {
   border-color: var(--accent-cyan);
-  background: rgba(2, 132, 199, 0.08);
+  background: rgba(5, 150, 105, 0.08);
 }
 
 /* Interactive Toast */
@@ -1452,7 +1457,7 @@ input:focus, select:focus {
   color: var(--bg-card);
   font-size: 0.86rem;
   font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 8px);
@@ -1565,13 +1570,13 @@ input:focus, select:focus {
   :root {
     --tabbar-h: 64px;
     /* High-translucency solid-composite card surface on mobile to avoid per-card blur GPU overdraw */
-    --bg-glass: rgba(255, 255, 255, 0.88);
-    --bg-glass-strong: rgba(255, 255, 255, 0.94);
+    --bg-glass: rgba(255, 255, 255, 0.92);
+    --bg-glass-strong: rgba(255, 255, 255, 0.96);
   }
 
   [data-theme="dark"] {
-    --bg-glass: rgba(19, 26, 44, 0.88);
-    --bg-glass-strong: rgba(17, 24, 39, 0.94);
+    --bg-glass: rgba(21, 25, 33, 0.92);
+    --bg-glass-strong: rgba(24, 29, 38, 0.96);
   }
 
   .desktop-only {
@@ -1841,10 +1846,10 @@ input:focus, select:focus {
     gap: 4px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     background: var(--bg-glass-strong);
-    backdrop-filter: blur(14px) saturate(150%);
-    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     border-top: 1px solid var(--border-glass);
-    box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 -4px 18px rgba(17, 24, 39, 0.06);
     transition: transform 0.2s ease;
   }
 
@@ -1882,7 +1887,7 @@ input:focus, select:focus {
 
   .mobile-tab.active {
     color: var(--accent-cyan);
-    background: rgba(2, 132, 199, 0.14);
+    background: rgba(5, 150, 105, 0.12);
   }
 
   .mobile-toast {
@@ -1926,7 +1931,7 @@ input:focus, select:focus {
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: rgba(2, 132, 199, 0.12);
+    background: rgba(5, 150, 105, 0.12);
     color: var(--accent-cyan);
   }
 
@@ -1964,7 +1969,7 @@ input:focus, select:focus {
   .more-tag {
     padding: 1px 8px;
     border-radius: 999px;
-    background: rgba(124, 58, 237, 0.14);
+    background: rgba(37, 99, 235, 0.12);
     color: var(--accent-violet);
     font-size: 0.75rem;
     font-weight: 700;
@@ -1988,6 +1993,7 @@ input:focus, select:focus {
     width: 100%;
   }
 }
+
 /* Keep Welcome/Info Modal Title + 👋 Emoji on a Single Line on Mobile */
 @media (max-width: 640px) {
   .modal-header h2,
