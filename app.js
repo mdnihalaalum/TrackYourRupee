@@ -717,21 +717,13 @@ function populateCategorySelects() {
   }
 }
 
-function syncAdaptiveDesktopLayout(monthExpenseCount) {
-  if (!breakdownCard || !leftColumn || !rightColumn) return;
-  const isDesktop = window.innerWidth > 640;
-  if (isDesktop && monthExpenseCount <= 3) {
-    if (breakdownCard.parentElement !== rightColumn) {
-      rightColumn.appendChild(breakdownCard);
-    }
-  } else if (breakdownCard.parentElement !== leftColumn) {
+/* Keep Category Breakdown anchored in Left Column on desktop so History aligns with it */
+function syncAdaptiveDesktopLayout() {
+  if (!breakdownCard || !leftColumn) return;
+  if (breakdownCard.parentElement !== leftColumn) {
     leftColumn.appendChild(breakdownCard);
   }
 }
-
-window.addEventListener('resize', () => {
-  syncAdaptiveDesktopLayout(getMonthExpenses(activeMonth).length);
-});
 
 function getTodayISO() {
   const now = new Date();
@@ -779,6 +771,15 @@ function setStatusClass(el, status) {
   if (!el) return;
   el.classList.remove('status-green', 'status-yellow', 'status-red');
   el.classList.add(`status-${status}`);
+}
+
+function setWidthClass(el, pct) {
+  if (!el) return;
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(pct) || 0)));
+  Array.from(el.classList).forEach((cls) => {
+    if (/^w-\d+$/.test(cls)) el.classList.remove(cls);
+  });
+  el.classList.add(`w-${clamped}`);
 }
 
 function updateSyncUI(text, state = 'default') {
@@ -1126,7 +1127,6 @@ function checkMonthlyBudgetPrompt() {
   const alreadyPromptedRecurring = safeGetItem(StorageService.RECURRING_PROMPTED_KEY) === currentYm;
 
   if (hasCurrentBudget) {
-    /* Even if a budget is already set, auto-prompt recurring bills once at the start of a new month */
     if (hasRecurringBills && !alreadyPromptedRecurring) {
       safeSetItem(StorageService.RECURRING_PROMPTED_KEY, currentYm);
       openBudgetPrompt(
@@ -1646,7 +1646,7 @@ function renderAll(options = {}) {
   const prevStatus = previousMonthStatusByYm[targetYm];
   const currentMonthExpenses = getMonthExpenses(activeMonth);
 
-  syncAdaptiveDesktopLayout(currentMonthExpenses.length);
+  syncAdaptiveDesktopLayout();
   renderSummaryAndSplit(currentMonthExpenses);
   renderReminderChip();
   renderCategoryDonut(currentMonthExpenses);
@@ -1694,7 +1694,7 @@ function renderSummaryAndSplit(monthExpenses = getMonthExpenses(activeMonth)) {
     barFillPct = 100;
   }
 
-  budgetBarFill.style.setProperty('--bar-w', `${barFillPct}%`);
+  setWidthClass(budgetBarFill, barFillPct);
   setStatusClass(budgetBarFill, monthStatus);
   setStatusClass(walletModule, monthStatus);
   setStatusClass(monthCalendarBox, monthStatus);
@@ -1769,8 +1769,6 @@ function renderSummaryAndSplit(monthExpenses = getMonthExpenses(activeMonth)) {
 
 function renderCategoryDonut(items = getMonthExpenses(activeMonth)) {
   if (!categoryDonut) return;
-  const R = 48;
-  const C = 2 * Math.PI * R;
   const total = items.reduce((s, e) => s + Number(e.amount), 0);
   if (breakdownMonthLabel) breakdownMonthLabel.textContent = formatMonthLabel(activeMonth);
 
@@ -1780,51 +1778,42 @@ function renderCategoryDonut(items = getMonthExpenses(activeMonth)) {
   });
   const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
 
-  let segments = '';
-  if (total > 0) {
-    const gap = sorted.length > 1 ? 1.2 : 0;
-    let offset = 0;
-    segments = sorted
-      .map(([cat, val]) => {
-        const len = (val / total) * C;
-        const dash = Math.max(len - gap, 0.01);
-        const seg = `<circle class="donut-seg ${CATEGORY_CLASS[cat] || 'cat-other'}" cx="60" cy="60" r="${R}"
-          stroke-dasharray="${dash} ${C - dash}" stroke-dashoffset="${-offset}"></circle>`;
-        offset += len;
-        return seg;
-      })
-      .join('');
-  } else {
-    segments = `<circle class="donut-track" cx="60" cy="60" r="${R}"></circle>`;
+  if (total <= 0) {
+    categoryDonut.innerHTML = '<p class="empty-state">No expenses recorded yet.</p>';
+    return;
   }
 
   const totalText = formatINR(total);
-  const legend =
-    total > 0
-      ? `<ul class="donut-legend">${sorted
-          .map(([cat, val]) => {
-            const pct = Math.round((val / total) * 100);
-            return `<li class="donut-legend-item">
-              <span class="donut-dot ${CATEGORY_CLASS[cat] || 'cat-other'}"></span>
+  const barsHtml = sorted
+    .map(([cat, val]) => {
+      const pct = Math.min(100, Math.max(1, Math.round((val / total) * 100)));
+      const catCls = CATEGORY_CLASS[cat] || 'cat-other';
+      return `
+        <li class="cat-bar-item ${catCls}">
+          <div class="cat-bar-top">
+            <span class="cat-bar-label">
+              <span class="donut-dot"></span>
               <span class="donut-legend-name">${escapeHtml(cat)}</span>
+            </span>
+            <span class="cat-bar-values">
               <span class="donut-legend-amt">${formatINR(val)}</span>
               <span class="donut-legend-pct">${pct}%</span>
-            </li>`;
-          })
-          .join('')}</ul>`
-      : '<p class="empty-state">No expenses recorded yet.</p>';
+            </span>
+          </div>
+          <div class="cat-bar-track">
+            <div class="cat-bar-fill w-${pct}"></div>
+          </div>
+        </li>
+      `;
+    })
+    .join('');
 
   categoryDonut.innerHTML = `
-    <div class="donut-wrap">
-      <svg class="donut-svg" viewBox="0 0 120 120" role="img" aria-label="Category breakdown: ${totalText} spent">
-        <g transform="rotate(-90 60 60)">${segments}</g>
-      </svg>
-      <div class="donut-center">
-        <strong class="${totalText.length > 9 ? 'is-long' : ''}">${totalText}</strong>
-        <span>spent</span>
-      </div>
+    <div class="cat-bars-summary">
+      <span class="muted-text">Total Spent</span>
+      <strong>${totalText}</strong>
     </div>
-    ${legend}
+    <ul class="cat-bars-list">${barsHtml}</ul>
   `;
 }
 

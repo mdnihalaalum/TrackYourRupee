@@ -21,7 +21,6 @@
   --scheme: light;
   --radius-lg: 18px;
   --radius-md: 11px;
-  --bar-w: 0%;
   --cat-food: #0369a1;
   --cat-travel: #1d4ed8;
   --cat-room: #0f766e;
@@ -923,7 +922,6 @@ input:focus, select:focus {
 }
 
 .bar-fill {
-  width: var(--bar-w, 0%);
   height: 100%;
   background: var(--accent-emerald);
   border-radius: 999px;
@@ -943,91 +941,98 @@ input:focus, select:focus {
   background: var(--accent-danger);
 }
 
-/* SVG Donut Breakdown */
+/* CSP-Safe Percentage Width Scale (0% to 100%) */
+.w-0 { width: 0%; } .w-1 { width: 1%; } .w-2 { width: 2%; } .w-3 { width: 3%; } .w-4 { width: 4%; }
+.w-5 { width: 5%; } .w-6 { width: 6%; } .w-7 { width: 7%; } .w-8 { width: 8%; } .w-9 { width: 9%; }
+.w-10 { width: 10%; } .w-11 { width: 11%; } .w-12 { width: 12%; } .w-13 { width: 13%; } .w-14 { width: 14%; }
+.w-15 { width: 15%; } .w-16 { width: 16%; } .w-17 { width: 17%; } .w-18 { width: 18%; } .w-19 { width: 19%; }
+.w-20 { width: 20%; } .w-21 { width: 21%; } .w-22 { width: 22%; } .w-23 { width: 23%; } .w-24 { width: 24%; }
+.w-25 { width: 25%; } .w-26 { width: 26%; } .w-27 { width: 27%; } .w-28 { width: 28%; } .w-29 { width: 29%; }
+.w-30 { width: 30%; } .w-31 { width: 31%; } .w-32 { width: 32%; } .w-33 { width: 33%; } .w-34 { width: 34%; }
+.w-35 { width: 35%; } .w-36 { width: 36%; } .w-37 { width: 37%; } .w-38 { width: 38%; } .w-39 { width: 39%; }
+.w-40 { width: 40%; } .w-41 { width: 41%; } .w-42 { width: 42%; } .w-43 { width: 43%; } .w-44 { width: 44%; }
+.w-45 { width: 45%; } .w-46 { width: 46%; } .w-47 { width: 47%; } .w-48 { width: 48%; } .w-49 { width: 49%; }
+.w-50 { width: 50%; } .w-51 { width: 51%; } .w-52 { width: 52%; } .w-53 { width: 53%; } .w-54 { width: 54%; }
+.w-55 { width: 55%; } .w-56 { width: 56%; } .w-57 { width: 57%; } .w-58 { width: 58%; } .w-59 { width: 59%; }
+.w-60 { width: 60%; } .w-61 { width: 61%; } .w-62 { width: 62%; } .w-63 { width: 63%; } .w-64 { width: 64%; }
+.w-65 { width: 65%; } .w-66 { width: 66%; } .w-67 { width: 67%; } .w-68 { width: 68%; } .w-69 { width: 69%; }
+.w-70 { width: 70%; } .w-71 { width: 71%; } .w-72 { width: 72%; } .w-73 { width: 73%; } .w-74 { width: 74%; }
+.w-75 { width: 75%; } .w-76 { width: 76%; } .w-77 { width: 77%; } .w-78 { width: 78%; } .w-79 { width: 79%; }
+.w-80 { width: 80%; } .w-81 { width: 81%; } .w-82 { width: 82%; } .w-83 { width: 83%; } .w-84 { width: 84%; }
+.w-85 { width: 85%; } .w-86 { width: 86%; } .w-87 { width: 87%; } .w-88 { width: 88%; } .w-89 { width: 89%; }
+.w-90 { width: 90%; } .w-91 { width: 91%; } .w-92 { width: 92%; } .w-93 { width: 93%; } .w-94 { width: 94%; }
+.w-95 { width: 95%; } .w-96 { width: 96%; } .w-97 { width: 97%; } .w-98 { width: 98%; } .w-99 { width: 99%; }
+.w-100 { width: 100%; }
+
+/* Horizontal Category Breakdown Bars */
 .category-donut {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-}
-
-.donut-wrap {
-  position: relative;
-  width: 184px;
-  height: 184px;
-}
-
-.donut-svg {
-  display: block;
+  gap: 12px;
   width: 100%;
-  height: 100%;
 }
 
-.donut-seg,
-.donut-track {
-  fill: none;
-  stroke-width: 16;
-}
-
-.donut-seg {
-  stroke: var(--cat);
-  transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease;
-}
-
-.donut-track {
-  stroke: var(--bg-well);
-}
-
-.donut-center {
-  position: absolute;
-  inset: 0;
+.cat-bars-summary {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 0 34px;
-  text-align: center;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
 }
 
-.donut-center strong {
+.cat-bars-summary strong {
   font-size: 1.15rem;
   font-weight: 700;
 }
 
-.donut-center strong.is-long {
-  font-size: 0.95rem;
-}
-
-.donut-center span {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.donut-legend {
+.cat-bars-list {
   list-style: none;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-.donut-legend-item {
-  display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) auto 3.2em;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+.cat-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   font-size: 0.86rem;
 }
 
+.cat-bar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cat-bar-values {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .donut-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--cat);
+  flex-shrink: 0;
 }
 
 .donut-legend-name {
@@ -1044,8 +1049,24 @@ input:focus, select:focus {
 
 .donut-legend-pct {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  min-width: 2.8em;
   text-align: right;
+}
+
+.cat-bar-track {
+  width: 100%;
+  height: 7px;
+  background: var(--bg-well);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  background: var(--cat);
+  border-radius: 999px;
+  transition: width 0.3s ease;
 }
 
 .cat-food { --cat: var(--cat-food); }
@@ -1075,12 +1096,30 @@ input:focus, select:focus {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 540px;
+  max-height: 295px;
   overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+
+.transaction-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.transaction-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transaction-list::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 999px;
 }
 
 .recent-card .transaction-list {
   max-height: none;
+  overflow: visible;
+  padding-right: 0;
 }
 
 .tx-item {
@@ -1468,18 +1507,26 @@ input:focus, select:focus {
   .main-grid {
     grid-template-columns: 400px 1fr;
     gap: 22px;
+    align-items: stretch;
   }
 
-  /* When Category Breakdown docks in Right Column (low entries <= 3), render Donut & Legend side-by-side */
-  .right-column .breakdown-card .category-donut {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    gap: 24px;
+  .right-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 
-  .right-column .breakdown-card .donut-legend {
-    max-width: 360px;
+  .history-card {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .history-card .transaction-list {
+    flex: 1 1 0;
+    min-height: 180px;
+    max-height: 295px;
   }
 }
 
@@ -1780,6 +1827,7 @@ input:focus, select:focus {
   .transaction-list {
     max-height: none;
     overflow: visible;
+    padding-right: 0;
   }
 
   .delete-btn {
