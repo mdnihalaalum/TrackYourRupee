@@ -6,6 +6,7 @@
 const GOOGLE_CLIENT_ID = '381251059137-hkv6bjlmcjg0i32qqblt0h0dubemdgap.apps.googleusercontent.com';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILE_NAME = 'expense.json';
+const FUN_EDITION_URL = 'https://trackyourrupeef.vercel.app';
 const MAX_AMOUNT = 100000000;
 const MAX_TOMBSTONES = 300;
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -181,6 +182,7 @@ const StorageService = {
   THEME_KEY: 'expenseflow_theme',
   WELCOME_SEEN_KEY: 'expenseflow_welcome_seen',
   BUDGET_REMINDER_KEY: 'expenseflow_budget_reminder',
+  RECURRING_PROMPTED_KEY: 'expenseflow_recurring_prompted_ym',
   accessToken: null,
   tokenClient: null,
   driveFileId: safeGetItem('expenseflow_drive_file_id', null),
@@ -304,7 +306,6 @@ const StorageService = {
     }
   },
 
-  /* Merge two state snapshots deterministically (used for multi-tab sync & cloud sync) */
   mergeSnapshots(base, incoming) {
     const deletedSet = new Set([
       ...(base.deletedIds || []).map(normalizeId).filter(Boolean),
@@ -494,7 +495,6 @@ const StorageService = {
   },
 
   async saveData(data) {
-    /* Reload latest disk state first and merge so another open tab never gets overwritten */
     const latestDisk = this.loadLocal();
     const merged = this.mergeSnapshots(latestDisk, data);
     appData = merged;
@@ -560,6 +560,12 @@ let previousMonthStatusByYm = {};
 const welcomeModal = document.getElementById('welcomeModal');
 const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
 const openGuideBtn = document.getElementById('openGuideBtn');
+
+const funEditionModal = document.getElementById('funEditionModal');
+const openFunEditionBtn = document.getElementById('openFunEditionBtn');
+const closeFunEditionBtn = document.getElementById('closeFunEditionBtn');
+const confirmFunEditionBtn = document.getElementById('confirmFunEditionBtn');
+const cancelFunEditionBtn = document.getElementById('cancelFunEditionBtn');
 
 const budgetPromptModal = document.getElementById('budgetPromptModal');
 const budgetPromptTitle = document.getElementById('budgetPromptTitle');
@@ -711,7 +717,6 @@ function populateCategorySelects() {
   }
 }
 
-/* Dock Category Breakdown below Transaction History on desktop when <= 3 entries, move back to Left Column when >= 4 */
 function syncAdaptiveDesktopLayout(monthExpenseCount) {
   if (!breakdownCard || !leftColumn || !rightColumn) return;
   const isDesktop = window.innerWidth > 640;
@@ -849,11 +854,39 @@ themeToggleBtn.addEventListener('click', () => {
 });
 
 /* ============================================================================
-   GOOGLE DRIVE OPT-IN SYNC FLOW (RELEASE D DEFERRED — TEST MODE GUARD ACTIVE)
+   FUN EDITION LINK & PUBLIC VOLUME / OWN-RISK MODAL
    ============================================================================ */
+function openFunEditionWarning() {
+  if (!funEditionModal) return;
+  openModalWithFocus(funEditionModal, cancelFunEditionBtn);
+}
+
+if (openFunEditionBtn) {
+  openFunEditionBtn.addEventListener('click', openFunEditionWarning);
+}
+if (closeFunEditionBtn) {
+  closeFunEditionBtn.addEventListener('click', () => closeModal(funEditionModal));
+}
+if (cancelFunEditionBtn) {
+  cancelFunEditionBtn.addEventListener('click', () => closeModal(funEditionModal));
+}
+if (confirmFunEditionBtn) {
+  confirmFunEditionBtn.addEventListener('click', () => {
+    closeModal(funEditionModal);
+    window.open(FUN_EDITION_URL, '_blank', 'noopener,noreferrer');
+  });
+}
+
+/* ============================================================================
+   GOOGLE DRIVE OPT-IN SYNC FLOW (TEST MODE GUARD ACTIVE)
+   ============================================================================ */
+const DRIVE_TEST_MODE_GUARD = true;
+
 async function triggerDriveSync(promptMode = 'consent') {
-  alert('Google Drive Backup is temporarily unavailable while the app is in testing mode. Your expenses remain safely saved on this device.');
-  return;
+  if (DRIVE_TEST_MODE_GUARD) {
+    alert('Google Drive Backup is temporarily unavailable while the app is in testing mode. Your expenses remain safely saved on this device.');
+    return;
+  }
 
   if (!StorageService.isConfigured()) {
     alert('Google Client ID missing in app.js.');
@@ -948,7 +981,7 @@ function getMonthHealthStatus(metrics) {
 }
 
 /* ============================================================================
-   SMART MONTHLY BUDGET & RECURRING BILLS PROMPT
+   SMART MONTHLY BUDGET & RECURRING BILLS AUTO-PROMPT
    ============================================================================ */
 let promptTargetMonth = activeMonth;
 
@@ -1038,7 +1071,7 @@ function applyCheckedRecurringBills(targetYm) {
   (appData.recurring || []).forEach((bill) => {
     if (!checkedIds.has(normalizeId(bill.id))) return;
     appData.expenses.unshift({
-      id: generateNumericId() + addedCount,
+      id: generateNumericId() + addedCount * 1000,
       amount: Number(bill.amount),
       category: bill.category,
       mode: bill.mode,
@@ -1049,6 +1082,9 @@ function applyCheckedRecurringBills(targetYm) {
     addedCount++;
   });
 
+  if (addedCount > 0) {
+    safeSetItem(StorageService.RECURRING_PROMPTED_KEY, targetYm);
+  }
   return addedCount;
 }
 
@@ -1056,7 +1092,11 @@ function openBudgetPrompt(targetMonth, reasonText, pendingEntry = null, showDate
   pendingExpenseEntry = pendingEntry;
   promptTargetMonth = targetMonth;
   const label = formatMonthLabel(targetMonth);
-  budgetPromptTitle.textContent = `Set ${label} Budget`;
+  const hasBudget = (Number(appData.budgets[targetMonth]) || 0) > 0;
+
+  budgetPromptTitle.textContent = hasBudget
+    ? `${label} Monthly Fixed Bills`
+    : `Set ${label} Budget`;
   budgetPromptMessage.textContent = reasonText;
   promptBudgetAmount.value = '';
 
@@ -1082,8 +1122,20 @@ function checkMonthlyBudgetPrompt() {
   const today = getTodayISO();
   const currentYm = today.slice(0, 7);
   const hasCurrentBudget = (Number(appData.budgets[currentYm]) || 0) > 0;
+  const hasRecurringBills = (appData.recurring || []).length > 0;
+  const alreadyPromptedRecurring = safeGetItem(StorageService.RECURRING_PROMPTED_KEY) === currentYm;
 
-  if (hasCurrentBudget) return;
+  if (hasCurrentBudget) {
+    /* Even if a budget is already set, auto-prompt recurring bills once at the start of a new month */
+    if (hasRecurringBills && !alreadyPromptedRecurring) {
+      safeSetItem(StorageService.RECURRING_PROMPTED_KEY, currentYm);
+      openBudgetPrompt(
+        currentYm,
+        `New month (${formatMonthLabel(currentYm)}) started! Confirm your monthly fixed bills below or add extra allowance.`
+      );
+    }
+    return;
+  }
 
   const savedReminder = getSavedReminder();
 
@@ -1097,9 +1149,10 @@ function checkMonthlyBudgetPrompt() {
     return;
   }
 
+  safeSetItem(StorageService.RECURRING_PROMPTED_KEY, currentYm);
   openBudgetPrompt(
     currentYm,
-    `Welcome to ${formatMonthLabel(currentYm)}! Set your monthly budget now to track your balance.`
+    `Welcome to ${formatMonthLabel(currentYm)}! Set your monthly budget and confirm your fixed monthly bills below.`
   );
 }
 
@@ -1225,7 +1278,13 @@ budgetInput.addEventListener('keydown', (e) => {
 let lastFocusedBeforeModal = null;
 
 function getVisibleModal() {
-  const modals = [recurringModal, shortcutsModal, budgetPromptModal, welcomeModal].filter(Boolean);
+  const modals = [
+    funEditionModal,
+    recurringModal,
+    shortcutsModal,
+    budgetPromptModal,
+    welcomeModal
+  ].filter(Boolean);
   return modals.find((m) => !m.classList.contains('hidden')) || null;
 }
 
@@ -1317,7 +1376,6 @@ activeMonthInput.addEventListener('change', (e) => {
     activeMonth = e.target.value;
     renderAll();
 
-    /* If user switches to a month with no budget and has recurring bills, offer prompt */
     const hasBudget = (Number(appData.budgets[activeMonth]) || 0) > 0;
     const hasExpenses = getMonthExpenses(activeMonth).length > 0;
     if (!hasBudget && !hasExpenses && (appData.recurring || []).length > 0) {
@@ -1581,7 +1639,7 @@ filterPayment.addEventListener('change', () => renderTransactions());
 searchInput.addEventListener('input', () => renderTransactions());
 
 /* ============================================================================
-   RENDERING ENGINE (Single getMonthExpenses Pass + Adaptive Laptop Layout)
+   RENDERING ENGINE
    ============================================================================ */
 function renderAll(options = {}) {
   const { soundCue = null, targetYm = activeMonth } = options;
@@ -1834,6 +1892,7 @@ const ICONS = {
   bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
   repeat: '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
   volume: '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+  spark: '<path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>',
   backup: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
   bulb: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/>',
   info: '<circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5"/><path d="M12 7.5h.01"/>',
@@ -1846,6 +1905,7 @@ const moreList = document.getElementById('moreList');
 
 // Shortcuts Modal DOM
 const openQuickAddBtn = document.getElementById('openQuickAddBtn');
+const openRecurringQuickBtn = document.getElementById('openRecurringQuickBtn');
 const saveAsShortcutBtn = document.getElementById('saveAsShortcutBtn');
 const shortcutsModal = document.getElementById('shortcutsModal');
 const addNewShortcutModalBtn = document.getElementById('addNewShortcutModalBtn');
@@ -2009,6 +2069,7 @@ async function commitShortcutExpense(sc, overrideAmount) {
 }
 
 if (openQuickAddBtn) openQuickAddBtn.addEventListener('click', () => openShortcutsModal(false));
+if (openRecurringQuickBtn) openRecurringQuickBtn.addEventListener('click', openRecurringModal);
 if (headerShortcutsBtn) headerShortcutsBtn.addEventListener('click', () => openShortcutsModal(false));
 if (addNewShortcutModalBtn) addNewShortcutModalBtn.addEventListener('click', startCreateShortcut);
 if (closeShortcutsBtn) closeShortcutsBtn.addEventListener('click', () => closeShortcutsModal(false));
@@ -2228,6 +2289,26 @@ function startEditRecurring(bill) {
   }, 40);
 }
 
+async function addSingleRecurringBillNow(bill) {
+  const todayIso = getTodayISO();
+  const billDate = activeMonth === todayIso.slice(0, 7) ? todayIso : `${activeMonth}-01`;
+  const entry = {
+    id: generateNumericId(),
+    amount: Number(bill.amount),
+    category: bill.category,
+    mode: bill.mode,
+    date: billDate,
+    note: bill.note || 'Monthly Fixed Bill',
+    updatedAt: Date.now()
+  };
+
+  appData.expenses.unshift(entry);
+  closeRecurringModal(false);
+  renderAll({ soundCue: 'deducted', targetYm: activeMonth });
+  await StorageService.saveData(appData);
+  showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
+}
+
 if (headerRecurringBtn) headerRecurringBtn.addEventListener('click', openRecurringModal);
 if (addNewRecurringBtn) addNewRecurringBtn.addEventListener('click', startCreateRecurring);
 if (closeRecurringBtn) closeRecurringBtn.addEventListener('click', () => closeRecurringModal(false));
@@ -2293,7 +2374,7 @@ if (applyRecurringNowBtn) {
     const billDate = activeMonth === todayIso.slice(0, 7) ? todayIso : `${activeMonth}-01`;
     bills.forEach((bill, idx) => {
       appData.expenses.unshift({
-        id: generateNumericId() + idx,
+        id: generateNumericId() + idx * 1000,
         amount: Number(bill.amount),
         category: bill.category,
         mode: bill.mode,
@@ -2328,16 +2409,16 @@ function renderRecurringList() {
 
       return `
         <div class="shortcut-row" data-rec-id="${bill.id}">
-          <div class="shortcut-tap-area">
+          <button type="button" class="shortcut-tap-area" data-rec-action="use" aria-label="Add ${labelForAria} ${formatINR(bill.amount)} now" title="Tap to log this bill now">
             <div class="shortcut-main">
               <strong>${titleText}</strong>
               <span class="shortcut-amt">${formatINR(bill.amount)} / mo</span>
             </div>
             <div class="shortcut-sub">
-              <span>${subText}</span>
+              <span>${subText}Tap to add now • </span>
               <span class="badge ${meta.cls}">${meta.label}</span>
             </div>
-          </div>
+          </button>
           <div class="shortcut-controls">
             <button type="button" class="sc-icon-btn" data-rec-action="edit" aria-label="Edit ${labelForAria} monthly bill" title="Edit">✎</button>
             <button type="button" class="sc-icon-btn sc-del" data-rec-action="delete" aria-label="Delete ${labelForAria} monthly bill" title="Delete">✕</button>
@@ -2359,7 +2440,9 @@ if (recurringList) {
     if (idx === -1) return;
 
     const action = actionBtn.dataset.recAction;
-    if (action === 'edit') {
+    if (action === 'use') {
+      await addSingleRecurringBillNow(appData.recurring[idx]);
+    } else if (action === 'edit') {
       startEditRecurring(appData.recurring[idx]);
     } else if (action === 'delete') {
       recordTombstone(id);
@@ -2414,6 +2497,10 @@ function setTab(tab, scrollTop, fromPopState = false) {
 }
 
 window.addEventListener('popstate', (event) => {
+  if (funEditionModal && !funEditionModal.classList.contains('hidden')) {
+    closeModal(funEditionModal);
+    return;
+  }
   if (!recurringModal.classList.contains('hidden')) {
     closeRecurringModalUI();
     return;
@@ -2479,7 +2566,7 @@ function getMoreItems() {
     {
       icon: 'repeat',
       title: 'Monthly Fixed Bills',
-      desc: 'Rent, Wi-Fi & recurring bills prompted each new month',
+      desc: 'Rent, Wi-Fi & recurring bills (auto or manual trigger)',
       tag: `${recCount}`,
       action: openRecurringModal
     },
@@ -2495,6 +2582,12 @@ function getMoreItems() {
       }
     },
     {
+      icon: 'spark',
+      title: 'Fun Audio Edition',
+      desc: 'Switch to the loud reaction-sound version (own risk)',
+      action: openFunEditionWarning
+    },
+    {
       icon: 'backup',
       title: 'Backup All Months (CSV)',
       desc: 'Download every recorded month in one CSV file',
@@ -2505,7 +2598,7 @@ function getMoreItems() {
       title: 'Request a feature',
       desc: 'Tell us what you would like to see next',
       action: () => {
-        if (FEATURE_REQUEST_URL) window.open(FEATURE_REQUEST_URL, '_blank', 'noopener');
+        if (FEATURE_REQUEST_URL) window.open(FEATURE_REQUEST_URL, '_blank', 'noopener,noreferrer');
         else showAppToast('Feature requests will open here soon');
       }
     },
