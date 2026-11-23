@@ -1,61 +1,55 @@
-/* Human-Crafted Fintech Slate & Emerald Theme Variables */
+/* Human-Crafted Matte Fintech Theme (Zerodha / Linear / Wise Inspired) */
 :root {
-  --bg-page: #f2f4f7;
-  --bg-mesh-1: rgba(5, 150, 105, 0.08);
-  --bg-mesh-2: rgba(37, 99, 235, 0.06);
-  --bg-mesh-3: rgba(15, 23, 42, 0.04);
+  --bg-page: #f4f5f7;
   --bg-card: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.78);
-  --bg-glass-strong: rgba(255, 255, 255, 0.94);
-  --bg-elevated: rgba(248, 250, 252, 0.88);
-  --bg-well: rgba(226, 232, 240, 0.72);
-  --border-subtle: rgba(203, 213, 225, 0.85);
-  --border-glass: rgba(226, 232, 240, 0.95);
-  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  --text-primary: #111827;
-  --text-muted: #4b5563;
-  --accent-cyan: #047857;
-  --accent-violet: #1d4ed8;
-  --accent-emerald: #059669;
+  --bg-glass: #ffffff;
+  --bg-glass-strong: #ffffff;
+  --bg-elevated: #f8f9fb;
+  --bg-well: #eceef2;
+  --border-subtle: #e2e5ec;
+  --border-glass: #dfe3eb;
+  --glass-specular: none;
+  --text-primary: #111318;
+  --text-muted: #5c6475;
+  --accent-cyan: #0f766e;
+  --accent-violet: #1e40af;
+  --accent-emerald: #047857;
   --accent-amber: #b45309;
-  --accent-danger: #dc2626;
+  --accent-danger: #be123c;
   --btn-primary-text: #ffffff;
-  --shadow-card: 0 4px 20px rgba(17, 24, 39, 0.05);
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
   --scheme: light;
   --radius-lg: 18px;
   --radius-md: 11px;
   --bar-w: 0%;
-  --cat-food: #0284c7;
-  --cat-travel: #2563eb;
-  --cat-room: #0d9488;
-  --cat-study: #d97706;
-  --cat-shopping: #e11d48;
-  --cat-other: #64748b;
+  --cat-food: #0369a1;
+  --cat-travel: #1d4ed8;
+  --cat-room: #0f766e;
+  --cat-study: #b45309;
+  --cat-shopping: #be123c;
+  --cat-other: #475569;
 }
 
-/* Dark Mode Carbon Slate & Mint Emerald Override */
+/* Dark Mode Matte Carbon & Deep Teal Override */
 [data-theme="dark"] {
-  --bg-page: #0c0f14;
-  --bg-mesh-1: rgba(16, 185, 129, 0.08);
-  --bg-mesh-2: rgba(59, 130, 246, 0.07);
-  --bg-mesh-3: rgba(15, 23, 42, 0.05);
-  --bg-card: #151921;
-  --bg-glass: rgba(21, 25, 33, 0.78);
-  --bg-glass-strong: rgba(24, 29, 38, 0.94);
-  --bg-elevated: rgba(30, 36, 48, 0.85);
-  --bg-well: rgba(13, 16, 22, 0.82);
-  --border-subtle: rgba(55, 65, 81, 0.65);
-  --border-glass: rgba(255, 255, 255, 0.09);
-  --glass-specular: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --bg-page: #0b0d11;
+  --bg-card: #13161d;
+  --bg-glass: #13161d;
+  --bg-glass-strong: #181c25;
+  --bg-elevated: #1b202b;
+  --bg-well: #0f1218;
+  --border-subtle: #262c3a;
+  --border-glass: #282f3e;
+  --glass-specular: none;
   --text-primary: #f3f4f6;
   --text-muted: #9ca3af;
-  --accent-cyan: #10b981;
+  --accent-cyan: #14b8a6;
   --accent-violet: #60a5fa;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
-  --accent-danger: #f87171;
-  --btn-primary-text: #06130e;
-  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.32);
+  --accent-danger: #fb7185;
+  --btn-primary-text: #041311;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35);
   --scheme: dark;
   --cat-food: #38bdf8;
   --cat-travel: #60a5fa;
@@ -74,23 +68,18 @@
 
 body {
   background-color: var(--bg-page);
-  background-image:
-    radial-gradient(circle at 12% 8%, var(--bg-mesh-1), transparent 42%),
-    radial-gradient(circle at 88% 14%, var(--bg-mesh-2), transparent 44%);
-  background-attachment: fixed;
+  background-image: none;
   color: var(--text-primary);
   min-height: 100vh;
   padding: 20px;
   line-height: 1.5;
   transition: background-color 0.2s ease, color 0.2s ease;
   font-variant-numeric: tabular-nums;
-  /* Block accidental text selection & long-press popups across the entire UI */
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
 
-/* Allow text selection ONLY on the web brand name and editable inputs */
 .selectable-brand,
 input,
 textarea {
@@ -107,7 +96,6 @@ textarea {
   clip: rect(0, 0, 0, 0);
 }
 
-/* Utility layout helpers (replaces inline styles for strict CSP) */
 .mt-8 {
   margin-top: 8px;
 }
@@ -133,14 +121,14 @@ textarea {
 }
 
 /* ============================================================================
-   MODALS (Frosted Glass Backdrop + Clean Elevated Card)
+   MODALS
    ============================================================================ */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.52);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(11, 13, 17, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,7 +140,7 @@ textarea {
 .modal-card {
   background: var(--bg-glass-strong);
   border: 1px solid var(--border-glass);
-  box-shadow: var(--glass-specular), 0 24px 48px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.24);
   border-radius: var(--radius-lg);
   max-width: 560px;
   width: 100%;
@@ -235,7 +223,7 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: var(--bg-glass-strong);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 7px 10px;
@@ -258,7 +246,7 @@ textarea {
 }
 
 /* ============================================================================
-   TOP HEADER & CUSTOM WALLET + RUPEE LOGO
+   TOP HEADER
    ============================================================================ */
 .topbar {
   display: flex;
@@ -266,12 +254,10 @@ textarea {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background: var(--bg-card);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-specular), var(--shadow-card);
+  box-shadow: var(--shadow-card);
   padding: 16px 22px;
 }
 
@@ -288,7 +274,6 @@ textarea {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 5px rgba(5, 150, 105, 0.22));
 }
 
 .brand-logo svg {
@@ -327,7 +312,7 @@ textarea {
 }
 
 .month-picker-wrap.status-green {
-  border-color: rgba(5, 150, 105, 0.45);
+  border-color: rgba(4, 120, 87, 0.45);
 }
 
 .month-picker-wrap.status-yellow {
@@ -335,7 +320,7 @@ textarea {
 }
 
 .month-picker-wrap.status-red {
-  border-color: rgba(220, 38, 38, 0.5);
+  border-color: rgba(190, 18, 60, 0.5);
 }
 
 .custom-cal-icon {
@@ -390,44 +375,45 @@ textarea {
   font-weight: 600;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(4, 120, 87, 0.1);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.28);
+  border: 1px solid rgba(4, 120, 87, 0.25);
   transition: all 0.2s ease;
 }
 
 .storage-badge.connected {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(15, 118, 110, 0.1);
   color: var(--accent-cyan);
-  border-color: rgba(5, 150, 105, 0.32);
+  border-color: rgba(15, 118, 110, 0.28);
 }
 
 .storage-badge.syncing {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(30, 64, 175, 0.1);
   color: var(--accent-violet);
-  border-color: rgba(37, 99, 235, 0.28);
+  border-color: rgba(30, 64, 175, 0.25);
 }
 
 .storage-badge.error {
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(190, 18, 60, 0.1);
   color: var(--accent-danger);
-  border-color: rgba(220, 38, 38, 0.28);
+  border-color: rgba(190, 18, 60, 0.25);
 }
 
 .btn-drive {
-  background: rgba(5, 150, 105, 0.1);
+  background: var(--bg-elevated);
   color: var(--accent-cyan);
-  border: 1px solid rgba(5, 150, 105, 0.32);
+  border: 1px solid var(--border-subtle);
 }
 
 .btn-drive:hover {
-  background: rgba(5, 150, 105, 0.18);
+  border-color: var(--accent-cyan);
+  background: rgba(15, 118, 110, 0.08);
 }
 
 .btn-drive.connected {
-  background: rgba(5, 150, 105, 0.14);
+  background: rgba(4, 120, 87, 0.1);
   color: var(--accent-emerald);
-  border-color: rgba(5, 150, 105, 0.35);
+  border-color: rgba(4, 120, 87, 0.32);
 }
 
 .drive-prompt-banner {
@@ -436,8 +422,8 @@ textarea {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  border-color: rgba(5, 150, 105, 0.32);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.06));
+  border-color: rgba(15, 118, 110, 0.32);
+  background: var(--bg-card);
   animation: fadeIn 0.25s ease;
 }
 
@@ -464,15 +450,13 @@ textarea {
 }
 
 /* ============================================================================
-   CARDS & 3 MERGED SUMMARY MODULES
+   CARDS & SUMMARY MODULES (Crisp Matte Surface)
    ============================================================================ */
 .card {
-  background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(135%);
-  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  background: var(--bg-card);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-specular), var(--shadow-card);
+  box-shadow: var(--shadow-card);
   padding: 18px;
 }
 
@@ -505,32 +489,6 @@ textarea {
   overflow: hidden;
 }
 
-.summary-module::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent-cyan), transparent);
-}
-
-.wallet-module.status-green::before {
-  background: linear-gradient(90deg, var(--accent-emerald), transparent);
-}
-
-.wallet-module.status-yellow::before {
-  background: linear-gradient(90deg, var(--accent-amber), transparent);
-}
-
-.wallet-module.status-red::before {
-  background: linear-gradient(90deg, var(--accent-danger), transparent);
-}
-
-.spending-module::before {
-  background: linear-gradient(90deg, var(--accent-violet), transparent);
-}
-
 .module-header {
   margin-bottom: 4px;
 }
@@ -561,21 +519,21 @@ textarea {
 }
 
 .status-pill.status-green {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(4, 120, 87, 0.1);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.28);
+  border: 1px solid rgba(4, 120, 87, 0.25);
 }
 
 .status-pill.status-yellow {
-  background: rgba(180, 83, 9, 0.12);
+  background: rgba(180, 83, 9, 0.1);
   color: var(--accent-amber);
-  border: 1px solid rgba(180, 83, 9, 0.32);
+  border: 1px solid rgba(180, 83, 9, 0.28);
 }
 
 .status-pill.status-red {
-  background: rgba(220, 38, 38, 0.12);
+  background: rgba(190, 18, 60, 0.1);
   color: var(--accent-danger);
-  border: 1px solid rgba(220, 38, 38, 0.32);
+  border: 1px solid rgba(190, 18, 60, 0.28);
 }
 
 .module-split-two {
@@ -599,7 +557,7 @@ textarea {
 .mini-edit-btn {
   background: var(--bg-elevated);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.35);
+  border: 1px solid rgba(4, 120, 87, 0.35);
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 0.72rem;
@@ -608,7 +566,7 @@ textarea {
 }
 
 .mini-edit-btn:hover {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(4, 120, 87, 0.12);
 }
 
 .reminder-chip {
@@ -619,8 +577,8 @@ textarea {
   margin-top: 2px;
   padding: 4px 9px;
   border-radius: 8px;
-  background: rgba(180, 83, 9, 0.12);
-  border: 1px solid rgba(180, 83, 9, 0.35);
+  background: rgba(180, 83, 9, 0.1);
+  border: 1px solid rgba(180, 83, 9, 0.32);
   color: var(--accent-amber);
   font-size: 0.74rem;
   font-weight: 600;
@@ -687,8 +645,8 @@ textarea {
 
 /* Inline Budget Drawer */
 .budget-drawer {
-  border-color: rgba(5, 150, 105, 0.32);
-  background: linear-gradient(135deg, var(--bg-glass), rgba(5, 150, 105, 0.06));
+  border-color: rgba(4, 120, 87, 0.32);
+  background: var(--bg-card);
   animation: fadeIn 0.2s ease;
 }
 
@@ -744,7 +702,7 @@ textarea {
 }
 
 .tag-cash { color: var(--accent-emerald); }
-.tag-lite { color: #0284c7; }
+.tag-lite { color: #0369a1; }
 .tag-bank { color: var(--accent-violet); }
 
 /* ============================================================================
@@ -840,15 +798,15 @@ input:focus, select:focus {
 }
 
 .pill.active {
-  background: var(--bg-glass-strong);
+  background: var(--bg-card);
   color: var(--accent-cyan);
-  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.08);
-  border-color: rgba(5, 150, 105, 0.35);
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+  border-color: var(--border-subtle);
 }
 
 .upi-sub-box {
-  background: rgba(37, 99, 235, 0.06);
-  border: 1px dashed rgba(37, 99, 235, 0.32);
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border-subtle);
   padding: 10px;
   border-radius: var(--radius-md);
   animation: fadeIn 0.2s ease;
@@ -856,7 +814,7 @@ input:focus, select:focus {
 
 .upi-sub-box .pill.active {
   color: var(--accent-violet);
-  border-color: rgba(37, 99, 235, 0.4);
+  border-color: rgba(30, 64, 175, 0.35);
 }
 
 .hidden {
@@ -884,29 +842,29 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+  background: var(--accent-emerald);
   color: var(--btn-primary-text);
-  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.22);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
 }
 
 .btn-primary:hover {
-  opacity: 0.94;
+  opacity: 0.92;
 }
 
 .btn-outline-emerald {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(4, 120, 87, 0.1);
   color: var(--accent-emerald);
-  border: 1px solid rgba(5, 150, 105, 0.38);
+  border: 1px solid rgba(4, 120, 87, 0.35);
 }
 
 .btn-outline-emerald:hover {
-  background: rgba(5, 150, 105, 0.2);
+  background: rgba(4, 120, 87, 0.18);
 }
 
 .btn-danger-outline {
-  background: rgba(220, 38, 38, 0.1);
+  background: rgba(190, 18, 60, 0.08);
   color: var(--accent-danger);
-  border: 1px solid rgba(220, 38, 38, 0.32);
+  border: 1px solid rgba(190, 18, 60, 0.3);
 }
 
 .btn-danger-outline:hover {
@@ -927,14 +885,15 @@ input:focus, select:focus {
 .btn-quick-add {
   padding: 6px 12px;
   font-size: 0.8rem;
-  background: rgba(5, 150, 105, 0.1);
+  background: var(--bg-elevated);
   color: var(--accent-cyan);
-  border: 1px solid rgba(5, 150, 105, 0.3);
+  border: 1px solid var(--border-subtle);
   border-radius: 999px;
 }
 
 .btn-quick-add:hover {
-  background: rgba(5, 150, 105, 0.18);
+  border-color: var(--accent-cyan);
+  background: rgba(15, 118, 110, 0.08);
 }
 
 .full-width {
@@ -954,7 +913,7 @@ input:focus, select:focus {
   padding: 10px 10px;
 }
 
-/* Status Progress Strip (uses CSS var --bar-w instead of inline style) */
+/* Status Progress Strip */
 .bar-track {
   width: 100%;
   height: 7px;
@@ -1161,17 +1120,17 @@ input:focus, select:focus {
 }
 
 .badge-cash {
-  background: rgba(5, 150, 105, 0.12);
+  background: rgba(4, 120, 87, 0.1);
   color: var(--accent-emerald);
 }
 
 .badge-lite {
-  background: rgba(2, 132, 199, 0.12);
-  color: #0284c7;
+  background: rgba(3, 105, 161, 0.1);
+  color: #0369a1;
 }
 
 .badge-bank {
-  background: rgba(37, 99, 235, 0.12);
+  background: rgba(30, 64, 175, 0.1);
   color: var(--accent-violet);
 }
 
@@ -1192,9 +1151,9 @@ input:focus, select:focus {
 }
 
 .delete-btn {
-  background: rgba(220, 38, 38, 0.1);
+  background: rgba(190, 18, 60, 0.08);
   color: var(--accent-danger);
-  border: 1px solid rgba(220, 38, 38, 0.25);
+  border: 1px solid rgba(190, 18, 60, 0.25);
   border-radius: 8px;
   padding: 5px 9px;
   font-size: 0.78rem;
@@ -1268,7 +1227,7 @@ input:focus, select:focus {
 
 .quick-log-confirm-box {
   background: var(--bg-elevated);
-  border: 1px solid rgba(5, 150, 105, 0.42);
+  border: 1px solid rgba(4, 120, 87, 0.42);
   border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 12px;
@@ -1371,12 +1330,12 @@ input:focus, select:focus {
 
 .sc-icon-btn.sc-del {
   color: var(--accent-danger);
-  border-color: rgba(220, 38, 38, 0.28);
+  border-color: rgba(190, 18, 60, 0.28);
 }
 
 .shortcut-editor-box {
   background: var(--bg-elevated);
-  border: 1px solid rgba(5, 150, 105, 0.32);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 12px;
@@ -1407,11 +1366,9 @@ input:focus, select:focus {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(14px) saturate(135%);
-  -webkit-backdrop-filter: blur(14px) saturate(135%);
+  background: var(--bg-card);
   border: 1px solid var(--border-glass);
-  box-shadow: var(--glass-specular);
+  box-shadow: var(--shadow-card);
   border-radius: var(--radius-lg);
   padding: 14px 22px;
   font-size: 0.82rem;
@@ -1438,7 +1395,7 @@ input:focus, select:focus {
 
 .footer-link-btn:hover {
   border-color: var(--accent-cyan);
-  background: rgba(5, 150, 105, 0.08);
+  background: rgba(15, 118, 110, 0.08);
 }
 
 /* Interactive Toast */
@@ -1564,19 +1521,18 @@ input:focus, select:focus {
 }
 
 /* ============================================================================
-   MOBILE LAYOUT & GPU-OPTIMIZED GLASS (<= 640px)
+   MOBILE LAYOUT (<= 640px)
    ============================================================================ */
 @media (max-width: 640px) {
   :root {
     --tabbar-h: 64px;
-    /* High-translucency solid-composite card surface on mobile to avoid per-card blur GPU overdraw */
-    --bg-glass: rgba(255, 255, 255, 0.92);
-    --bg-glass-strong: rgba(255, 255, 255, 0.96);
+    --bg-glass: #ffffff;
+    --bg-glass-strong: #ffffff;
   }
 
   [data-theme="dark"] {
-    --bg-glass: rgba(21, 25, 33, 0.92);
-    --bg-glass-strong: rgba(24, 29, 38, 0.96);
+    --bg-glass: #13161d;
+    --bg-glass-strong: #181c25;
   }
 
   .desktop-only {
@@ -1603,10 +1559,7 @@ input:focus, select:focus {
     min-width: 0;
   }
 
-  /* Keep backdrop-filter strictly on topbar, tabbar, and modals; keep scrolling cards crisp at 60fps */
   .card {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     padding: 12px;
     border-radius: 14px;
   }
@@ -1834,7 +1787,7 @@ input:focus, select:focus {
     min-height: 44px;
   }
 
-  /* Bottom Tab Bar (Frosted Glass) */
+  /* Bottom Tab Bar */
   .mobile-tabbar {
     position: fixed;
     left: 0;
@@ -1845,11 +1798,9 @@ input:focus, select:focus {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-    background: var(--bg-glass-strong);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    background: var(--bg-card);
     border-top: 1px solid var(--border-glass);
-    box-shadow: 0 -4px 18px rgba(17, 24, 39, 0.06);
+    box-shadow: 0 -2px 12px rgba(16, 24, 40, 0.06);
     transition: transform 0.2s ease;
   }
 
@@ -1887,7 +1838,7 @@ input:focus, select:focus {
 
   .mobile-tab.active {
     color: var(--accent-cyan);
-    background: rgba(5, 150, 105, 0.12);
+    background: rgba(15, 118, 110, 0.1);
   }
 
   .mobile-toast {
@@ -1931,7 +1882,7 @@ input:focus, select:focus {
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: rgba(5, 150, 105, 0.12);
+    background: rgba(15, 118, 110, 0.1);
     color: var(--accent-cyan);
   }
 
@@ -1969,7 +1920,7 @@ input:focus, select:focus {
   .more-tag {
     padding: 1px 8px;
     border-radius: 999px;
-    background: rgba(37, 99, 235, 0.12);
+    background: rgba(30, 64, 175, 0.1);
     color: var(--accent-violet);
     font-size: 0.75rem;
     font-weight: 700;
