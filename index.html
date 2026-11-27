@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#047857" />
+  <meta name="theme-color" id="metaThemeLight" media="(prefers-color-scheme: light)" content="#f4f5f7" />
+  <meta name="theme-color" id="metaThemeDark" media="(prefers-color-scheme: dark)" content="#0b0d11" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
@@ -37,20 +38,25 @@
       <div class="modal-body">
         <ul class="welcome-list">
           <li>
-            <strong>1. Purpose &amp; Architecture:</strong><br />
-            TrackYourRupee manages monthly allowances, rollover balances, category caps, and daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong> with zero backend servers.
+            <strong>1. Welcome &amp; About TrackYourRupee:</strong><br />
+            TrackYourRupee is a simple, fast personal expense tracker that helps you manage your monthly allowance, set spending caps per category, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month.
           </li>
           <li>
-            <strong>2. Local Storage, Offline Cache &amp; Backup:</strong><br />
-            Records are saved immediately inside browser <code>LocalStorage</code> (Schema v4) with Service Worker offline caching. Use <strong>Backup JSON</strong> to download a full snapshot (budgets, caps, shortcuts, bills, and entries) or <strong>Backup CSV</strong> for spreadsheets.
+            <strong>2. How Your Data Is Saved &amp; Backed Up:</strong><br />
+            Everything you add is saved right on your device so the app works offline anytime. Use <strong>Backup &amp; Restore</strong> to save a full <code>.json</code> backup file (including budgets, caps, shortcuts, and bills) or export a <code>.csv</code> file for spreadsheets. If you connect <strong>Google Drive Backup</strong>, it only syncs one private <code>expense.json</code> file in your Drive.
           </li>
           <li>
-            <strong>3. Strict Privacy &amp; Input Isolation:</strong><br />
-            No third-party trackers or server databases read your records. Optional Google Drive sync uses <code>drive.file</code> scope so only <code>expense.json</code> is accessible.
+            <strong>3. 100% Privacy &amp; Safety:</strong><br />
+            No external server or tracker ever collects or reads your financial details—everything stays strictly on your device and your own Google account. <em>Tip: Avoid clearing browser site data unless you have exported a backup file first.</em>
+          </li>
+          <li>
+            <strong>4. Coming in Future Updates:</strong><br />
+            * Support for bank statement linking may be added in future versions to make expense tracking even faster.<br />
+            * Smart budget planning and personalized guides to help you spend less will also be added.
           </li>
           <li id="systemHealthPanel">
-            <strong>4. System Health &amp; Diagnostics:</strong><br />
-            <span class="muted-text" id="diagnosticReadout">Checking local storage, cache, and schema integrity...</span>
+            <strong>5. App Status &amp; Diagnostics:</strong><br />
+            <span class="muted-text" id="diagnosticReadout">Checking storage and offline status...</span>
           </li>
         </ul>
       </div>
@@ -330,6 +336,120 @@
     </div>
   </div>
 
+  <!-- Bills & Category Caps Hub Modal (Desktop Topbar Merged Button) -->
+  <div class="modal-backdrop hidden" id="planCapsHubModal" role="dialog" aria-modal="true" aria-labelledby="planCapsHubTitle">
+    <div class="modal-card">
+      <div class="modal-header shortcuts-modal-header">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+          </span>
+          <div>
+            <h2 id="planCapsHubTitle">Monthly Bills &amp; Category Caps</h2>
+            <p class="subtitle">Manage fixed recurring bills and category spending limits</p>
+          </div>
+        </div>
+        <button type="button" class="icon-close-btn" id="closePlanCapsHubBtn" aria-label="Close dialog">
+          <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="more-list">
+          <button type="button" class="more-row" id="hubOpenRecurringBtn">
+            <span class="more-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </span>
+            <span class="more-text">
+              <span class="more-title">Monthly Fixed Bills <span class="more-tag" id="hubRecurringCount">0</span></span>
+              <span class="more-desc">Rent, Wi-Fi &amp; recurring monthly bills</span>
+            </span>
+            <span class="more-chevron">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </span>
+          </button>
+          <button type="button" class="more-row" id="hubOpenCapsBtn">
+            <span class="more-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+            </span>
+            <span class="more-text">
+              <span class="more-title">Category Monthly Caps <span class="more-tag" id="hubCapsCount">0</span></span>
+              <span class="more-desc">Set spending caps per category with alert bars</span>
+            </span>
+            <span class="more-chevron">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary full-width" id="donePlanCapsHubBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup & Restore Hub Modal (Mobile More Merged Button) -->
+  <div class="modal-backdrop hidden" id="backupHubModal" role="dialog" aria-modal="true" aria-labelledby="backupHubTitle">
+    <div class="modal-card">
+      <div class="modal-header shortcuts-modal-header">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          <div>
+            <h2 id="backupHubTitle">Backup &amp; Restore</h2>
+            <p class="subtitle">Export or restore your ledger data</p>
+          </div>
+        </div>
+        <button type="button" class="icon-close-btn" id="closeBackupHubBtn" aria-label="Close backup dialog">
+          <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="more-list">
+          <button type="button" class="more-row" id="hubExportJsonBtn">
+            <span class="more-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </span>
+            <span class="more-text">
+              <span class="more-title">Backup Full Snapshot (JSON)</span>
+              <span class="more-desc">Export budgets, caps, shortcuts, bills &amp; entries</span>
+            </span>
+            <span class="more-chevron">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </span>
+          </button>
+          <button type="button" class="more-row" id="hubImportJsonBtn">
+            <span class="more-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </span>
+            <span class="more-text">
+              <span class="more-title">Restore Snapshot (JSON)</span>
+              <span class="more-desc">Import &amp; merge a saved JSON backup file</span>
+            </span>
+            <span class="more-chevron">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </span>
+          </button>
+          <button type="button" class="more-row" id="hubExportCsvBtn">
+            <span class="more-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            </span>
+            <span class="more-text">
+              <span class="more-title">Backup All Months (CSV)</span>
+              <span class="more-desc">Download every recorded month for spreadsheets</span>
+            </span>
+            <span class="more-chevron">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary full-width" id="doneBackupHubBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Fun Edition Public Volume & Own-Risk Warning Modal -->
   <div class="modal-backdrop hidden" id="funEditionModal" role="dialog" aria-modal="true" aria-labelledby="funEditionTitle">
     <div class="modal-card">
@@ -391,19 +511,19 @@
           <input type="month" id="activeMonthInput" title="Switch Month" />
         </div>
         <span class="storage-badge" id="storageStatus" data-mtab="home">Saved on Device</span>
+        <button type="button" class="btn btn-drive" id="driveAuthBtn" data-mtab="home">Backup to Drive</button>
         <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="headerShortcutsBtn" title="Manage Quick Add Shortcuts">
           <svg class="ui-svg" viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           <span>Shortcuts</span>
         </button>
-        <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="headerRecurringBtn" title="Manage Monthly Fixed Bills">
-          <svg class="ui-svg" viewBox="0 0 24 24" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-          <span>Recurring</span>
+        <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="headerPlanCapsBtn" title="Manage Monthly Recurring Bills &amp; Category Caps">
+          <svg class="ui-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+          <span>Bills &amp; Caps</span>
         </button>
         <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="soundToggleBtn" title="Toggle Sound Effects">
           <svg class="ui-svg" id="soundToggleIcon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
           <span id="soundToggleText">Sound: On</span>
         </button>
-        <button type="button" class="btn btn-drive" id="driveAuthBtn" data-mtab="home">Backup to Drive</button>
         <button type="button" class="btn btn-secondary" id="themeToggleBtn" data-mtab="home" title="Switch Light / Dark Theme">Dark Mode</button>
         <button type="button" class="btn btn-secondary" id="exportCsvBtn" data-mtab="home" title="Export active month CSV (Shift+Click for All Months)">Export CSV</button>
       </div>

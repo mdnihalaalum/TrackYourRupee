@@ -906,7 +906,21 @@ const monthCalendarBox = document.getElementById('monthCalendarBox');
 const activeMonthInput = document.getElementById('activeMonthInput');
 const storageStatus = document.getElementById('storageStatus');
 const headerShortcutsBtn = document.getElementById('headerShortcutsBtn');
-const headerRecurringBtn = document.getElementById('headerRecurringBtn');
+const headerPlanCapsBtn = document.getElementById('headerPlanCapsBtn');
+const planCapsHubModal = document.getElementById('planCapsHubModal');
+const closePlanCapsHubBtn = document.getElementById('closePlanCapsHubBtn');
+const donePlanCapsHubBtn = document.getElementById('donePlanCapsHubBtn');
+const hubOpenRecurringBtn = document.getElementById('hubOpenRecurringBtn');
+const hubOpenCapsBtn = document.getElementById('hubOpenCapsBtn');
+const hubRecurringCount = document.getElementById('hubRecurringCount');
+const hubCapsCount = document.getElementById('hubCapsCount');
+
+const backupHubModal = document.getElementById('backupHubModal');
+const closeBackupHubBtn = document.getElementById('closeBackupHubBtn');
+const doneBackupHubBtn = document.getElementById('doneBackupHubBtn');
+const hubExportJsonBtn = document.getElementById('hubExportJsonBtn');
+const hubImportJsonBtn = document.getElementById('hubImportJsonBtn');
+const hubExportCsvBtn = document.getElementById('hubExportCsvBtn');
 const soundToggleBtn = document.getElementById('soundToggleBtn');
 const soundToggleIcon = document.getElementById('soundToggleIcon');
 const soundToggleText = document.getElementById('soundToggleText');
@@ -1259,6 +1273,66 @@ function openCategoryCapsModal() {
   openModalWithFocus(categoryCapsModal, firstInput);
 }
 
+function openPlanCapsHubModal() {
+  if (!planCapsHubModal) return;
+  if (hubRecurringCount) hubRecurringCount.textContent = String((appData.recurring || []).length);
+  if (hubCapsCount) hubCapsCount.textContent = String(Object.keys(appData.categoryCaps || {}).length);
+  openModalWithFocus(planCapsHubModal, hubOpenRecurringBtn);
+}
+
+function openBackupHubModal() {
+  if (!backupHubModal) return;
+  if (backupHubModal.classList.contains('hidden')) {
+    pushModalHistoryState('backup');
+  }
+  openModalWithFocus(backupHubModal, hubExportJsonBtn);
+}
+
+function closeBackupHubModal(fromPopState = false) {
+  if (!backupHubModal || backupHubModal.classList.contains('hidden')) return;
+  closeModal(backupHubModal);
+  if (!fromPopState && window.history && window.history.state && window.history.state.modal === 'backup') {
+    window.history.back();
+  }
+}
+
+if (headerPlanCapsBtn) headerPlanCapsBtn.addEventListener('click', openPlanCapsHubModal);
+if (closePlanCapsHubBtn) closePlanCapsHubBtn.addEventListener('click', () => closeModal(planCapsHubModal));
+if (donePlanCapsHubBtn) donePlanCapsHubBtn.addEventListener('click', () => closeModal(planCapsHubModal));
+if (hubOpenRecurringBtn) {
+  hubOpenRecurringBtn.addEventListener('click', () => {
+    closeModal(planCapsHubModal);
+    openRecurringModal();
+  });
+}
+if (hubOpenCapsBtn) {
+  hubOpenCapsBtn.addEventListener('click', () => {
+    closeModal(planCapsHubModal);
+    openCategoryCapsModal();
+  });
+}
+
+if (closeBackupHubBtn) closeBackupHubBtn.addEventListener('click', () => closeBackupHubModal(false));
+if (doneBackupHubBtn) doneBackupHubBtn.addEventListener('click', () => closeBackupHubModal(false));
+if (hubExportJsonBtn) {
+  hubExportJsonBtn.addEventListener('click', () => {
+    closeBackupHubModal(false);
+    downloadJsonSnapshot();
+  });
+}
+if (hubImportJsonBtn) {
+  hubImportJsonBtn.addEventListener('click', () => {
+    closeBackupHubModal(false);
+    triggerJsonRestorePicker();
+  });
+}
+if (hubExportCsvBtn) {
+  hubExportCsvBtn.addEventListener('click', () => {
+    closeBackupHubModal(false);
+    downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
+  });
+}
+
 if (openCategoryCapsBtn) openCategoryCapsBtn.addEventListener('click', openCategoryCapsModal);
 if (openCategoryCapsFooterBtn) openCategoryCapsFooterBtn.addEventListener('click', openCategoryCapsModal);
 if (closeCategoryCapsBtn) closeCategoryCapsBtn.addEventListener('click', () => closeModal(categoryCapsModal));
@@ -1375,6 +1449,7 @@ if (rollbackRestoreBtn) {
    ============================================================================ */
 function applyTheme(theme, persist = true) {
   const isDark = theme === 'dark';
+  const statusBg = isDark ? '#0b0d11' : '#f4f5f7';
   if (isDark) {
     document.documentElement.setAttribute('data-theme', 'dark');
     themeToggleBtn.textContent = 'Light Mode';
@@ -1382,6 +1457,10 @@ function applyTheme(theme, persist = true) {
     document.documentElement.removeAttribute('data-theme');
     themeToggleBtn.textContent = 'Dark Mode';
   }
+  const metaLight = document.getElementById('metaThemeLight');
+  const metaDark = document.getElementById('metaThemeDark');
+  if (metaLight) metaLight.setAttribute('content', statusBg);
+  if (metaDark) metaDark.setAttribute('content', statusBg);
   if (persist) {
     safeSetItem(StorageService.THEME_KEY, isDark ? 'dark' : 'light');
   }
@@ -1759,6 +1838,8 @@ function getVisibleModal() {
   const modals = [
     editTxModal,
     categoryCapsModal,
+    planCapsHubModal,
+    backupHubModal,
     funEditionModal,
     recurringModal,
     shortcutsModal,
@@ -1802,6 +1883,7 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     if (activeModal === shortcutsModal) closeShortcutsModal(false);
     else if (activeModal === recurringModal) closeRecurringModal(false);
+    else if (activeModal === backupHubModal) closeBackupHubModal(false);
     else if (activeModal === editTxModal) closeEditTransactionModal();
     else closeModal(activeModal);
     return;
@@ -2839,7 +2921,6 @@ async function addSingleRecurringBillNow(bill) {
   showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
 }
 
-if (headerRecurringBtn) headerRecurringBtn.addEventListener('click', openRecurringModal);
 if (addNewRecurringBtn) addNewRecurringBtn.addEventListener('click', startCreateRecurring);
 if (closeRecurringBtn) closeRecurringBtn.addEventListener('click', () => closeRecurringModal(false));
 if (closeRecurringFooterBtn) closeRecurringFooterBtn.addEventListener('click', () => closeRecurringModal(false));
@@ -3029,6 +3110,14 @@ function setTab(tab, scrollTop, fromPopState = false) {
 }
 
 window.addEventListener('popstate', (event) => {
+  if (backupHubModal && !backupHubModal.classList.contains('hidden')) {
+    closeModal(backupHubModal);
+    return;
+  }
+  if (planCapsHubModal && !planCapsHubModal.classList.contains('hidden')) {
+    closeModal(planCapsHubModal);
+    return;
+  }
   if (editTxModal && !editTxModal.classList.contains('hidden')) {
     closeEditTransactionModal();
     return;
@@ -3127,21 +3216,10 @@ function getMoreItems() {
     },
     {
       icon: 'download',
-      title: 'Backup Full Snapshot (JSON)',
-      desc: 'Export budgets, caps, shortcuts, bills & entries',
-      action: downloadJsonSnapshot
-    },
-    {
-      icon: 'upload',
-      title: 'Restore Snapshot (JSON)',
-      desc: 'Import & merge a saved JSON backup file',
-      action: triggerJsonRestorePicker
-    },
-    {
-      icon: 'download',
-      title: 'Backup All Months (CSV)',
-      desc: 'Download every recorded month for spreadsheets',
-      action: () => downloadExpensesCsv(appData.expenses, 'All_Months_Backup')
+      title: 'Backup & Restore',
+      desc: 'JSON snapshot backup, restore & CSV export',
+      tag: '3 options',
+      action: openBackupHubModal
     },
     {
       icon: 'spark',
