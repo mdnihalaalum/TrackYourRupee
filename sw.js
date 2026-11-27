@@ -2,7 +2,7 @@
  * TrackYourRupee Service Worker (Offline-First App Shell Cache)
  * Rule 13 (Caching Layer) & Feature 1 (Installable Offline PWA)
  */
-const CACHE_NAME = 'trackyourrupee-shell-v4-1';
+const CACHE_NAME = 'trackyourrupee-shell-v4-3';
 const APP_SHELL_ASSETS = [
   './',
   './index.html',

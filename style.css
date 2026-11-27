@@ -2188,3 +2188,39 @@ input:focus, select:focus {
     white-space: nowrap;
   }
 }
+
+
+/* Non-Blocking Wallet Allowance Nudge Strip & Quick-Fill Chip */
+.wallet-nudge-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.08);
+  border: 1px dashed rgba(15, 118, 110, 0.35);
+}
+
+.wallet-nudge-action {
+  background: transparent;
+  border: none;
+  color: var(--accent-cyan);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  flex: 1;
+}
+
+.wallet-nudge-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prompt-quick-fill-row {
+  margin-top: 4px;
+}

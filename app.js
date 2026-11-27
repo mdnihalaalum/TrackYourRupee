@@ -26,7 +26,7 @@ const AppConfig = Object.freeze({
   MAX_IMPORT_BYTES: 2 * 1024 * 1024, // 2 MB DoS protection cap
   ISO_DATE_RE: /^\d{4}-\d{2}-\d{2}$/,
   ISO_MONTH_RE: /^\d{4}-\d{2}$/,
-  DRIVE_TEST_MODE_GUARD: true,
+  DRIVE_TEST_MODE_GUARD: false,
   DEFAULT_CLIENT_ID: '381251059137-hkv6bjlmcjg0i32qqblt0h0dubemdgap.apps.googleusercontent.com'
 });
 
@@ -858,6 +858,7 @@ let previousMonthStatusByYm = {};
 // Modals & File Input
 const jsonRestoreInput = document.getElementById('jsonRestoreInput');
 const welcomeModal = document.getElementById('welcomeModal');
+const welcomeSoundGroup = document.getElementById('welcomeSoundGroup');
 const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
 const rollbackRestoreBtn = document.getElementById('rollbackRestoreBtn');
 const diagnosticReadout = document.getElementById('diagnosticReadout');
@@ -891,6 +892,8 @@ const budgetPromptModal = document.getElementById('budgetPromptModal');
 const budgetPromptTitle = document.getElementById('budgetPromptTitle');
 const budgetPromptMessage = document.getElementById('budgetPromptMessage');
 const promptBudgetAmount = document.getElementById('promptBudgetAmount');
+const copyPrevBudgetRow = document.getElementById('copyPrevBudgetRow');
+const copyPrevBudgetBtn = document.getElementById('copyPrevBudgetBtn');
 const promptRecurringBox = document.getElementById('promptRecurringBox');
 const promptRecurringTotal = document.getElementById('promptRecurringTotal');
 const promptRecurringChecklist = document.getElementById('promptRecurringChecklist');
@@ -941,6 +944,11 @@ const budgetCardLabel = document.getElementById('budgetCardLabel');
 const editBudgetBtn = document.getElementById('editBudgetBtn');
 const budgetTotal = document.getElementById('budgetTotal');
 const budgetStatusSub = document.getElementById('budgetStatusSub');
+const walletBudgetNudge = document.getElementById('walletBudgetNudge');
+const walletNudgeText = document.getElementById('walletNudgeText');
+const walletNudgeSetBtn = document.getElementById('walletNudgeSetBtn');
+const dismissWalletNudgeBtn = document.getElementById('dismissWalletNudgeBtn');
+
 const budgetReminderChip = document.getElementById('budgetReminderChip');
 const budgetReminderText = document.getElementById('budgetReminderText');
 const deleteReminderBtn = document.getElementById('deleteReminderBtn');
@@ -1133,6 +1141,23 @@ function updateSoundToggleUI() {
   if (soundToggleIcon) {
     soundToggleIcon.innerHTML = on ? SVG_SHAPES.volumeOn : SVG_SHAPES.volumeOff;
   }
+  if (welcomeSoundGroup) {
+    welcomeSoundGroup.querySelectorAll('.pill').forEach((btn) => {
+      const btnOn = btn.dataset.welcomeSound === 'on';
+      btn.classList.toggle('active', btnOn === on);
+    });
+  }
+}
+
+if (welcomeSoundGroup) {
+  welcomeSoundGroup.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pill');
+    if (!btn) return;
+    const enable = btn.dataset.welcomeSound === 'on';
+    SoundService.setEnabled(enable);
+    if (enable) SoundService.play('added');
+    renderMoreList();
+  });
 }
 
 if (soundToggleBtn) {
@@ -1647,6 +1672,51 @@ function applyCheckedRecurringBills(targetYm) {
   return addedCount;
 }
 
+let dismissedWalletNudgeMonths = new Set();
+let lastKnownPrevBudgetAmount = 0;
+
+function getPreviousConfiguredBudget(targetMonth) {
+  const prevYm = AnalyticsEngine.getPreviousMonthYm(targetMonth);
+  const prevDirect = Number((appData.budgets && appData.budgets[prevYm]) || 0);
+  if (prevDirect > 0) {
+    return { ym: prevYm, amount: prevDirect };
+  }
+  const earlierMonths = Object.keys(appData.budgets || {})
+    .filter((ym) => ym < targetMonth && Number(appData.budgets[ym]) > 0)
+    .sort();
+  if (earlierMonths.length > 0) {
+    const latestYm = earlierMonths[earlierMonths.length - 1];
+    return { ym: latestYm, amount: Number(appData.budgets[latestYm]) };
+  }
+  return null;
+}
+
+if (copyPrevBudgetBtn) {
+  copyPrevBudgetBtn.addEventListener('click', () => {
+    if (lastKnownPrevBudgetAmount > 0) {
+      promptBudgetAmount.value = lastKnownPrevBudgetAmount;
+      promptBudgetAmount.focus();
+      promptBudgetAmount.select();
+    }
+  });
+}
+
+if (walletNudgeSetBtn) {
+  walletNudgeSetBtn.addEventListener('click', () => {
+    openBudgetPrompt(
+      activeMonth,
+      `Set your ${formatMonthLabel(activeMonth)} monthly allowance or copy your previous month's budget.`
+    );
+  });
+}
+
+if (dismissWalletNudgeBtn) {
+  dismissWalletNudgeBtn.addEventListener('click', () => {
+    dismissedWalletNudgeMonths.add(activeMonth);
+    if (walletBudgetNudge) walletBudgetNudge.classList.add('hidden');
+  });
+}
+
 function openBudgetPrompt(targetMonth, reasonText, pendingEntry = null, showDateImmediately = false) {
   pendingExpenseEntry = pendingEntry;
   promptTargetMonth = targetMonth;
@@ -1658,6 +1728,18 @@ function openBudgetPrompt(targetMonth, reasonText, pendingEntry = null, showDate
     : `Set ${label} Budget`;
   budgetPromptMessage.textContent = reasonText;
   promptBudgetAmount.value = '';
+
+  const prevBudgetInfo = !hasBudget ? getPreviousConfiguredBudget(targetMonth) : null;
+  if (copyPrevBudgetRow && copyPrevBudgetBtn) {
+    if (prevBudgetInfo && prevBudgetInfo.amount > 0) {
+      lastKnownPrevBudgetAmount = prevBudgetInfo.amount;
+      copyPrevBudgetBtn.textContent = `Same as ${formatMonthLabel(prevBudgetInfo.ym)}: ${formatINR(prevBudgetInfo.amount)}`;
+      copyPrevBudgetRow.classList.remove('hidden');
+    } else {
+      lastKnownPrevBudgetAmount = 0;
+      copyPrevBudgetRow.classList.add('hidden');
+    }
+  }
 
   const today = getTodayISO();
   const existingReminder = getSavedReminder();
@@ -1681,20 +1763,9 @@ function checkMonthlyBudgetPrompt() {
   const today = getTodayISO();
   const currentYm = today.slice(0, 7);
   const hasCurrentBudget = (Number(appData.budgets[currentYm]) || 0) > 0;
-  const hasRecurringBills = (appData.recurring || []).length > 0;
-  const alreadyPromptedRecurring = safeGetItem(StorageService.RECURRING_PROMPTED_KEY) === currentYm;
+  if (hasCurrentBudget) return;
 
-  if (hasCurrentBudget) {
-    if (hasRecurringBills && !alreadyPromptedRecurring) {
-      safeSetItem(StorageService.RECURRING_PROMPTED_KEY, currentYm);
-      openBudgetPrompt(
-        currentYm,
-        `New month (${formatMonthLabel(currentYm)}) started. Confirm your monthly fixed bills or add extra allowance.`
-      );
-    }
-    return;
-  }
-
+  // Only auto-prompt if the user explicitly scheduled a reminder date for this month
   const savedReminder = getSavedReminder();
   if (savedReminder && savedReminder.month === currentYm && savedReminder.remindOn) {
     if (today >= savedReminder.remindOn) {
@@ -1703,14 +1774,7 @@ function checkMonthlyBudgetPrompt() {
         `Reminder: You scheduled ${formatDateReadable(savedReminder.remindOn)} to add your ${formatMonthLabel(currentYm)} budget.`
       );
     }
-    return;
   }
-
-  safeSetItem(StorageService.RECURRING_PROMPTED_KEY, currentYm);
-  openBudgetPrompt(
-    currentYm,
-    `Set your ${formatMonthLabel(currentYm)} monthly budget and confirm any fixed monthly bills.`
-  );
 }
 
 async function finalizePendingExpense(recurringCountAdded = 0) {
@@ -1934,15 +1998,6 @@ activeMonthInput.addEventListener('change', (e) => {
   if (e.target.value && AppConfig.ISO_MONTH_RE.test(e.target.value)) {
     activeMonth = e.target.value;
     renderAll();
-
-    const hasBudget = (Number(appData.budgets[activeMonth]) || 0) > 0;
-    const hasExpenses = AnalyticsEngine.getMonthExpenses(activeMonth).length > 0;
-    if (!hasBudget && !hasExpenses && (appData.recurring || []).length > 0) {
-      openBudgetPrompt(
-        activeMonth,
-        `Set your ${formatMonthLabel(activeMonth)} budget and choose recurring bills to include.`
-      );
-    }
   }
 });
 
@@ -2104,14 +2159,14 @@ expenseForm.addEventListener('submit', async (e) => {
   };
 
   const entryMonth = entryDate.slice(0, 7);
-  const hasAnyBudget = Object.values(appData.budgets).some((b) => Number(b) > 0);
+  const hasMonthBudget = (Number(appData.budgets[entryMonth]) || 0) > 0;
   const reminder = getSavedReminder();
   const hasDeferredThisMonth = reminder && reminder.month === entryMonth;
 
-  if (!hasAnyBudget && !hasDeferredThisMonth) {
+  if (!hasMonthBudget && !hasDeferredThisMonth) {
     openBudgetPrompt(
       entryMonth,
-      `Before recording ₹${amount}, set your ${formatMonthLabel(entryMonth)} budget first?`,
+      `No budget set for ${formatMonthLabel(entryMonth)} yet. Add your monthly budget before recording ₹${amount}?`,
       entry
     );
     return;
@@ -2258,6 +2313,17 @@ function renderSummaryAndSplit(monthExpenses = AnalyticsEngine.getMonthExpenses(
     metrics.addedThisMonth > 0
       ? 'Allowance added'
       : 'Click "+ Add / Edit" to set';
+
+  if (walletBudgetNudge && walletNudgeText) {
+    const showNudge =
+      metrics.addedThisMonth <= 0 && !dismissedWalletNudgeMonths.has(activeMonth);
+    if (showNudge) {
+      walletNudgeText.textContent = `No ${label} allowance added yet — Set now`;
+      walletBudgetNudge.classList.remove('hidden');
+    } else {
+      walletBudgetNudge.classList.add('hidden');
+    }
+  }
 
   remainingBalanceValue.textContent = formatINR(metrics.remainingBalance);
   remainingBalanceValue.classList.toggle('text-danger', metrics.remainingBalance < 0);
@@ -2667,14 +2733,28 @@ async function commitShortcutExpense(sc, overrideAmount) {
     updatedAt: Date.now()
   };
 
-  appData.expenses.unshift(entry);
   const entryMonth = today.slice(0, 7);
+  const hasMonthBudget = (Number(appData.budgets[entryMonth]) || 0) > 0;
+  const reminder = getSavedReminder();
+  const hasDeferredThisMonth = reminder && reminder.month === entryMonth;
+
+  closeShortcutsModal(false);
+
+  if (!hasMonthBudget && !hasDeferredThisMonth) {
+    openBudgetPrompt(
+      entryMonth,
+      `No budget set for ${formatMonthLabel(entryMonth)} yet. Add your monthly budget before recording ₹${finalAmount}?`,
+      entry
+    );
+    return;
+  }
+
+  appData.expenses.unshift(entry);
   if (entryMonth !== activeMonth) {
     activeMonth = entryMonth;
     activeMonthInput.value = activeMonth;
   }
 
-  closeShortcutsModal(false);
   renderAll({ soundCue: 'deducted', targetYm: entryMonth });
   await StorageService.saveData(appData);
   showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);

@@ -54,8 +54,16 @@
             * Support for bank statement linking may be added in future versions to make expense tracking even faster.<br />
             * Smart budget planning and personalized guides to help you spend less will also be added.
           </li>
+          <li>
+            <strong>5. Sound Feedback Preference:</strong><br />
+            TrackYourRupee plays subtle audio cues when you add allowance, record expenses, or cross budget thresholds. Choose your preference below (you can change this anytime in the top bar or More tab):
+            <div class="pill-group mt-8" id="welcomeSoundGroup" role="group" aria-label="Sound effects preference">
+              <button type="button" class="pill active" data-welcome-sound="on">Sound: On</button>
+              <button type="button" class="pill" data-welcome-sound="off">Sound: Off (Mute)</button>
+            </div>
+          </li>
           <li id="systemHealthPanel">
-            <strong>5. App Status &amp; Diagnostics:</strong><br />
+            <strong>6. App Status &amp; Diagnostics:</strong><br />
             <span class="muted-text" id="diagnosticReadout">Checking storage and offline status...</span>
           </li>
         </ul>
@@ -88,6 +96,11 @@
         <div class="form-group">
           <label for="promptBudgetAmount">Monthly Budget Amount (₹)</label>
           <input type="number" id="promptBudgetAmount" placeholder="e.g. 3000" min="1" max="100000000" step="1" />
+          <div class="prompt-quick-fill-row hidden" id="copyPrevBudgetRow">
+            <button type="button" class="btn btn-secondary btn-sm full-width" id="copyPrevBudgetBtn">
+              Use same as previous month
+            </button>
+          </div>
         </div>
 
         <div class="upi-sub-box mt-12 hidden" id="promptRecurringBox">
@@ -573,6 +586,15 @@
           <div class="bar-track">
             <div class="bar-fill status-green" id="budgetBarFill"></div>
           </div>
+        </div>
+
+        <div class="wallet-nudge-strip hidden" id="walletBudgetNudge">
+          <button type="button" class="wallet-nudge-action" id="walletNudgeSetBtn">
+            <span id="walletNudgeText">No allowance added yet — Set now</span>
+          </button>
+          <button type="button" class="reminder-del-btn" id="dismissWalletNudgeBtn" title="Dismiss notice" aria-label="Dismiss allowance notice">
+            <svg class="ui-svg-xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
 
         <div class="reminder-chip hidden" id="budgetReminderChip">
