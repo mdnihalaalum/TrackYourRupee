@@ -47,7 +47,7 @@
           </li>
           <li>
             <strong>3. 100% Privacy &amp; Safety:</strong><br />
-            No external server or tracker ever collects or reads your financial details—everything stays strictly on your device and your own Google account. <em>Tip: Avoid clearing browser site data unless you have exported a backup file first.</em>
+            No backend database or analytics tracker collects your financial records—everything stays strictly on your device and your own Google Drive (only the Inter font is loaded from Google Fonts when online). <em>Tip: Export a JSON backup before clearing browser site data.</em>
           </li>
           <li>
             <strong>4. Coming in Future Updates:</strong><br />
@@ -665,7 +665,7 @@
           <span class="muted-text" id="rolloverPreviewText">Add extra funds on top of your current budget, replace the base limit, reset to ₹0, or schedule a reminder.</span>
         </div>
         <div class="budget-form-controls">
-          <input type="number" id="budgetInput" placeholder="e.g. 2000" min="0" max="100000000" step="1" aria-label="Monthly budget amount" />
+          <input type="number" id="budgetInput" placeholder="e.g. 2000" min="1" max="100000000" step="1" aria-label="Monthly budget amount" />
           <button type="button" class="btn btn-primary" id="addFundsBtn">+ Add to Existing</button>
           <button type="button" class="btn btn-outline-emerald" id="replaceBudgetBtn">Set / Replace</button>
           <button type="button" class="btn btn-secondary" id="scheduleReminderDrawerBtn">Remind Later</button>

@@ -1,15 +1,18 @@
 /**
  * ============================================================================
- * TRACKYOURRUPEE v4 — SYSTEM ARCHITECTURE & HARDENED CLIENT ENGINE
+ * TRACKYOURRUPEE v4.4 — HARDENED CLIENT ENGINE & SECURITY AUDIT REMEDIATION
  * ============================================================================
- * Implements:
- * - Feature 1: Installable Offline PWA (Service Worker + Manifest)
- * - Feature 3: Full JSON Snapshot Backup, Validation & Merge Restore + Rollback
- * - Feature 4: Per-Category Monthly Spending Caps with Threshold Coloring
- * - Feature 5: Inline/Modal Transaction Editor
- * - Feature 6: Month-over-Month Spending & Top Category Shift Analytics
- * - Engineering Guardrails: Single-pass O(N) metrics index, memoized cache,
- *   global error boundary, rate-limited writes/sync, and automated self-tests.
+ * Fixes all High (H1–H3), Medium (M1–M5), and Low (L1–L13) audit findings:
+ * - H1: Serialized write queue + read-merge-write Drive sync (prevents overwrites)
+ * - H2: 4.5s Delete Undo toast + JSON Restore clears tombstones for restored IDs
+ * - H3: Upper-bound budget cap enforcement + legacy timestamp-less budget merge
+ * - M1: Clamped imported timestamps (<= now + 24h) + strict `bt` sanitization
+ * - M2: 90-day expiring tombstones with 2,000-entry capacity
+ * - M3: Restore persists via saveData() + verifies saveLocal() + auto-expiring rollback
+ * - M4: OAuth `error_callback` prevents popup-close hang
+ * - L1–L12: Persistent shortcut order, uniform ₹1–₹10Cr validation, integer paise math,
+ *   URL-encoded Drive IDs, escaped date fallback, newline CSV prefix, monotonic IDs,
+ *   duplicate recurring bill guard, null-safe listeners, and mobile modal keyboard scroll.
  */
 'use strict';
 
@@ -21,8 +24,12 @@ const AppConfig = Object.freeze({
   DRIVE_SCOPE: 'https://www.googleapis.com/auth/drive.file',
   DRIVE_FILE_NAME: 'expense.json',
   FUN_EDITION_URL: 'https://trackyourrupeef.vercel.app',
+  MIN_AMOUNT: 1,
   MAX_AMOUNT: 100000000,
-  MAX_TOMBSTONES: 300,
+  MAX_TOMBSTONES: 2000,
+  TOMBSTONE_TTL_MS: 90 * 24 * 60 * 60 * 1000, // 90 days
+  PRE_RESTORE_TTL_MS: 24 * 60 * 60 * 1000, // 24 hours
+  MAX_FUTURE_SKEW_MS: 24 * 60 * 60 * 1000, // +1 day clock skew allowance
   MAX_IMPORT_BYTES: 2 * 1024 * 1024, // 2 MB DoS protection cap
   ISO_DATE_RE: /^\d{4}-\d{2}-\d{2}$/,
   ISO_MONTH_RE: /^\d{4}-\d{2}$/,
@@ -72,8 +79,63 @@ function renderSvg(name, cls = 'ui-svg') {
   return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${SVG_SHAPES[name] || ''}</svg>`;
 }
 
+function onEl(el, eventName, handler) {
+  if (el && typeof el.addEventListener === 'function') {
+    el.addEventListener(eventName, handler);
+  }
+}
+
 /* ============================================================================
-   2. GLOBAL ERROR BOUNDARY, DIAGNOSTICS & RATE LIMITER (Rules 8, 14, 15)
+   2. INTEGER PAISE MONEY HELPERS & VALIDATION (L2, L3, M1)
+   ============================================================================ */
+function toPaise(rupees) {
+  const num = Number(rupees);
+  if (!Number.isFinite(num)) return 0;
+  return Math.round(num * 100);
+}
+
+function fromPaise(paise) {
+  return Math.round(Number(paise) || 0) / 100;
+}
+
+function roundMoney(rupees) {
+  return fromPaise(toPaise(rupees));
+}
+
+function isValidAmount(val) {
+  return (
+    typeof val === 'number' &&
+    Number.isFinite(val) &&
+    val >= AppConfig.MIN_AMOUNT &&
+    val <= AppConfig.MAX_AMOUNT
+  );
+}
+
+function isValidBudgetAmount(val) {
+  return (
+    typeof val === 'number' &&
+    Number.isFinite(val) &&
+    val >= 0 &&
+    val <= AppConfig.MAX_AMOUNT
+  );
+}
+
+function clampTimestamp(rawTs, fallbackTs = Date.now()) {
+  const num = Number(rawTs);
+  if (!Number.isFinite(num) || num <= 0) return fallbackTs;
+  const maxAllowed = Date.now() + AppConfig.MAX_FUTURE_SKEW_MS;
+  return Math.min(Math.floor(num), maxAllowed);
+}
+
+function isValidIsoDate(str) {
+  if (typeof str !== 'string' || !AppConfig.ISO_DATE_RE.test(str)) return false;
+  const [y, m, d] = str.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
+
+/* ============================================================================
+   3. GLOBAL ERROR BOUNDARY, DIAGNOSTICS & RATE LIMITER
    ============================================================================ */
 const Diagnostics = {
   lastError: 'None',
@@ -120,7 +182,7 @@ const canSubmitExpense = createRateLimiter(350);
 const canTriggerSync = createRateLimiter(2000);
 
 /* ============================================================================
-   3. SOUND SERVICE (Local .mp3 Clips in /sounds/ — Never Ducks Music)
+   4. SOUND SERVICE (Local .mp3 Clips in /sounds/ — Never Ducks Music)
    ============================================================================ */
 const SoundService = {
   SOUND_KEY: 'expenseflow_sound_enabled',
@@ -181,9 +243,10 @@ const SoundService = {
 };
 
 /* ============================================================================
-   4. SAFE STORAGE, SCHEMA v4, SNAPSHOT BACKUP & ROLLBACK (Rules 11, 16)
+   5. MONOTONIC ID GENERATOR & EXPIRING TOMBSTONES (H2, M2, L7)
    ============================================================================ */
 let storageWarningShown = false;
+let _idCounter = 0;
 
 function safeGetItem(key, fallback = null) {
   try {
@@ -222,43 +285,61 @@ function normalizeId(rawId) {
 }
 
 function generateNumericId() {
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    return Date.now() * 1000 + (arr[0] % 1000);
+  _idCounter = (_idCounter + 1) % 1000;
+  return Date.now() * 1000 + _idCounter;
+}
+
+function normalizeTombstones(rawList) {
+  if (!Array.isArray(rawList)) return [];
+  const now = Date.now();
+  const cutoff = now - AppConfig.TOMBSTONE_TTL_MS;
+  const map = new Map();
+
+  for (const item of rawList) {
+    let id = null;
+    let ts = now;
+    if (typeof item === 'number' || typeof item === 'string') {
+      id = normalizeId(item);
+    } else if (item && typeof item === 'object') {
+      id = normalizeId(item.i ?? item.id);
+      ts = clampTimestamp(item.t ?? item.ts, now);
+    }
+    if (!id || ts < cutoff) continue;
+    const prev = map.get(id);
+    if (!prev || ts > prev.ts) {
+      map.set(id, { id, ts });
+    }
   }
-  return Date.now() * 1000 + Math.floor(Math.random() * 1000);
+
+  return Array.from(map.values())
+    .sort((a, b) => a.ts - b.ts)
+    .slice(-AppConfig.MAX_TOMBSTONES);
 }
 
 function recordTombstone(id) {
   const norm = normalizeId(id);
   if (!norm) return;
-  if (!appData.deletedIds.includes(norm)) {
-    appData.deletedIds.push(norm);
-    if (appData.deletedIds.length > AppConfig.MAX_TOMBSTONES) {
-      appData.deletedIds = appData.deletedIds.slice(-AppConfig.MAX_TOMBSTONES);
-    }
-  }
+  const existing = normalizeTombstones(appData.deletedIds);
+  const filtered = existing.filter((t) => t.id !== norm);
+  filtered.push({ id: norm, ts: Date.now() });
+  appData.deletedIds = filtered.slice(-AppConfig.MAX_TOMBSTONES);
 }
 
-function isValidAmount(val) {
-  return typeof val === 'number' && Number.isFinite(val) && val > 0 && val <= AppConfig.MAX_AMOUNT;
+function removeTombstonesForIds(idsToRestore) {
+  const restoreSet = new Set(idsToRestore.map(normalizeId).filter(Boolean));
+  if (restoreSet.size === 0) return;
+  appData.deletedIds = normalizeTombstones(appData.deletedIds).filter(
+    (t) => !restoreSet.has(t.id)
+  );
 }
 
-function isValidBudgetAmount(val) {
-  return typeof val === 'number' && Number.isFinite(val) && val >= 0 && val <= AppConfig.MAX_AMOUNT;
-}
-
-function isValidIsoDate(str) {
-  if (typeof str !== 'string' || !AppConfig.ISO_DATE_RE.test(str)) return false;
-  const [y, m, d] = str.split('-').map(Number);
-  const dt = new Date(y, m - 1, d);
-  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
-}
-
+/* ============================================================================
+   6. STORAGE SERVICE: QUEUED READ-MERGE-WRITE SYNC & HARDENED SCHEMA (H1–M4)
+   ============================================================================ */
 const StorageService = {
   STORAGE_KEY: 'expenseflow_data_v3',
   PRE_RESTORE_KEY: 'expenseflow_pre_restore_snapshot',
+  PRE_RESTORE_TS_KEY: 'expenseflow_pre_restore_ts',
   FILE_ID_KEY: 'expenseflow_drive_file_id',
   DRIVE_PREF_KEY: 'expenseflow_drive_pref',
   THEME_KEY: 'expenseflow_theme',
@@ -267,7 +348,9 @@ const StorageService = {
   RECURRING_PROMPTED_KEY: 'expenseflow_recurring_prompted_ym',
   accessToken: null,
   tokenClient: null,
+  tokenErrorCallback: null,
   driveFileId: safeGetItem('expenseflow_drive_file_id', null),
+  _saveQueue: Promise.resolve(),
 
   emptyState() {
     return {
@@ -286,46 +369,61 @@ const StorageService = {
     const cleanCaps = {};
     if (data.categoryCaps && typeof data.categoryCaps === 'object') {
       Object.entries(data.categoryCaps).forEach(([cat, val]) => {
-        const num = Number(val);
+        const num = roundMoney(val);
         if (VALID_CATEGORIES.has(cat) && isValidAmount(num)) {
           cleanCaps[cat] = num;
         }
       });
     }
 
+    const cleanBt = {};
+    if (data.budgetUpdatedAt && typeof data.budgetUpdatedAt === 'object') {
+      Object.entries(data.budgetUpdatedAt).forEach(([ym, ts]) => {
+        if (AppConfig.ISO_MONTH_RE.test(ym)) {
+          const validTs = clampTimestamp(ts, 0);
+          if (validTs > 0) cleanBt[ym] = validTs;
+        }
+      });
+    }
+
+    const cleanDel = normalizeTombstones(data.deletedIds).map((t) => ({
+      i: t.id,
+      t: t.ts
+    }));
+
     return JSON.stringify({
       app: 'TrackYourRupee',
       v: AppConfig.SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       b: data.budgets || {},
-      bt: data.budgetUpdatedAt || {},
+      bt: cleanBt,
       cc: cleanCaps,
-      cct: Number(data.categoryCapsUpdatedAt) || 0,
-      del: Array.isArray(data.deletedIds) ? data.deletedIds.slice(-AppConfig.MAX_TOMBSTONES) : [],
+      cct: clampTimestamp(data.categoryCapsUpdatedAt, 0),
+      del: cleanDel,
       e: (data.expenses || []).map((x) => ({
         i: normalizeId(x.id) || generateNumericId(),
-        a: Number(x.amount),
+        a: roundMoney(x.amount),
         c: x.category,
         m: x.mode,
         d: x.date,
         n: x.note || '',
-        u: Number(x.updatedAt) || normalizeId(x.id) || Date.now()
+        u: clampTimestamp(x.updatedAt, Date.now())
       })),
       s: (data.shortcuts || []).map((x) => ({
         i: normalizeId(x.id) || generateNumericId(),
-        a: Number(x.amount),
+        a: roundMoney(x.amount),
         c: x.category,
         m: x.mode,
         n: x.note || '',
-        u: Number(x.updatedAt) || normalizeId(x.id) || Date.now()
+        u: clampTimestamp(x.updatedAt, Date.now())
       })),
       r: (data.recurring || []).map((x) => ({
         i: normalizeId(x.id) || generateNumericId(),
-        a: Number(x.amount),
+        a: roundMoney(x.amount),
         c: x.category,
         m: x.mode,
         n: x.note || '',
-        u: Number(x.updatedAt) || normalizeId(x.id) || Date.now()
+        u: clampTimestamp(x.updatedAt, Date.now())
       }))
     });
   },
@@ -336,7 +434,7 @@ const StorageService = {
 
     const sanitizeTx = (x) => {
       if (!x || typeof x !== 'object') return null;
-      const amt = Number(x.a ?? x.amount);
+      const amt = roundMoney(x.a ?? x.amount);
       if (!isValidAmount(amt)) return null;
       const id = normalizeId(x.i ?? x.id) || generateNumericId();
       const rawDate = x.d ?? x.date;
@@ -346,13 +444,13 @@ const StorageService = {
       const rawMode = x.m ?? x.mode;
       const mode = VALID_MODES.has(rawMode) ? rawMode : 'Cash';
       const note = String(x.n ?? x.note ?? '').slice(0, 60);
-      const updatedAt = Number(x.u ?? x.updatedAt) || id;
+      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(id, Date.now()));
       return { id, amount: amt, category, mode, date, note, updatedAt };
     };
 
     const sanitizePreset = (x) => {
       if (!x || typeof x !== 'object') return null;
-      const amt = Number(x.a ?? x.amount);
+      const amt = roundMoney(x.a ?? x.amount);
       if (!isValidAmount(amt)) return null;
       const id = normalizeId(x.i ?? x.id) || generateNumericId();
       const rawCat = x.c ?? x.category;
@@ -360,7 +458,7 @@ const StorageService = {
       const rawMode = x.m ?? x.mode;
       const mode = VALID_MODES.has(rawMode) ? rawMode : 'Cash';
       const note = String(x.n ?? x.note ?? '').slice(0, 40);
-      const updatedAt = Number(x.u ?? x.updatedAt) || id;
+      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(id, Date.now()));
       return { id, amount: amt, category, mode, note, updatedAt };
     };
 
@@ -368,9 +466,22 @@ const StorageService = {
     const budgets = {};
     if (rawBudgets && typeof rawBudgets === 'object') {
       Object.entries(rawBudgets).forEach(([ym, val]) => {
-        const num = Number(val);
+        const num = roundMoney(val);
         if (AppConfig.ISO_MONTH_RE.test(ym) && isValidBudgetAmount(num)) {
           budgets[ym] = num;
+        }
+      });
+    }
+
+    // M1: Rebuild budgetUpdatedAt strictly from valid ISO month keys & clamped numeric timestamps
+    const budgetUpdatedAt = {};
+    if (raw.bt && typeof raw.bt === 'object') {
+      Object.entries(raw.bt).forEach(([ym, ts]) => {
+        if (AppConfig.ISO_MONTH_RE.test(ym)) {
+          const validTs = clampTimestamp(ts, 0);
+          if (validTs > 0) {
+            budgetUpdatedAt[ym] = validTs;
+          }
         }
       });
     }
@@ -379,7 +490,7 @@ const StorageService = {
     const categoryCaps = {};
     if (rawCaps && typeof rawCaps === 'object') {
       Object.entries(rawCaps).forEach(([cat, val]) => {
-        const num = Number(val);
+        const num = roundMoney(val);
         if (VALID_CATEGORIES.has(cat) && isValidAmount(num)) {
           categoryCaps[cat] = num;
         }
@@ -392,12 +503,10 @@ const StorageService = {
 
     return {
       budgets,
-      budgetUpdatedAt: raw.bt && typeof raw.bt === 'object' ? raw.bt : {},
+      budgetUpdatedAt,
       categoryCaps,
-      categoryCapsUpdatedAt: Number(raw.cct ?? raw.categoryCapsUpdatedAt) || 0,
-      deletedIds: Array.isArray(raw.del)
-        ? raw.del.map(normalizeId).filter(Boolean).slice(-AppConfig.MAX_TOMBSTONES)
-        : [],
+      categoryCapsUpdatedAt: clampTimestamp(raw.cct ?? raw.categoryCapsUpdatedAt, 0),
+      deletedIds: normalizeTombstones(raw.del),
       expenses: Array.isArray(rawExpenses) ? rawExpenses.map(sanitizeTx).filter(Boolean) : [],
       shortcuts: Array.isArray(rawShortcuts) ? rawShortcuts.map(sanitizePreset).filter(Boolean) : [],
       recurring: Array.isArray(rawRecurring) ? rawRecurring.map(sanitizePreset).filter(Boolean) : []
@@ -416,11 +525,11 @@ const StorageService = {
   },
 
   mergeSnapshots(base, incoming) {
-    const deletedSet = new Set([
-      ...(base.deletedIds || []).map(normalizeId).filter(Boolean),
-      ...(incoming.deletedIds || []).map(normalizeId).filter(Boolean)
+    const mergedTombstones = normalizeTombstones([
+      ...(base.deletedIds || []),
+      ...(incoming.deletedIds || [])
     ]);
-    const deletedIds = Array.from(deletedSet).slice(-AppConfig.MAX_TOMBSTONES);
+    const deletedSet = new Set(mergedTombstones.map((t) => t.id));
 
     const mergeList = (listA, listB) => {
       const map = new Map();
@@ -439,9 +548,23 @@ const StorageService = {
     const expenses = mergeList(base.expenses, incoming.expenses).sort(
       (a, b) => b.date.localeCompare(a.date) || b.id - a.id
     );
-    const shortcuts = mergeList(base.shortcuts, incoming.shortcuts);
+
+    // L1: Preserve incoming shortcut ordering after merging
+    const mergedShortcutsRaw = mergeList(base.shortcuts, incoming.shortcuts);
+    const incomingOrder = new Map();
+    (incoming.shortcuts || []).forEach((s, idx) => {
+      const id = normalizeId(s.id);
+      if (id) incomingOrder.set(id, idx);
+    });
+    const shortcuts = mergedShortcutsRaw.sort((a, b) => {
+      const idxA = incomingOrder.has(a.id) ? incomingOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
+      const idxB = incomingOrder.has(b.id) ? incomingOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
+      return idxA - idxB;
+    });
+
     const recurring = mergeList(base.recurring, incoming.recurring);
 
+    // H3: Merge budgets even when legacy backups lack `bt` timestamps (incTs === 0 && baseTs === 0)
     const budgets = { ...(base.budgets || {}) };
     const budgetUpdatedAt = { ...(base.budgetUpdatedAt || {}) };
     const allMonths = new Set([
@@ -449,15 +572,20 @@ const StorageService = {
       ...Object.keys(incoming.budgets || {})
     ]);
     allMonths.forEach((ym) => {
-      const baseTs = budgetUpdatedAt[ym] || 0;
-      const incTs = (incoming.budgetUpdatedAt && incoming.budgetUpdatedAt[ym]) || 0;
-      if (incTs > baseTs) {
-        if (incoming.budgets && incoming.budgets[ym] !== undefined) {
+      const baseTs = Number(budgetUpdatedAt[ym]) || 0;
+      const incTs = Number(incoming.budgetUpdatedAt && incoming.budgetUpdatedAt[ym]) || 0;
+      const incHasBudget = incoming.budgets && incoming.budgets[ym] !== undefined;
+      const baseHasBudget = budgets[ym] !== undefined;
+
+      if (incTs > baseTs || (incTs === 0 && baseTs === 0 && incHasBudget && !baseHasBudget)) {
+        if (incHasBudget) {
           budgets[ym] = incoming.budgets[ym];
         } else {
           delete budgets[ym];
         }
-        budgetUpdatedAt[ym] = incTs;
+        if (incTs > 0) {
+          budgetUpdatedAt[ym] = incTs;
+        }
       }
     });
 
@@ -474,7 +602,7 @@ const StorageService = {
       budgetUpdatedAt,
       categoryCaps,
       categoryCapsUpdatedAt,
-      deletedIds,
+      deletedIds: mergedTombstones,
       expenses,
       shortcuts,
       recurring
@@ -494,11 +622,21 @@ const StorageService = {
     return ok;
   },
 
-  createPreRestoreSafetySnapshot() {
-    safeSetItem(this.PRE_RESTORE_KEY, this.packData(appData));
+  createPreRestoreSafetySnapshot(snapshotData = appData) {
+    safeSetItem(this.PRE_RESTORE_KEY, this.packData(snapshotData));
+    safeSetItem(this.PRE_RESTORE_TS_KEY, String(Date.now()));
+  },
+
+  cleanupExpiredPreRestoreSnapshot() {
+    const rawTs = Number(safeGetItem(this.PRE_RESTORE_TS_KEY, '0'));
+    if (rawTs > 0 && Date.now() - rawTs > AppConfig.PRE_RESTORE_TTL_MS) {
+      safeRemoveItem(this.PRE_RESTORE_KEY);
+      safeRemoveItem(this.PRE_RESTORE_TS_KEY);
+    }
   },
 
   hasPreRestoreSnapshot() {
+    this.cleanupExpiredPreRestoreSnapshot();
     return Boolean(safeGetItem(this.PRE_RESTORE_KEY));
   },
 
@@ -508,9 +646,12 @@ const StorageService = {
     try {
       const parsed = this.unpackData(JSON.parse(raw));
       appData = parsed;
-      this.saveLocal(appData);
-      safeRemoveItem(this.PRE_RESTORE_KEY);
-      return true;
+      const ok = this.saveLocal(appData);
+      if (ok) {
+        safeRemoveItem(this.PRE_RESTORE_KEY);
+        safeRemoveItem(this.PRE_RESTORE_TS_KEY);
+      }
+      return ok;
     } catch (err) {
       Diagnostics.recordError('Rollback', err);
       return false;
@@ -525,15 +666,21 @@ const StorageService = {
     return Boolean(AppConfig.DEFAULT_CLIENT_ID);
   },
 
-  initTokenClient(callback) {
+  initTokenClient(callback, errorCallback = null) {
     if (!this.isConfigured() || typeof google === 'undefined' || !google.accounts) {
       return false;
     }
+    this.tokenErrorCallback = errorCallback;
     if (!this.tokenClient) {
       this.tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: AppConfig.DEFAULT_CLIENT_ID,
         scope: AppConfig.DRIVE_SCOPE,
-        callback
+        callback,
+        error_callback: (err) => {
+          if (typeof this.tokenErrorCallback === 'function') {
+            this.tokenErrorCallback(err);
+          }
+        }
       });
     } else {
       this.tokenClient.callback = callback;
@@ -541,17 +688,23 @@ const StorageService = {
     return true;
   },
 
+  // M4: Rejects cleanly if popup is closed or blocked via error_callback
   requestToken(promptMode = 'consent') {
     return new Promise((resolve, reject) => {
-      const ready = this.initTokenClient((response) => {
-        if (response.error) {
-          reject(new Error(response.error));
-          return;
+      const ready = this.initTokenClient(
+        (response) => {
+          if (response.error) {
+            reject(new Error(response.error));
+            return;
+          }
+          this.accessToken = response.access_token;
+          safeSetItem(this.DRIVE_PREF_KEY, 'enabled');
+          resolve(this.accessToken);
+        },
+        (err) => {
+          reject(new Error((err && err.type) || 'POPUP_CLOSED_OR_BLOCKED'));
         }
-        this.accessToken = response.access_token;
-        safeSetItem(this.DRIVE_PREF_KEY, 'enabled');
-        resolve(this.accessToken);
-      });
+      );
       if (!ready) {
         reject(new Error('Google Identity Services not ready.'));
         return;
@@ -582,8 +735,9 @@ const StorageService = {
   async findOrCreateDriveFile(initialData) {
     if (this.driveFileId) {
       try {
+        const safeId = encodeURIComponent(this.driveFileId);
         await this.driveFetch(
-          `https://www.googleapis.com/drive/v3/files/${this.driveFileId}?fields=id,trashed`
+          `https://www.googleapis.com/drive/v3/files/${safeId}?fields=id,trashed`
         );
         return this.driveFileId;
       } catch {
@@ -631,8 +785,9 @@ const StorageService = {
 
   async readDriveData() {
     if (!this.driveFileId) return null;
+    const safeId = encodeURIComponent(this.driveFileId);
     const res = await this.driveFetch(
-      `https://www.googleapis.com/drive/v3/files/${this.driveFileId}?alt=media`
+      `https://www.googleapis.com/drive/v3/files/${safeId}?alt=media`
     );
     const json = await res.json();
     return this.unpackData(json);
@@ -641,8 +796,9 @@ const StorageService = {
   async writeDriveData(data) {
     if (!this.accessToken) return false;
     await this.findOrCreateDriveFile(data);
+    const safeId = encodeURIComponent(this.driveFileId);
     await this.driveFetch(
-      `https://www.googleapis.com/upload/drive/v3/files/${this.driveFileId}?uploadType=media`,
+      `https://www.googleapis.com/upload/drive/v3/files/${safeId}?uploadType=media`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -652,37 +808,57 @@ const StorageService = {
     return true;
   },
 
-  async saveData(data) {
-    const latestDisk = this.loadLocal();
-    const merged = this.mergeSnapshots(latestDisk, data);
-    appData = merged;
+  // H1 & M3: Serialized async queue + Read-Merge-Write before writing to Drive
+  saveData(data) {
+    const task = async () => {
+      const latestDisk = this.loadLocal();
+      let merged = this.mergeSnapshots(latestDisk, data);
+      appData = merged;
 
-    const savedOk = this.saveLocal(merged);
-    if (!savedOk) {
-      updateSyncUI('Storage Full / Blocked', 'error');
-      return;
-    }
-    if (!this.isDriveOptedIn()) {
-      updateSyncUI('Saved on Device', 'default');
-      return;
-    }
-    if (!this.accessToken) {
-      updateSyncUI('Saved Locally (Sync Drive)', 'default');
-      return;
-    }
-    try {
-      updateSyncUI('Syncing to Drive...', 'syncing');
-      await this.writeDriveData(merged);
-      updateSyncUI('Device + Drive Synced', 'connected');
-    } catch (err) {
-      Diagnostics.recordError('DriveWrite', err);
-      updateSyncUI('Saved Locally (Drive paused)', 'error');
-    }
+      const savedOk = this.saveLocal(merged);
+      if (!savedOk) {
+        updateSyncUI('Storage Full / Blocked', 'error');
+        return false;
+      }
+
+      if (!this.isDriveOptedIn()) {
+        updateSyncUI('Saved on Device', 'default');
+        return true;
+      }
+
+      if (!this.accessToken) {
+        updateSyncUI('Saved Locally (Sync Drive)', 'default');
+        return true;
+      }
+
+      try {
+        updateSyncUI('Syncing to Drive...', 'syncing');
+        await this.findOrCreateDriveFile(merged);
+        const cloudData = await this.readDriveData();
+        if (cloudData) {
+          this.createPreRestoreSafetySnapshot(merged);
+          merged = this.mergeSnapshots(merged, cloudData);
+          appData = merged;
+          this.saveLocal(merged);
+          renderAll();
+        }
+        await this.writeDriveData(merged);
+        updateSyncUI('Device + Drive Synced', 'connected');
+        return true;
+      } catch (err) {
+        Diagnostics.recordError('DriveWrite', err);
+        updateSyncUI('Saved Locally (Drive paused)', 'error');
+        return false;
+      }
+    };
+
+    this._saveQueue = this._saveQueue.then(task, task);
+    return this._saveQueue;
   }
 };
 
 /* ============================================================================
-   5. SINGLE-PASS O(N) ANALYTICS & INDEXING ENGINE (Rules 12, 13 & Feature 6)
+   7. SINGLE-PASS O(N) INTEGER-PAISE ANALYTICS ENGINE (L3 & Feature 6)
    ============================================================================ */
 const AnalyticsEngine = {
   _cache: null,
@@ -695,28 +871,28 @@ const AnalyticsEngine = {
     if (this._cache) return this._cache;
 
     const expensesByMonth = new Map();
-    const spentByMonth = new Map();
-    const categoryTotalsByMonth = new Map();
+    const spentPaiseByMonth = new Map();
+    const categoryPaiseByMonth = new Map();
 
     for (const tx of data.expenses || []) {
       const ym = tx.date.slice(0, 7);
-      const amt = Number(tx.amount) || 0;
+      const paise = toPaise(tx.amount);
 
       if (!expensesByMonth.has(ym)) expensesByMonth.set(ym, []);
       expensesByMonth.get(ym).push(tx);
 
-      spentByMonth.set(ym, (spentByMonth.get(ym) || 0) + amt);
+      spentPaiseByMonth.set(ym, (spentPaiseByMonth.get(ym) || 0) + paise);
 
-      if (!categoryTotalsByMonth.has(ym)) categoryTotalsByMonth.set(ym, {});
-      const catMap = categoryTotalsByMonth.get(ym);
-      catMap[tx.category] = (catMap[tx.category] || 0) + amt;
+      if (!categoryPaiseByMonth.has(ym)) categoryPaiseByMonth.set(ym, {});
+      const catMap = categoryPaiseByMonth.get(ym);
+      catMap[tx.category] = (catMap[tx.category] || 0) + paise;
     }
 
     for (const list of expensesByMonth.values()) {
       list.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
     }
 
-    this._cache = { expensesByMonth, spentByMonth, categoryTotalsByMonth };
+    this._cache = { expensesByMonth, spentPaiseByMonth, categoryPaiseByMonth };
     return this._cache;
   },
 
@@ -725,42 +901,47 @@ const AnalyticsEngine = {
   },
 
   getCategoryTotals(ym) {
-    return this.buildIndex().categoryTotalsByMonth.get(ym) || {};
+    const rawPaiseMap = this.buildIndex().categoryPaiseByMonth.get(ym) || {};
+    const out = {};
+    Object.entries(rawPaiseMap).forEach(([cat, p]) => {
+      out[cat] = fromPaise(p);
+    });
+    return out;
   },
 
   calculateMonthMetrics(targetYm, data = appData) {
-    const { spentByMonth } = this.buildIndex(data);
+    const { spentPaiseByMonth } = this.buildIndex(data);
     const allMonths = new Set([
       ...Object.keys(data.budgets || {}),
-      ...spentByMonth.keys(),
+      ...spentPaiseByMonth.keys(),
       targetYm
     ]);
     const sortedMonths = Array.from(allMonths).sort();
 
-    let carryForward = 0;
-    let targetMonthAdded = 0;
-    let targetMonthSpent = 0;
-    let targetRolloverIn = 0;
+    let carryForwardPaise = 0;
+    let targetMonthAddedPaise = 0;
+    let targetMonthSpentPaise = 0;
+    let targetRolloverInPaise = 0;
 
     for (const ym of sortedMonths) {
       if (ym > targetYm) break;
-      const added = Number((data.budgets && data.budgets[ym]) || 0);
-      const spent = spentByMonth.get(ym) || 0;
+      const addedPaise = toPaise((data.budgets && data.budgets[ym]) || 0);
+      const spentPaise = spentPaiseByMonth.get(ym) || 0;
 
       if (ym === targetYm) {
-        targetRolloverIn = carryForward;
-        targetMonthAdded = added;
-        targetMonthSpent = spent;
+        targetRolloverInPaise = carryForwardPaise;
+        targetMonthAddedPaise = addedPaise;
+        targetMonthSpentPaise = spentPaise;
       }
-      carryForward = carryForward + added - spent;
+      carryForwardPaise = carryForwardPaise + addedPaise - spentPaise;
     }
 
     return {
-      addedThisMonth: targetMonthAdded,
-      rolloverIn: targetRolloverIn,
-      totalAvailablePool: targetRolloverIn + targetMonthAdded,
-      spentThisMonth: targetMonthSpent,
-      remainingBalance: carryForward
+      addedThisMonth: fromPaise(targetMonthAddedPaise),
+      rolloverIn: fromPaise(targetRolloverInPaise),
+      totalAvailablePool: fromPaise(targetRolloverInPaise + targetMonthAddedPaise),
+      spentThisMonth: fromPaise(targetMonthSpentPaise),
+      remainingBalance: fromPaise(carryForwardPaise)
     };
   },
 
@@ -774,9 +955,9 @@ const AnalyticsEngine = {
 
   calculateMoMComparison(targetYm, data = appData) {
     const prevYm = this.getPreviousMonthYm(targetYm);
-    const { spentByMonth, categoryTotalsByMonth } = this.buildIndex(data);
-    const currSpent = spentByMonth.get(targetYm) || 0;
-    const prevSpent = spentByMonth.get(prevYm) || 0;
+    const { spentPaiseByMonth, categoryPaiseByMonth } = this.buildIndex(data);
+    const currPaise = spentPaiseByMonth.get(targetYm) || 0;
+    const prevPaise = spentPaiseByMonth.get(prevYm) || 0;
 
     const [y, m] = targetYm.split('-').map(Number);
     const todayIso = getTodayISO();
@@ -784,43 +965,43 @@ const AnalyticsEngine = {
       targetYm === todayIso.slice(0, 7)
         ? Math.max(1, Number(todayIso.slice(8, 10)))
         : Math.max(1, new Date(y, m, 0).getDate());
-    const dailyAvg = currSpent / daysElapsed;
+    const dailyAvg = fromPaise(Math.round(currPaise / daysElapsed));
 
     let pctChange = 0;
-    let hasPrev = prevSpent > 0;
+    const hasPrev = prevPaise > 0;
     if (hasPrev) {
-      pctChange = Math.round(((currSpent - prevSpent) / prevSpent) * 100);
+      pctChange = Math.round(((currPaise - prevPaise) / prevPaise) * 100);
     }
 
-    const currCats = categoryTotalsByMonth.get(targetYm) || {};
-    const prevCats = categoryTotalsByMonth.get(prevYm) || {};
+    const currCats = categoryPaiseByMonth.get(targetYm) || {};
+    const prevCats = categoryPaiseByMonth.get(prevYm) || {};
     const allCats = new Set([...Object.keys(currCats), ...Object.keys(prevCats)]);
 
     let topCat = '--';
-    let topDiff = 0;
+    let topDiffPaise = 0;
     allCats.forEach((cat) => {
       const diff = (currCats[cat] || 0) - (prevCats[cat] || 0);
-      if (Math.abs(diff) > Math.abs(topDiff)) {
-        topDiff = diff;
+      if (Math.abs(diff) > Math.abs(topDiffPaise)) {
+        topDiffPaise = diff;
         topCat = cat;
       }
     });
 
     return {
       prevYm,
-      currSpent,
-      prevSpent,
+      currSpent: fromPaise(currPaise),
+      prevSpent: fromPaise(prevPaise),
       hasPrev,
       pctChange,
       dailyAvg,
       topCat,
-      topDiff
+      topDiff: fromPaise(topDiffPaise)
     };
   }
 };
 
 /* ============================================================================
-   6. APP STATE & MULTI-TAB STORAGE SYNC LISTENER
+   8. APP STATE & MULTI-TAB STORAGE SYNC LISTENER
    ============================================================================ */
 let appData = StorageService.loadLocal();
 if (!Array.isArray(appData.shortcuts)) appData.shortcuts = [];
@@ -1012,44 +1193,41 @@ const recentList = document.getElementById('recentList');
 const recentCount = document.getElementById('recentCount');
 const recentSeeAllBtn = document.getElementById('recentSeeAllBtn');
 
-// Shared Toast
+// Shared Toast (Supports both Undo-Add and Undo-Delete — H2)
 const toastEl = document.getElementById('mobileToast');
 const toastTextEl = document.getElementById('mobileToastText');
 const toastUndoBtn = document.getElementById('mobileToastUndoBtn');
-let lastUndoExpenseId = null;
+let pendingUndoAction = null;
 let toastTimer = null;
 
-function showAppToast(message, undoExpenseId = null, durationMs = 2600) {
+function showAppToast(message, undoHandler = null, durationMs = 2600) {
   if (!toastEl || !toastTextEl) return;
   toastTextEl.textContent = message;
-  lastUndoExpenseId = undoExpenseId;
+  pendingUndoAction = typeof undoHandler === 'function' ? undoHandler : null;
   if (toastUndoBtn) {
-    toastUndoBtn.classList.toggle('hidden', !undoExpenseId);
+    toastUndoBtn.classList.toggle('hidden', !pendingUndoAction);
   }
   toastEl.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(
     () => {
       toastEl.classList.remove('show');
-      lastUndoExpenseId = null;
+      pendingUndoAction = null;
     },
-    undoExpenseId ? 4500 : durationMs
+    pendingUndoAction ? 4500 : durationMs
   );
 }
 
-if (toastUndoBtn) {
-  toastUndoBtn.addEventListener('click', async () => {
-    if (!lastUndoExpenseId) return;
-    const idToRemove = lastUndoExpenseId;
-    lastUndoExpenseId = null;
-    toastEl.classList.remove('show');
-    await deleteExpenseById(idToRemove);
-    showAppToast('Expense undone');
-  });
-}
+onEl(toastUndoBtn, 'click', async () => {
+  if (!pendingUndoAction) return;
+  const fn = pendingUndoAction;
+  pendingUndoAction = null;
+  toastEl.classList.remove('show');
+  await fn();
+});
 
 /* ============================================================================
-   7. FORMATTING, SELECT POPULATORS & TRANSACTION ROW RENDERER
+   9. FORMATTING, SELECT POPULATORS & TRANSACTION ROW RENDERER
    ============================================================================ */
 function populateCategorySelects() {
   const scCategory = document.getElementById('scCategory');
@@ -1079,8 +1257,9 @@ function getCurrentMonth() {
 }
 
 function formatINR(num) {
-  return '₹' + Number(num || 0).toLocaleString('en-IN', {
-    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+  const clean = roundMoney(num);
+  return '₹' + clean.toLocaleString('en-IN', {
+    minimumFractionDigits: clean % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2
   });
 }
@@ -1126,6 +1305,7 @@ function setWidthClass(el, pct) {
 }
 
 function updateSyncUI(text, state = 'default') {
+  if (!storageStatus) return;
   storageStatus.textContent = text;
   storageStatus.className = 'storage-badge';
   if (state === 'connected') storageStatus.classList.add('connected');
@@ -1149,27 +1329,24 @@ function updateSoundToggleUI() {
   }
 }
 
-if (welcomeSoundGroup) {
-  welcomeSoundGroup.addEventListener('click', (e) => {
-    const btn = e.target.closest('.pill');
-    if (!btn) return;
-    const enable = btn.dataset.welcomeSound === 'on';
-    SoundService.setEnabled(enable);
-    if (enable) SoundService.play('added');
-    renderMoreList();
-  });
-}
+onEl(welcomeSoundGroup, 'click', (e) => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  const enable = btn.dataset.welcomeSound === 'on';
+  SoundService.setEnabled(enable);
+  if (enable) SoundService.play('added');
+  renderMoreList();
+});
 
-if (soundToggleBtn) {
-  soundToggleBtn.addEventListener('click', () => {
-    const enabled = SoundService.toggle();
-    showAppToast(enabled ? 'Sound effects enabled' : 'Sound effects muted');
-  });
-}
+onEl(soundToggleBtn, 'click', () => {
+  const enabled = SoundService.toggle();
+  showAppToast(enabled ? 'Sound effects enabled' : 'Sound effects muted');
+});
 
 function renderTransactionRow(e) {
   const meta = MODE_META[e.mode] || MODE_META.Cash;
   const noteHtml = e.note ? ` • ${escapeHtml(e.note)}` : '';
+  const dateHtml = escapeHtml(formatDateReadable(e.date));
   const editAria = escapeHtml(`Edit ${e.category} ${formatINR(e.amount)}`);
   const delAria = escapeHtml(`Delete ${e.category} ${formatINR(e.amount)}`);
 
@@ -1180,7 +1357,7 @@ function renderTransactionRow(e) {
           <span class="tx-category">${escapeHtml(e.category)}</span>
           <span class="badge ${meta.cls}">${meta.label}</span>
         </div>
-        <div class="tx-meta">${formatDateReadable(e.date)}${noteHtml}</div>
+        <div class="tx-meta">${dateHtml}${noteHtml}</div>
       </div>
       <div class="tx-right">
         <span class="tx-amount">${formatINR(e.amount)}</span>
@@ -1196,7 +1373,7 @@ function renderTransactionRow(e) {
 }
 
 /* ============================================================================
-   8. FEATURE 5: EDIT EXISTING TRANSACTION MODAL
+   10. FEATURE 5: EDIT EXISTING TRANSACTION MODAL (With Mobile Keyboard Scroll)
    ============================================================================ */
 function openEditTransactionModal(id) {
   const numId = normalizeId(id);
@@ -1218,55 +1395,53 @@ function closeEditTransactionModal() {
   closeModal(editTxModal);
 }
 
-if (closeEditTxBtn) closeEditTxBtn.addEventListener('click', closeEditTransactionModal);
-if (cancelEditTxBtn) cancelEditTxBtn.addEventListener('click', closeEditTransactionModal);
+onEl(closeEditTxBtn, 'click', closeEditTransactionModal);
+onEl(cancelEditTxBtn, 'click', closeEditTransactionModal);
 
-if (saveEditTxBtn) {
-  saveEditTxBtn.addEventListener('click', async () => {
-    if (!editingTransactionId) return;
-    const amt = parseFloat(editTxAmount.value);
-    if (!isValidAmount(amt)) {
-      editTxAmount.focus();
-      showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
-      return;
-    }
-    if (!isValidIsoDate(editTxDate.value)) {
-      editTxDate.focus();
-      showAppToast('Select a valid date');
-      return;
-    }
+onEl(saveEditTxBtn, 'click', async () => {
+  if (!editingTransactionId) return;
+  const amt = roundMoney(parseFloat(editTxAmount.value));
+  if (!isValidAmount(amt)) {
+    editTxAmount.focus();
+    showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
+    return;
+  }
+  if (!isValidIsoDate(editTxDate.value)) {
+    editTxDate.focus();
+    showAppToast('Select a valid date');
+    return;
+  }
 
-    const idx = appData.expenses.findIndex((item) => normalizeId(item.id) === editingTransactionId);
-    if (idx === -1) {
-      closeEditTransactionModal();
-      return;
-    }
-
-    appData.expenses[idx] = {
-      ...appData.expenses[idx],
-      amount: amt,
-      category: editTxCategory.value,
-      mode: editTxMode.value,
-      date: editTxDate.value,
-      note: editTxNote.value.trim().slice(0, 60),
-      updatedAt: Date.now()
-    };
-
-    const editedMonth = editTxDate.value.slice(0, 7);
-    if (editedMonth !== activeMonth) {
-      activeMonth = editedMonth;
-      activeMonthInput.value = activeMonth;
-    }
-
+  const idx = appData.expenses.findIndex((item) => normalizeId(item.id) === editingTransactionId);
+  if (idx === -1) {
     closeEditTransactionModal();
-    renderAll({ targetYm: editedMonth });
-    await StorageService.saveData(appData);
-    showAppToast('Transaction updated');
-  });
-}
+    return;
+  }
+
+  appData.expenses[idx] = {
+    ...appData.expenses[idx],
+    amount: amt,
+    category: editTxCategory.value,
+    mode: editTxMode.value,
+    date: editTxDate.value,
+    note: editTxNote.value.trim().slice(0, 60),
+    updatedAt: Date.now()
+  };
+
+  const editedMonth = editTxDate.value.slice(0, 7);
+  if (editedMonth !== activeMonth) {
+    activeMonth = editedMonth;
+    activeMonthInput.value = activeMonth;
+  }
+
+  closeEditTransactionModal();
+  renderAll({ targetYm: editedMonth });
+  await StorageService.saveData(appData);
+  showAppToast('Transaction updated');
+});
 
 /* ============================================================================
-   9. FEATURE 4: PER-CATEGORY MONTHLY SPENDING CAPS MODAL
+   11. FEATURE 4: PER-CATEGORY MONTHLY SPENDING CAPS & HUB MODALS
    ============================================================================ */
 function openCategoryCapsModal() {
   if (!categoryCapsFormList) return;
@@ -1284,7 +1459,7 @@ function openCategoryCapsModal() {
           type="number"
           data-cap-cat="${escapeHtml(cat.value)}"
           value="${currentVal}"
-          min="0"
+          min="1"
           max="100000000"
           step="1"
           placeholder="No cap"
@@ -1321,78 +1496,66 @@ function closeBackupHubModal(fromPopState = false) {
   }
 }
 
-if (headerPlanCapsBtn) headerPlanCapsBtn.addEventListener('click', openPlanCapsHubModal);
-if (closePlanCapsHubBtn) closePlanCapsHubBtn.addEventListener('click', () => closeModal(planCapsHubModal));
-if (donePlanCapsHubBtn) donePlanCapsHubBtn.addEventListener('click', () => closeModal(planCapsHubModal));
-if (hubOpenRecurringBtn) {
-  hubOpenRecurringBtn.addEventListener('click', () => {
-    closeModal(planCapsHubModal);
-    openRecurringModal();
-  });
-}
-if (hubOpenCapsBtn) {
-  hubOpenCapsBtn.addEventListener('click', () => {
-    closeModal(planCapsHubModal);
-    openCategoryCapsModal();
-  });
-}
+onEl(headerPlanCapsBtn, 'click', openPlanCapsHubModal);
+onEl(closePlanCapsHubBtn, 'click', () => closeModal(planCapsHubModal));
+onEl(donePlanCapsHubBtn, 'click', () => closeModal(planCapsHubModal));
+onEl(hubOpenRecurringBtn, 'click', () => {
+  closeModal(planCapsHubModal);
+  openRecurringModal();
+});
+onEl(hubOpenCapsBtn, 'click', () => {
+  closeModal(planCapsHubModal);
+  openCategoryCapsModal();
+});
 
-if (closeBackupHubBtn) closeBackupHubBtn.addEventListener('click', () => closeBackupHubModal(false));
-if (doneBackupHubBtn) doneBackupHubBtn.addEventListener('click', () => closeBackupHubModal(false));
-if (hubExportJsonBtn) {
-  hubExportJsonBtn.addEventListener('click', () => {
-    closeBackupHubModal(false);
-    downloadJsonSnapshot();
-  });
-}
-if (hubImportJsonBtn) {
-  hubImportJsonBtn.addEventListener('click', () => {
-    closeBackupHubModal(false);
-    triggerJsonRestorePicker();
-  });
-}
-if (hubExportCsvBtn) {
-  hubExportCsvBtn.addEventListener('click', () => {
-    closeBackupHubModal(false);
-    downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
-  });
-}
+onEl(closeBackupHubBtn, 'click', () => closeBackupHubModal(false));
+onEl(doneBackupHubBtn, 'click', () => closeBackupHubModal(false));
+onEl(hubExportJsonBtn, 'click', () => {
+  closeBackupHubModal(false);
+  downloadJsonSnapshot();
+});
+onEl(hubImportJsonBtn, 'click', () => {
+  closeBackupHubModal(false);
+  triggerJsonRestorePicker();
+});
+onEl(hubExportCsvBtn, 'click', () => {
+  closeBackupHubModal(false);
+  downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
+});
 
-if (openCategoryCapsBtn) openCategoryCapsBtn.addEventListener('click', openCategoryCapsModal);
-if (openCategoryCapsFooterBtn) openCategoryCapsFooterBtn.addEventListener('click', openCategoryCapsModal);
-if (closeCategoryCapsBtn) closeCategoryCapsBtn.addEventListener('click', () => closeModal(categoryCapsModal));
-if (cancelCategoryCapsBtn) cancelCategoryCapsBtn.addEventListener('click', () => closeModal(categoryCapsModal));
+onEl(openCategoryCapsBtn, 'click', openCategoryCapsModal);
+onEl(openCategoryCapsFooterBtn, 'click', openCategoryCapsModal);
+onEl(closeCategoryCapsBtn, 'click', () => closeModal(categoryCapsModal));
+onEl(cancelCategoryCapsBtn, 'click', () => closeModal(categoryCapsModal));
 
-if (saveCategoryCapsBtn) {
-  saveCategoryCapsBtn.addEventListener('click', async () => {
-    const nextCaps = {};
-    const inputs = Array.from(categoryCapsFormList.querySelectorAll('input[data-cap-cat]'));
-    for (const inp of inputs) {
-      const cat = inp.dataset.capCat;
-      const rawVal = inp.value.trim();
-      if (!rawVal) continue;
-      const num = parseFloat(rawVal);
-      if (!isValidBudgetAmount(num)) {
-        inp.focus();
-        showAppToast(`Invalid cap for ${cat}`);
-        return;
-      }
-      if (num > 0 && VALID_CATEGORIES.has(cat)) {
-        nextCaps[cat] = num;
-      }
+onEl(saveCategoryCapsBtn, 'click', async () => {
+  const nextCaps = {};
+  const inputs = Array.from(categoryCapsFormList.querySelectorAll('input[data-cap-cat]'));
+  for (const inp of inputs) {
+    const cat = inp.dataset.capCat;
+    const rawVal = inp.value.trim();
+    if (!rawVal) continue;
+    const num = roundMoney(parseFloat(rawVal));
+    if (!isValidBudgetAmount(num)) {
+      inp.focus();
+      showAppToast(`Invalid cap for ${cat}`);
+      return;
     }
+    if (num >= AppConfig.MIN_AMOUNT && VALID_CATEGORIES.has(cat)) {
+      nextCaps[cat] = num;
+    }
+  }
 
-    appData.categoryCaps = nextCaps;
-    appData.categoryCapsUpdatedAt = Date.now();
-    closeModal(categoryCapsModal);
-    renderAll();
-    await StorageService.saveData(appData);
-    showAppToast('Category caps saved');
-  });
-}
+  appData.categoryCaps = nextCaps;
+  appData.categoryCapsUpdatedAt = Date.now();
+  closeModal(categoryCapsModal);
+  renderAll();
+  await StorageService.saveData(appData);
+  showAppToast('Category caps saved');
+});
 
 /* ============================================================================
-   10. FEATURE 3: JSON FULL-STATE BACKUP, RESTORE & PRE-RESTORE ROLLBACK
+   12. FEATURE 3: JSON FULL-STATE BACKUP, RESTORE & ROLLBACK (H2, M3)
    ============================================================================ */
 function downloadJsonSnapshot() {
   const jsonStr = StorageService.packData(appData);
@@ -1415,72 +1578,83 @@ function triggerJsonRestorePicker() {
   jsonRestoreInput.click();
 }
 
-if (exportJsonBackupBtn) exportJsonBackupBtn.addEventListener('click', downloadJsonSnapshot);
-if (importJsonRestoreBtn) importJsonRestoreBtn.addEventListener('click', triggerJsonRestorePicker);
+onEl(exportJsonBackupBtn, 'click', downloadJsonSnapshot);
+onEl(importJsonRestoreBtn, 'click', triggerJsonRestorePicker);
 
-if (jsonRestoreInput) {
-  jsonRestoreInput.addEventListener('change', async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
+onEl(jsonRestoreInput, 'change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
 
-    if (file.size > AppConfig.MAX_IMPORT_BYTES) {
-      showAppToast('Backup file exceeds 2 MB limit');
+  if (file.size > AppConfig.MAX_IMPORT_BYTES) {
+    showAppToast('Backup file exceeds 2 MB limit');
+    return;
+  }
+
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if (!parsed || typeof parsed !== 'object' || (parsed.e === undefined && parsed.expenses === undefined)) {
+      showAppToast('Invalid TrackYourRupee JSON backup file');
       return;
     }
 
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      if (!parsed || typeof parsed !== 'object' || (parsed.e === undefined && parsed.expenses === undefined)) {
-        showAppToast('Invalid TrackYourRupee JSON backup file');
-        return;
-      }
+    const unpacked = StorageService.unpackData(parsed);
 
-      StorageService.createPreRestoreSafetySnapshot();
-      const unpacked = StorageService.unpackData(parsed);
-      appData = StorageService.mergeSnapshots(appData, unpacked);
-      StorageService.saveLocal(appData);
-      renderAll();
-      renderMoreList();
-      updateDiagnosticsReadout();
+    // H2: Clear tombstones for IDs explicitly present in the backup being restored
+    const idsInBackup = [
+      ...unpacked.expenses.map((x) => x.id),
+      ...unpacked.shortcuts.map((x) => x.id),
+      ...unpacked.recurring.map((x) => x.id)
+    ];
+    removeTombstonesForIds(idsInBackup);
+
+    StorageService.createPreRestoreSafetySnapshot(appData);
+    appData = StorageService.mergeSnapshots(appData, unpacked);
+
+    // M3: Persist through saveData() so Drive also receives restored entries if connected
+    const savedOk = await StorageService.saveData(appData);
+    renderAll();
+    renderMoreList();
+    updateDiagnosticsReadout();
+
+    if (savedOk) {
       showAppToast(`Restored ${unpacked.expenses.length} entries (Rollback available in Info)`);
-    } catch (err) {
-      Diagnostics.recordError('JsonRestore', err);
-      showAppToast('Could not read JSON backup file');
     }
-  });
-}
+  } catch (err) {
+    Diagnostics.recordError('JsonRestore', err);
+    showAppToast('Could not read JSON backup file');
+  }
+});
 
-if (rollbackRestoreBtn) {
-  rollbackRestoreBtn.addEventListener('click', () => {
-    if (!StorageService.hasPreRestoreSnapshot()) {
-      showAppToast('No pre-restore snapshot available');
-      return;
-    }
-    const ok = StorageService.rollbackPreRestore();
-    if (ok) {
-      renderAll();
-      renderMoreList();
-      updateDiagnosticsReadout();
-      showAppToast('Rolled back to state before last restore');
-    } else {
-      showAppToast('Rollback failed');
-    }
-  });
-}
+onEl(rollbackRestoreBtn, 'click', async () => {
+  if (!StorageService.hasPreRestoreSnapshot()) {
+    showAppToast('No pre-restore snapshot available');
+    return;
+  }
+  const ok = StorageService.rollbackPreRestore();
+  if (ok) {
+    renderAll();
+    renderMoreList();
+    updateDiagnosticsReadout();
+    await StorageService.saveData(appData);
+    showAppToast('Rolled back to state before last restore');
+  } else {
+    showAppToast('Rollback failed');
+  }
+});
 
 /* ============================================================================
-   11. THEME MANAGEMENT, FUN EDITION MODAL & DRIVE SYNC
+   13. THEME MANAGEMENT, FUN EDITION MODAL & DRIVE SYNC
    ============================================================================ */
 function applyTheme(theme, persist = true) {
   const isDark = theme === 'dark';
   const statusBg = isDark ? '#0b0d11' : '#f4f5f7';
   if (isDark) {
     document.documentElement.setAttribute('data-theme', 'dark');
-    themeToggleBtn.textContent = 'Light Mode';
+    if (themeToggleBtn) themeToggleBtn.textContent = 'Light Mode';
   } else {
     document.documentElement.removeAttribute('data-theme');
-    themeToggleBtn.textContent = 'Dark Mode';
+    if (themeToggleBtn) themeToggleBtn.textContent = 'Dark Mode';
   }
   const metaLight = document.getElementById('metaThemeLight');
   const metaDark = document.getElementById('metaThemeDark');
@@ -1491,7 +1665,7 @@ function applyTheme(theme, persist = true) {
   }
 }
 
-themeToggleBtn.addEventListener('click', () => {
+onEl(themeToggleBtn, 'click', () => {
   const current = document.documentElement.getAttribute('data-theme');
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
@@ -1501,15 +1675,13 @@ function openFunEditionWarning() {
   openModalWithFocus(funEditionModal, cancelFunEditionBtn);
 }
 
-if (openFunEditionBtn) openFunEditionBtn.addEventListener('click', openFunEditionWarning);
-if (closeFunEditionBtn) closeFunEditionBtn.addEventListener('click', () => closeModal(funEditionModal));
-if (cancelFunEditionBtn) cancelFunEditionBtn.addEventListener('click', () => closeModal(funEditionModal));
-if (confirmFunEditionBtn) {
-  confirmFunEditionBtn.addEventListener('click', () => {
-    closeModal(funEditionModal);
-    window.open(AppConfig.FUN_EDITION_URL, '_blank', 'noopener,noreferrer');
-  });
-}
+onEl(openFunEditionBtn, 'click', openFunEditionWarning);
+onEl(closeFunEditionBtn, 'click', () => closeModal(funEditionModal));
+onEl(cancelFunEditionBtn, 'click', () => closeModal(funEditionModal));
+onEl(confirmFunEditionBtn, 'click', () => {
+  closeModal(funEditionModal);
+  window.open(AppConfig.FUN_EDITION_URL, '_blank', 'noopener,noreferrer');
+});
 
 async function triggerDriveSync(promptMode = 'consent') {
   if (!canTriggerSync()) return;
@@ -1526,14 +1698,17 @@ async function triggerDriveSync(promptMode = 'consent') {
 
     const cloudData = await StorageService.readDriveData();
     if (cloudData) {
+      StorageService.createPreRestoreSafetySnapshot(appData);
       appData = StorageService.mergeSnapshots(appData, cloudData);
     }
 
     StorageService.saveLocal(appData);
     await StorageService.writeDriveData(appData);
-    drivePromptBanner.classList.add('hidden');
-    driveAuthBtn.textContent = 'Sync Drive Now';
-    driveAuthBtn.classList.add('connected');
+    if (drivePromptBanner) drivePromptBanner.classList.add('hidden');
+    if (driveAuthBtn) {
+      driveAuthBtn.textContent = 'Sync Drive Now';
+      driveAuthBtn.classList.add('connected');
+    }
     updateSyncUI('Device + Drive Synced', 'connected');
     renderAll();
   } catch (err) {
@@ -1542,21 +1717,21 @@ async function triggerDriveSync(promptMode = 'consent') {
   }
 }
 
-driveAuthBtn.addEventListener('click', () => {
+onEl(driveAuthBtn, 'click', () => {
   triggerDriveSync(StorageService.accessToken ? '' : 'consent');
 });
 
-promptConnectBtn.addEventListener('click', () => {
+onEl(promptConnectBtn, 'click', () => {
   triggerDriveSync('consent');
 });
 
-promptDismissBtn.addEventListener('click', () => {
+onEl(promptDismissBtn, 'click', () => {
   safeSetItem(StorageService.DRIVE_PREF_KEY, 'dismissed');
-  drivePromptBanner.classList.add('hidden');
+  if (drivePromptBanner) drivePromptBanner.classList.add('hidden');
 });
 
 /* ============================================================================
-   12. BUDGET HEALTH & SMART MONTHLY PROMPT
+   14. BUDGET HEALTH & SMART MONTHLY PROMPT (H3)
    ============================================================================ */
 function getMonthHealthStatus(metrics) {
   if (metrics.totalAvailablePool > 0) {
@@ -1586,6 +1761,7 @@ function clearSavedReminder() {
 }
 
 function renderReminderChip() {
+  if (!budgetReminderChip || !budgetReminderText) return;
   const reminder = getSavedReminder();
   if (reminder && reminder.month === activeMonth && reminder.remindOn) {
     budgetReminderText.textContent = `Reminder: ${formatDateReadable(reminder.remindOn)}`;
@@ -1595,13 +1771,13 @@ function renderReminderChip() {
   }
 }
 
-deleteReminderBtn.addEventListener('click', clearSavedReminder);
+onEl(deleteReminderBtn, 'click', clearSavedReminder);
 
 function updatePromptRecurringTotal() {
   if (!promptRecurringChecklist || !promptRecurringTotal) return;
   const checkedBoxes = Array.from(promptRecurringChecklist.querySelectorAll('input[type="checkbox"]:checked'));
-  const sum = checkedBoxes.reduce((acc, cb) => acc + Number(cb.dataset.amount || 0), 0);
-  promptRecurringTotal.textContent = `Selected: ${formatINR(sum)}`;
+  const sumPaise = checkedBoxes.reduce((acc, cb) => acc + toPaise(cb.dataset.amount || 0), 0);
+  promptRecurringTotal.textContent = `Selected: ${formatINR(fromPaise(sumPaise))}`;
 }
 
 function renderPromptRecurringChecklist() {
@@ -1635,9 +1811,7 @@ function renderPromptRecurringChecklist() {
   updatePromptRecurringTotal();
 }
 
-if (promptRecurringChecklist) {
-  promptRecurringChecklist.addEventListener('change', updatePromptRecurringTotal);
-}
+onEl(promptRecurringChecklist, 'change', updatePromptRecurringTotal);
 
 function applyCheckedRecurringBills(targetYm) {
   if (!promptRecurringChecklist || promptRecurringBox.classList.contains('hidden')) return 0;
@@ -1655,8 +1829,8 @@ function applyCheckedRecurringBills(targetYm) {
   (appData.recurring || []).forEach((bill) => {
     if (!checkedIds.has(normalizeId(bill.id))) return;
     appData.expenses.unshift({
-      id: generateNumericId() + addedCount * 1000,
-      amount: Number(bill.amount),
+      id: generateNumericId(),
+      amount: roundMoney(bill.amount),
       category: bill.category,
       mode: bill.mode,
       date: billDate,
@@ -1691,31 +1865,25 @@ function getPreviousConfiguredBudget(targetMonth) {
   return null;
 }
 
-if (copyPrevBudgetBtn) {
-  copyPrevBudgetBtn.addEventListener('click', () => {
-    if (lastKnownPrevBudgetAmount > 0) {
-      promptBudgetAmount.value = lastKnownPrevBudgetAmount;
-      promptBudgetAmount.focus();
-      promptBudgetAmount.select();
-    }
-  });
-}
+onEl(copyPrevBudgetBtn, 'click', () => {
+  if (lastKnownPrevBudgetAmount > 0 && promptBudgetAmount) {
+    promptBudgetAmount.value = lastKnownPrevBudgetAmount;
+    promptBudgetAmount.focus();
+    promptBudgetAmount.select();
+  }
+});
 
-if (walletNudgeSetBtn) {
-  walletNudgeSetBtn.addEventListener('click', () => {
-    openBudgetPrompt(
-      activeMonth,
-      `Set your ${formatMonthLabel(activeMonth)} monthly allowance or copy your previous month's budget.`
-    );
-  });
-}
+onEl(walletNudgeSetBtn, 'click', () => {
+  openBudgetPrompt(
+    activeMonth,
+    `Set your ${formatMonthLabel(activeMonth)} monthly allowance or copy your previous month's budget.`
+  );
+});
 
-if (dismissWalletNudgeBtn) {
-  dismissWalletNudgeBtn.addEventListener('click', () => {
-    dismissedWalletNudgeMonths.add(activeMonth);
-    if (walletBudgetNudge) walletBudgetNudge.classList.add('hidden');
-  });
-}
+onEl(dismissWalletNudgeBtn, 'click', () => {
+  dismissedWalletNudgeMonths.add(activeMonth);
+  if (walletBudgetNudge) walletBudgetNudge.classList.add('hidden');
+});
 
 function openBudgetPrompt(targetMonth, reasonText, pendingEntry = null, showDateImmediately = false) {
   pendingExpenseEntry = pendingEntry;
@@ -1765,7 +1933,6 @@ function checkMonthlyBudgetPrompt() {
   const hasCurrentBudget = (Number(appData.budgets[currentYm]) || 0) > 0;
   if (hasCurrentBudget) return;
 
-  // Only auto-prompt if the user explicitly scheduled a reminder date for this month
   const savedReminder = getSavedReminder();
   if (savedReminder && savedReminder.month === currentYm && savedReminder.remindOn) {
     if (today >= savedReminder.remindOn) {
@@ -1797,8 +1964,8 @@ async function finalizePendingExpense(recurringCountAdded = 0) {
   }
 }
 
-savePromptBudgetBtn.addEventListener('click', async () => {
-  const val = parseFloat(promptBudgetAmount.value);
+onEl(savePromptBudgetBtn, 'click', async () => {
+  const val = roundMoney(parseFloat(promptBudgetAmount.value));
   if (!isValidAmount(val)) {
     promptBudgetAmount.focus();
     showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
@@ -1806,7 +1973,16 @@ savePromptBudgetBtn.addEventListener('click', async () => {
   }
 
   const targetMonth = pendingExpenseEntry ? pendingExpenseEntry.date.slice(0, 7) : promptTargetMonth;
-  appData.budgets[targetMonth] = (Number(appData.budgets[targetMonth]) || 0) + val;
+  const nextTotal = fromPaise(toPaise(appData.budgets[targetMonth] || 0) + toPaise(val));
+
+  // H3: Enforce maximum budget cap so total never exceeds ₹10,00,00,000
+  if (nextTotal > AppConfig.MAX_AMOUNT) {
+    promptBudgetAmount.focus();
+    showAppToast('Total monthly budget cannot exceed ₹10,00,00,000');
+    return;
+  }
+
+  appData.budgets[targetMonth] = nextTotal;
   appData.budgetUpdatedAt[targetMonth] = Date.now();
   clearSavedReminder();
 
@@ -1826,35 +2002,33 @@ savePromptBudgetBtn.addEventListener('click', async () => {
   await finalizePendingExpense(billsAdded);
 });
 
-if (applyRecurringOnlyBtn) {
-  applyRecurringOnlyBtn.addEventListener('click', async () => {
-    const targetMonth = pendingExpenseEntry ? pendingExpenseEntry.date.slice(0, 7) : promptTargetMonth;
-    const billsAdded = applyCheckedRecurringBills(targetMonth);
-    if (billsAdded === 0) {
-      showAppToast('Select at least one recurring bill first');
-      return;
-    }
-    if (targetMonth !== activeMonth) {
-      activeMonth = targetMonth;
-      activeMonthInput.value = activeMonth;
-    }
-    closeModal(budgetPromptModal);
-    const hasPending = Boolean(pendingExpenseEntry);
-    renderAll({ soundCue: hasPending ? null : 'deducted', targetYm: targetMonth });
-    await StorageService.saveData(appData);
-    if (!hasPending) {
-      showAppToast(`Added ${billsAdded} recurring ${billsAdded === 1 ? 'bill' : 'bills'}`);
-    }
-    await finalizePendingExpense(billsAdded);
-  });
-}
+onEl(applyRecurringOnlyBtn, 'click', async () => {
+  const targetMonth = pendingExpenseEntry ? pendingExpenseEntry.date.slice(0, 7) : promptTargetMonth;
+  const billsAdded = applyCheckedRecurringBills(targetMonth);
+  if (billsAdded === 0) {
+    showAppToast('Select at least one recurring bill first');
+    return;
+  }
+  if (targetMonth !== activeMonth) {
+    activeMonth = targetMonth;
+    activeMonthInput.value = activeMonth;
+  }
+  closeModal(budgetPromptModal);
+  const hasPending = Boolean(pendingExpenseEntry);
+  renderAll({ soundCue: hasPending ? null : 'deducted', targetYm: targetMonth });
+  await StorageService.saveData(appData);
+  if (!hasPending) {
+    showAppToast(`Added ${billsAdded} recurring ${billsAdded === 1 ? 'bill' : 'bills'}`);
+  }
+  await finalizePendingExpense(billsAdded);
+});
 
-notNowBudgetBtn.addEventListener('click', () => {
+onEl(notNowBudgetBtn, 'click', () => {
   reminderDateBox.classList.remove('hidden');
   budgetReminderDate.focus();
 });
 
-confirmReminderBtn.addEventListener('click', async () => {
+onEl(confirmReminderBtn, 'click', async () => {
   const chosenDate = budgetReminderDate.value;
   if (!isValidIsoDate(chosenDate)) {
     budgetReminderDate.focus();
@@ -1872,21 +2046,21 @@ confirmReminderBtn.addEventListener('click', async () => {
   await finalizePendingExpense(0);
 });
 
-promptBudgetAmount.addEventListener('keydown', (e) => {
+onEl(promptBudgetAmount, 'keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     savePromptBudgetBtn.click();
   }
 });
 
-budgetReminderDate.addEventListener('keydown', (e) => {
+onEl(budgetReminderDate, 'keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     confirmReminderBtn.click();
   }
 });
 
-budgetInput.addEventListener('keydown', (e) => {
+onEl(budgetInput, 'keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     addFundsBtn.click();
@@ -1894,7 +2068,7 @@ budgetInput.addEventListener('keydown', (e) => {
 });
 
 /* ============================================================================
-   13. MODAL FOCUS TRAP & ESCAPE KEY HANDLER
+   15. MODAL FOCUS TRAP, ESCAPE KEY & MOBILE KEYBOARD SCROLL HANDLER
    ============================================================================ */
 let lastFocusedBeforeModal = null;
 
@@ -1939,6 +2113,16 @@ function closeModal(modalEl) {
   }
 }
 
+// Automatically scroll focused inputs inside modals into view when mobile keyboard opens
+document.addEventListener('focusin', (e) => {
+  const modalBody = e.target && e.target.closest ? e.target.closest('.modal-body') : null;
+  if (modalBody && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 180);
+  }
+});
+
 document.addEventListener('keydown', (e) => {
   const activeModal = getVisibleModal();
   if (!activeModal) return;
@@ -1975,9 +2159,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ============================================================================
-   14. UI INTERACTIONS: PILLS, BUDGET DRAWER, DIAGNOSTICS & EXPENSE CRUD
+   16. UI INTERACTIONS: PILLS, BUDGET DRAWER, DIAGNOSTICS & EXPENSE CRUD (H2, H3)
    ============================================================================ */
-paymentModeGroup.addEventListener('click', (e) => {
+onEl(paymentModeGroup, 'click', (e) => {
   const btn = e.target.closest('.pill');
   if (!btn) return;
   paymentModeGroup.querySelectorAll('.pill').forEach((p) => p.classList.remove('active'));
@@ -1986,7 +2170,7 @@ paymentModeGroup.addEventListener('click', (e) => {
   upiSubGroup.classList.toggle('hidden', selectedMode !== 'UPI');
 });
 
-upiTypeGroup.addEventListener('click', (e) => {
+onEl(upiTypeGroup, 'click', (e) => {
   const btn = e.target.closest('.pill');
   if (!btn) return;
   upiTypeGroup.querySelectorAll('.pill').forEach((p) => p.classList.remove('active'));
@@ -1994,26 +2178,25 @@ upiTypeGroup.addEventListener('click', (e) => {
   selectedUpiType = btn.dataset.upi;
 });
 
-activeMonthInput.addEventListener('change', (e) => {
+onEl(activeMonthInput, 'change', (e) => {
   if (e.target.value && AppConfig.ISO_MONTH_RE.test(e.target.value)) {
     activeMonth = e.target.value;
     renderAll();
   }
 });
 
-if (monthCalendarBox && activeMonthInput) {
-  monthCalendarBox.addEventListener('click', () => {
-    if (typeof activeMonthInput.showPicker === 'function') {
-      try {
-        activeMonthInput.showPicker();
-      } catch {
-        activeMonthInput.focus();
-      }
-    } else {
+onEl(monthCalendarBox, 'click', () => {
+  if (!activeMonthInput) return;
+  if (typeof activeMonthInput.showPicker === 'function') {
+    try {
+      activeMonthInput.showPicker();
+    } catch {
       activeMonthInput.focus();
     }
-  });
-}
+  } else {
+    activeMonthInput.focus();
+  }
+});
 
 function updateDiagnosticsReadout() {
   if (!diagnosticReadout) return;
@@ -2028,24 +2211,22 @@ function updateDiagnosticsReadout() {
   }
 }
 
-closeWelcomeBtn.addEventListener('click', () => {
+onEl(closeWelcomeBtn, 'click', () => {
   safeSetItem(StorageService.WELCOME_SEEN_KEY, 'true');
   closeModal(welcomeModal);
   checkMonthlyBudgetPrompt();
 });
 
-openGuideBtn.addEventListener('click', () => {
+onEl(openGuideBtn, 'click', () => {
   updateDiagnosticsReadout();
   openModalWithFocus(welcomeModal, closeWelcomeBtn);
 });
 
-if (dailyAllowanceSub) {
-  dailyAllowanceSub.addEventListener('click', () => {
-    showAppToast(currentDailyFormulaText, null, 3800);
-  });
-}
+onEl(dailyAllowanceSub, 'click', () => {
+  showAppToast(currentDailyFormulaText, null, 3800);
+});
 
-editBudgetBtn.addEventListener('click', () => {
+onEl(editBudgetBtn, 'click', () => {
   budgetDrawerTitle.textContent = `Manage ${formatMonthLabel(activeMonth)} Budget (₹)`;
   budgetInput.value = '';
   budgetDrawer.classList.toggle('hidden');
@@ -2065,10 +2246,10 @@ function scrollAddExpenseIntoView() {
   }, 150);
 }
 
-amountInput.addEventListener('focus', scrollAddExpenseIntoView);
-noteInput.addEventListener('focus', scrollAddExpenseIntoView);
+onEl(amountInput, 'focus', scrollAddExpenseIntoView);
+onEl(noteInput, 'focus', scrollAddExpenseIntoView);
 
-scheduleReminderDrawerBtn.addEventListener('click', () => {
+onEl(scheduleReminderDrawerBtn, 'click', () => {
   budgetDrawer.classList.add('hidden');
   openBudgetPrompt(
     activeMonth,
@@ -2078,18 +2259,27 @@ scheduleReminderDrawerBtn.addEventListener('click', () => {
   );
 });
 
-cancelBudgetBtn.addEventListener('click', () => {
+onEl(cancelBudgetBtn, 'click', () => {
   budgetDrawer.classList.add('hidden');
 });
 
-addFundsBtn.addEventListener('click', async () => {
-  const val = parseFloat(budgetInput.value);
+onEl(addFundsBtn, 'click', async () => {
+  const val = roundMoney(parseFloat(budgetInput.value));
   if (!isValidAmount(val)) {
     budgetInput.focus();
     showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
     return;
   }
-  appData.budgets[activeMonth] = Number(appData.budgets[activeMonth] || 0) + val;
+
+  // H3: Prevent sum from exceeding ₹10,00,00,000 and vanishing on reload
+  const nextTotal = fromPaise(toPaise(appData.budgets[activeMonth] || 0) + toPaise(val));
+  if (nextTotal > AppConfig.MAX_AMOUNT) {
+    budgetInput.focus();
+    showAppToast('Total monthly budget cannot exceed ₹10,00,00,000');
+    return;
+  }
+
+  appData.budgets[activeMonth] = nextTotal;
   appData.budgetUpdatedAt[activeMonth] = Date.now();
   clearSavedReminder();
   budgetDrawer.classList.add('hidden');
@@ -2097,25 +2287,23 @@ addFundsBtn.addEventListener('click', async () => {
   await StorageService.saveData(appData);
 });
 
-replaceBudgetBtn.addEventListener('click', async () => {
-  const val = parseFloat(budgetInput.value);
-  if (!isValidBudgetAmount(val)) {
+onEl(replaceBudgetBtn, 'click', async () => {
+  const val = roundMoney(parseFloat(budgetInput.value));
+  if (!isValidAmount(val)) {
     budgetInput.focus();
-    showAppToast('Enter a valid budget amount (₹0 to ₹10,00,00,000)');
+    showAppToast('Enter a valid budget amount between ₹1 and ₹10,00,00,000');
     return;
   }
   const prevVal = Number(appData.budgets[activeMonth] || 0);
   appData.budgets[activeMonth] = val;
   appData.budgetUpdatedAt[activeMonth] = Date.now();
-  if (val > 0) {
-    clearSavedReminder();
-  }
+  clearSavedReminder();
   budgetDrawer.classList.add('hidden');
   renderAll({ soundCue: val > prevVal ? 'added' : null, targetYm: activeMonth });
   await StorageService.saveData(appData);
 });
 
-resetBudgetBtn.addEventListener('click', async () => {
+onEl(resetBudgetBtn, 'click', async () => {
   const confirmed = confirm(
     `Reset ${formatMonthLabel(activeMonth)} budget to ₹0? Recorded expenses will remain intact.`
   );
@@ -2127,11 +2315,11 @@ resetBudgetBtn.addEventListener('click', async () => {
   await StorageService.saveData(appData);
 });
 
-expenseForm.addEventListener('submit', async (e) => {
+onEl(expenseForm, 'submit', async (e) => {
   e.preventDefault();
   if (!canSubmitExpense()) return;
 
-  const amount = parseFloat(amountInput.value);
+  const amount = roundMoney(parseFloat(amountInput.value));
   if (!isValidAmount(amount)) {
     amountInput.focus();
     showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
@@ -2184,13 +2372,28 @@ expenseForm.addEventListener('submit', async (e) => {
   await StorageService.saveData(appData);
 });
 
-async function deleteExpenseById(id) {
+// H2: Delete with 4.5s Undo toast that clears tombstone and restores entry
+async function deleteExpenseById(id, silent = false) {
   const numId = normalizeId(id);
   if (!numId) return;
+  const deletedTx = appData.expenses.find((item) => normalizeId(item.id) === numId);
+  if (!deletedTx) return;
+
   appData.expenses = appData.expenses.filter((item) => normalizeId(item.id) !== numId);
   recordTombstone(numId);
   renderAll();
   await StorageService.saveData(appData);
+
+  if (!silent) {
+    showAppToast(`Deleted ${formatINR(deletedTx.amount)} — Undo`, async () => {
+      removeTombstonesForIds([deletedTx.id]);
+      appData.expenses.unshift({ ...deletedTx, updatedAt: Date.now() });
+      appData.expenses.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+      renderAll();
+      await StorageService.saveData(appData);
+      showAppToast('Entry restored');
+    });
+  }
 }
 
 function handleTransactionListClick(e) {
@@ -2208,14 +2411,13 @@ function handleTransactionListClick(e) {
   }
 }
 
-transactionList.addEventListener('click', handleTransactionListClick);
-if (recentList) {
-  recentList.addEventListener('click', handleTransactionListClick);
-}
+onEl(transactionList, 'click', handleTransactionListClick);
+onEl(recentList, 'click', handleTransactionListClick);
 
+// L6: Prefix any leading whitespace/newline + formula character (`=`, `+`, `-`, `@`)
 function sanitizeCsvCell(value) {
   let str = String(value ?? '');
-  if (/^[=+\-@\t\r]/.test(str)) {
+  if (/^[\s=+\-@]/.test(str)) {
     str = `'${str}`;
   }
   return `"${str.replace(/"/g, '""')}"`;
@@ -2231,7 +2433,7 @@ function downloadExpensesCsv(expensesSubset, fileLabel) {
     e.date,
     sanitizeCsvCell(e.category),
     sanitizeCsvCell(e.mode),
-    Number(e.amount),
+    roundMoney(e.amount),
     sanitizeCsvCell(e.note || '')
   ]);
 
@@ -2248,7 +2450,7 @@ function downloadExpensesCsv(expensesSubset, fileLabel) {
   URL.revokeObjectURL(url);
 }
 
-exportCsvBtn.addEventListener('click', (e) => {
+onEl(exportCsvBtn, 'click', (e) => {
   if (e.shiftKey) {
     downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
     return;
@@ -2261,18 +2463,16 @@ exportCsvBtn.addEventListener('click', (e) => {
   downloadExpensesCsv(monthExpenses, activeMonth);
 });
 
-if (exportAllBackupBtn) {
-  exportAllBackupBtn.addEventListener('click', () => {
-    downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
-  });
-}
+onEl(exportAllBackupBtn, 'click', () => {
+  downloadExpensesCsv(appData.expenses, 'All_Months_Backup');
+});
 
-filterCategory.addEventListener('change', () => renderTransactions());
-filterPayment.addEventListener('change', () => renderTransactions());
-searchInput.addEventListener('input', () => renderTransactions());
+onEl(filterCategory, 'change', () => renderTransactions());
+onEl(filterPayment, 'change', () => renderTransactions());
+onEl(searchInput, 'input', () => renderTransactions());
 
 /* ============================================================================
-   15. RENDERING ENGINE (SUMMARY, MoM, CATEGORY CAPS, RECENT & HISTORY)
+   17. RENDERING ENGINE (INTEGER PAISE SUMS, MoM, CAPS, RECENT & HISTORY)
    ============================================================================ */
 function renderAll(options = {}) {
   const { soundCue = null, targetYm = activeMonth } = options;
@@ -2334,7 +2534,7 @@ function renderSummaryAndSplit(monthExpenses = AnalyticsEngine.getMonthExpenses(
   let barFillPct = 0;
 
   if (metrics.totalAvailablePool > 0) {
-    const leftPct = (metrics.remainingBalance / metrics.totalAvailablePool) * 100;
+    const leftPct = (toPaise(metrics.remainingBalance) / toPaise(metrics.totalAvailablePool)) * 100;
     barFillPct = Math.min(100, Math.max(0, Math.round(leftPct)));
   } else if (metrics.remainingBalance < 0) {
     barFillPct = 100;
@@ -2360,19 +2560,20 @@ function renderSummaryAndSplit(monthExpenses = AnalyticsEngine.getMonthExpenses(
   monthCount.textContent = `${monthExpenses.length} ${monthExpenses.length === 1 ? 'transaction' : 'transactions'}`;
 
   const todayExpenses = AnalyticsEngine.getMonthExpenses(today.slice(0, 7)).filter((e) => e.date === today);
-  const todaySum = todayExpenses.reduce((s, e) => s + Number(e.amount), 0);
+  const todayPaise = todayExpenses.reduce((s, e) => s + toPaise(e.amount), 0);
+  const todaySum = fromPaise(todayPaise);
   todayTotal.textContent = formatINR(todaySum);
   todayDateLabel.textContent = formatDateReadable(today);
 
   const daysLeft = getRemainingDaysInMonth(activeMonth);
-  const currentBalance = metrics.remainingBalance;
-  const todaysLimit = currentBalance > 0 ? currentBalance / daysLeft : 0;
+  const currentBalancePaise = toPaise(metrics.remainingBalance);
+  const todaysLimitPaise = currentBalancePaise > 0 ? Math.round(currentBalancePaise / daysLeft) : 0;
 
   let todayStatus = 'green';
   let todayStatusWord = 'On track';
 
-  if (todaysLimit > 0) {
-    const todayRatio = (todaySum / todaysLimit) * 100;
+  if (todaysLimitPaise > 0) {
+    const todayRatio = (todayPaise / todaysLimitPaise) * 100;
     if (todayRatio < 70) {
       todayStatus = 'green';
       todayStatusWord = 'On track';
@@ -2383,9 +2584,10 @@ function renderSummaryAndSplit(monthExpenses = AnalyticsEngine.getMonthExpenses(
       todayStatus = 'red';
       todayStatusWord = 'Over';
     }
-    if (dailyAllowanceText) dailyAllowanceText.textContent = `Today's limit: ${formatINR(Math.round(todaysLimit))}`;
-    currentDailyFormulaText = `Auto-set: ${formatINR(currentBalance)} balance left / ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`;
-  } else if (todaySum > 0) {
+    const roundedLimitRupees = Math.round(fromPaise(todaysLimitPaise));
+    if (dailyAllowanceText) dailyAllowanceText.textContent = `Today's limit: ${formatINR(roundedLimitRupees)}`;
+    currentDailyFormulaText = `Auto-set: ${formatINR(metrics.remainingBalance)} balance left / ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`;
+  } else if (todayPaise > 0) {
     todayStatus = 'red';
     todayStatusWord = 'Over';
     if (dailyAllowanceText) dailyAllowanceText.textContent = 'No allowance left';
@@ -2398,19 +2600,20 @@ function renderSummaryAndSplit(monthExpenses = AnalyticsEngine.getMonthExpenses(
   setStatusClass(todayStatusBadge, todayStatus);
   todayStatusBadge.textContent = todayStatusWord;
 
-  let cashSum = 0;
-  let upiLiteSum = 0;
-  let upiBankSum = 0;
+  let cashPaise = 0;
+  let upiLitePaise = 0;
+  let upiBankPaise = 0;
 
   monthExpenses.forEach((e) => {
-    if (e.mode === 'Cash') cashSum += Number(e.amount);
-    else if (e.mode === 'UPI Lite') upiLiteSum += Number(e.amount);
-    else if (e.mode === 'Bank Account' || e.mode === 'UPI Bank') upiBankSum += Number(e.amount);
+    const p = toPaise(e.amount);
+    if (e.mode === 'Cash') cashPaise += p;
+    else if (e.mode === 'UPI Lite') upiLitePaise += p;
+    else if (e.mode === 'Bank Account' || e.mode === 'UPI Bank') upiBankPaise += p;
   });
 
-  cashTotal.textContent = formatINR(cashSum);
-  upiLiteTotal.textContent = formatINR(upiLiteSum);
-  upiBankTotal.textContent = formatINR(upiBankSum);
+  cashTotal.textContent = formatINR(fromPaise(cashPaise));
+  upiLiteTotal.textContent = formatINR(fromPaise(upiLitePaise));
+  upiBankTotal.textContent = formatINR(fromPaise(upiBankPaise));
 }
 
 function renderMoMComparison() {
@@ -2451,13 +2654,13 @@ function renderMoMComparison() {
 
 function renderCategoryBreakdown(items = AnalyticsEngine.getMonthExpenses(activeMonth)) {
   if (!categoryDonut) return;
-  const total = items.reduce((s, e) => s + Number(e.amount), 0);
+  const totalPaise = items.reduce((s, e) => s + toPaise(e.amount), 0);
+  const total = fromPaise(totalPaise);
   if (breakdownMonthLabel) breakdownMonthLabel.textContent = formatMonthLabel(activeMonth);
 
   const totals = { ...AnalyticsEngine.getCategoryTotals(activeMonth) };
   const caps = appData.categoryCaps || {};
 
-  // Ensure categories with active caps appear even if ₹0 spent yet
   Object.keys(caps).forEach((cat) => {
     if (caps[cat] > 0 && totals[cat] === undefined) {
       totals[cat] = 0;
@@ -2474,19 +2677,21 @@ function renderCategoryBreakdown(items = AnalyticsEngine.getMonthExpenses(active
   const totalText = formatINR(total);
   const barsHtml = sorted
     .map(([cat, val]) => {
+      const valPaise = toPaise(val);
       const cap = Number(caps[cat] || 0);
-      const sharePct = total > 0 ? Math.round((val / total) * 100) : 0;
+      const capPaise = toPaise(cap);
+      const sharePct = totalPaise > 0 ? Math.round((valPaise / totalPaise) * 100) : 0;
       const barPct =
-        cap > 0
-          ? Math.min(100, Math.max(val > 0 ? 2 : 0, Math.round((val / cap) * 100)))
-          : total > 0
+        capPaise > 0
+          ? Math.min(100, Math.max(valPaise > 0 ? 2 : 0, Math.round((valPaise / capPaise) * 100)))
+          : totalPaise > 0
             ? Math.min(100, Math.max(1, sharePct))
             : 0;
 
       let capStateClass = '';
       let capBadgeHtml = '';
-      if (cap > 0) {
-        const capRatio = (val / cap) * 100;
+      if (capPaise > 0) {
+        const capRatio = (valPaise / capPaise) * 100;
         if (capRatio > 100) capStateClass = 'cap-over';
         else if (capRatio >= 80) capStateClass = 'cap-warn';
         capBadgeHtml = `<span class="cap-badge ${capStateClass}">Cap ${formatINR(cap)}</span>`;
@@ -2503,7 +2708,7 @@ function renderCategoryBreakdown(items = AnalyticsEngine.getMonthExpenses(active
             </span>
             <span class="cat-bar-values">
               <span class="donut-legend-amt">${formatINR(val)}</span>
-              <span class="donut-legend-pct">${cap > 0 ? Math.round((val / cap) * 100) : sharePct}%</span>
+              <span class="donut-legend-pct">${capPaise > 0 ? Math.round((valPaise / capPaise) * 100) : sharePct}%</span>
             </span>
           </div>
           <div class="cat-bar-track">
@@ -2538,9 +2743,10 @@ function renderRecent(all = AnalyticsEngine.getMonthExpenses(activeMonth)) {
 }
 
 function renderTransactions(monthItems = AnalyticsEngine.getMonthExpenses(activeMonth)) {
-  const catFilter = filterCategory.value;
-  const modeFilter = filterPayment.value;
-  const query = searchInput.value.trim().toLowerCase();
+  if (!transactionList) return;
+  const catFilter = filterCategory ? filterCategory.value : 'ALL';
+  const modeFilter = filterPayment ? filterPayment.value : 'ALL';
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
   const filtered = monthItems
     .filter((e) => (catFilter === 'ALL' ? true : e.category === catFilter))
@@ -2555,7 +2761,9 @@ function renderTransactions(monthItems = AnalyticsEngine.getMonthExpenses(active
       );
     });
 
-  historyCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
+  if (historyCount) {
+    historyCount.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
+  }
 
   if (filtered.length === 0) {
     transactionList.innerHTML =
@@ -2576,7 +2784,7 @@ function escapeHtml(str) {
 }
 
 /* ============================================================================
-   16. SHORTCUTS MANAGER & MONTHLY FIXED BILLS MANAGER
+   18. SHORTCUTS MANAGER & MONTHLY FIXED BILLS MANAGER (L1, L8)
    ============================================================================ */
 const TAB_KEY = 'expenseflow_mobile_tab';
 const TABS = ['home', 'transactions', 'insights', 'more'];
@@ -2643,8 +2851,8 @@ function pushModalHistoryState(modalName) {
 
 function closeShortcutsModalUI() {
   closeModal(shortcutsModal);
-  shortcutEditorBox.classList.add('hidden');
-  quickLogConfirmBox.classList.add('hidden');
+  if (shortcutEditorBox) shortcutEditorBox.classList.add('hidden');
+  if (quickLogConfirmBox) quickLogConfirmBox.classList.add('hidden');
   editingShortcutId = null;
   pendingQuickLogShortcut = null;
 }
@@ -2652,7 +2860,7 @@ function closeShortcutsModalUI() {
 function openShortcutsModal(startInCreateMode = false) {
   editingShortcutId = null;
   pendingQuickLogShortcut = null;
-  quickLogConfirmBox.classList.add('hidden');
+  if (quickLogConfirmBox) quickLogConfirmBox.classList.add('hidden');
   renderShortcutsList();
   if (shortcutsModal.classList.contains('hidden')) {
     pushModalHistoryState('shortcuts');
@@ -2660,11 +2868,11 @@ function openShortcutsModal(startInCreateMode = false) {
   openModalWithFocus(shortcutsModal, startInCreateMode ? scAmount : addNewShortcutModalBtn);
 
   if (startInCreateMode) startCreateShortcut();
-  else shortcutEditorBox.classList.add('hidden');
+  else if (shortcutEditorBox) shortcutEditorBox.classList.add('hidden');
 }
 
 function closeShortcutsModal(fromPopState = false) {
-  if (shortcutsModal.classList.contains('hidden')) return;
+  if (!shortcutsModal || shortcutsModal.classList.contains('hidden')) return;
   closeShortcutsModalUI();
   if (!fromPopState && window.history && window.history.state && window.history.state.modal === 'shortcuts') {
     window.history.back();
@@ -2674,7 +2882,7 @@ function closeShortcutsModal(fromPopState = false) {
 function startCreateShortcut() {
   editingShortcutId = null;
   pendingQuickLogShortcut = null;
-  quickLogConfirmBox.classList.add('hidden');
+  if (quickLogConfirmBox) quickLogConfirmBox.classList.add('hidden');
   shortcutEditorTitle.textContent = 'New Shortcut';
   scAmount.value = '';
   scCategory.value = 'Food';
@@ -2687,7 +2895,7 @@ function startCreateShortcut() {
 function startEditShortcut(sc) {
   editingShortcutId = sc.id;
   pendingQuickLogShortcut = null;
-  quickLogConfirmBox.classList.add('hidden');
+  if (quickLogConfirmBox) quickLogConfirmBox.classList.add('hidden');
   shortcutEditorTitle.textContent = 'Edit Shortcut';
   scAmount.value = sc.amount;
   scCategory.value = sc.category;
@@ -2715,7 +2923,7 @@ function promptShortcutAmount(sc) {
 }
 
 async function commitShortcutExpense(sc, overrideAmount) {
-  const finalAmount = Number(overrideAmount);
+  const finalAmount = roundMoney(Number(overrideAmount));
   if (!isValidAmount(finalAmount)) {
     quickLogAmountInput.focus();
     showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
@@ -2757,66 +2965,67 @@ async function commitShortcutExpense(sc, overrideAmount) {
 
   renderAll({ soundCue: 'deducted', targetYm: entryMonth });
   await StorageService.saveData(appData);
-  showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
+  showAppToast(`Added ${formatINR(entry.amount)} — Undo`, async () => {
+    await deleteExpenseById(entry.id, true);
+    showAppToast('Expense undone');
+  });
 }
 
-if (openQuickAddBtn) openQuickAddBtn.addEventListener('click', () => openShortcutsModal(false));
-if (openRecurringQuickBtn) openRecurringQuickBtn.addEventListener('click', openRecurringModal);
-if (headerShortcutsBtn) headerShortcutsBtn.addEventListener('click', () => openShortcutsModal(false));
-if (addNewShortcutModalBtn) addNewShortcutModalBtn.addEventListener('click', startCreateShortcut);
-if (closeShortcutsBtn) closeShortcutsBtn.addEventListener('click', () => closeShortcutsModal(false));
-if (closeShortcutsFooterBtn) closeShortcutsFooterBtn.addEventListener('click', () => closeShortcutsModal(false));
+onEl(openQuickAddBtn, 'click', () => openShortcutsModal(false));
+onEl(openRecurringQuickBtn, 'click', openRecurringModal);
+onEl(headerShortcutsBtn, 'click', () => openShortcutsModal(false));
+onEl(addNewShortcutModalBtn, 'click', startCreateShortcut);
+onEl(closeShortcutsBtn, 'click', () => closeShortcutsModal(false));
+onEl(closeShortcutsFooterBtn, 'click', () => closeShortcutsModal(false));
 
-confirmQuickLogBtn.addEventListener('click', async () => {
+onEl(confirmQuickLogBtn, 'click', async () => {
   if (!pendingQuickLogShortcut) return;
   await commitShortcutExpense(pendingQuickLogShortcut, quickLogAmountInput.value);
 });
 
-cancelQuickLogBtn.addEventListener('click', () => {
+onEl(cancelQuickLogBtn, 'click', () => {
   pendingQuickLogShortcut = null;
-  quickLogConfirmBox.classList.add('hidden');
+  if (quickLogConfirmBox) quickLogConfirmBox.classList.add('hidden');
 });
 
-quickLogAmountInput.addEventListener('keydown', (e) => {
+onEl(quickLogAmountInput, 'keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
     confirmQuickLogBtn.click();
   }
 });
 
-if (saveAsShortcutBtn) {
-  saveAsShortcutBtn.addEventListener('click', async () => {
-    const amount = parseFloat(amountInput.value);
-    if (!isValidAmount(amount)) {
-      amountInput.focus();
-      showAppToast('Enter a valid amount first');
-      return;
-    }
+onEl(saveAsShortcutBtn, 'click', async () => {
+  const amount = roundMoney(parseFloat(amountInput.value));
+  if (!isValidAmount(amount)) {
+    amountInput.focus();
+    showAppToast('Enter a valid amount first');
+    return;
+  }
 
-    const mode = selectedMode === 'Cash' ? 'Cash' : selectedUpiType;
-    const shortcut = {
-      id: generateNumericId(),
-      amount,
-      category: categoryInput.value,
-      mode,
-      note: noteInput.value.trim().slice(0, 40),
-      updatedAt: Date.now()
-    };
+  const mode = selectedMode === 'Cash' ? 'Cash' : selectedUpiType;
+  const shortcut = {
+    id: generateNumericId(),
+    amount,
+    category: categoryInput.value,
+    mode,
+    note: noteInput.value.trim().slice(0, 40),
+    updatedAt: Date.now()
+  };
 
-    appData.shortcuts.push(shortcut);
-    await StorageService.saveData(appData);
-    renderMoreList();
-    showAppToast(`Saved shortcut: ${formatINR(amount)}`);
-  });
-}
-
-cancelShortcutEditBtn.addEventListener('click', () => {
-  editingShortcutId = null;
-  shortcutEditorBox.classList.add('hidden');
+  appData.shortcuts.push(shortcut);
+  await StorageService.saveData(appData);
+  renderMoreList();
+  showAppToast(`Saved shortcut: ${formatINR(amount)}`);
 });
 
-saveShortcutEditBtn.addEventListener('click', async () => {
-  const val = parseFloat(scAmount.value);
+onEl(cancelShortcutEditBtn, 'click', () => {
+  editingShortcutId = null;
+  if (shortcutEditorBox) shortcutEditorBox.classList.add('hidden');
+});
+
+onEl(saveShortcutEditBtn, 'click', async () => {
+  const val = roundMoney(parseFloat(scAmount.value));
   if (!isValidAmount(val)) {
     scAmount.focus();
     showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
@@ -2851,7 +3060,7 @@ saveShortcutEditBtn.addEventListener('click', async () => {
   }
 
   editingShortcutId = null;
-  shortcutEditorBox.classList.add('hidden');
+  if (shortcutEditorBox) shortcutEditorBox.classList.add('hidden');
   renderShortcutsList();
   renderMoreList();
 });
@@ -2895,7 +3104,7 @@ function renderShortcutsList() {
     .join('');
 }
 
-shortcutsList.addEventListener('click', async (e) => {
+onEl(shortcutsList, 'click', async (e) => {
   const actionBtn = e.target.closest('[data-sc-action]');
   const row = e.target.closest('.shortcut-row');
   if (!actionBtn || !row) return;
@@ -2931,16 +3140,17 @@ shortcutsList.addEventListener('click', async (e) => {
   }
 });
 
-/* Recurring Bills Manager */
+/* Recurring Bills Manager (L8: Duplicate guard on Add All) */
 function closeRecurringModalUI() {
   closeModal(recurringModal);
-  recurringEditorBox.classList.add('hidden');
+  if (recurringEditorBox) recurringEditorBox.classList.add('hidden');
   editingRecurringId = null;
 }
 
 function openRecurringModal() {
   editingRecurringId = null;
-  recurringEditorBox.classList.add('hidden');
+  if (recurringEditorBox) recurringEditorBox.classList.add('hidden');
+  if (applyRecurringNowBtn) applyRecurringNowBtn.disabled = false;
   renderRecurringList();
   if (recurringModal.classList.contains('hidden')) {
     pushModalHistoryState('recurring');
@@ -2949,7 +3159,7 @@ function openRecurringModal() {
 }
 
 function closeRecurringModal(fromPopState = false) {
-  if (recurringModal.classList.contains('hidden')) return;
+  if (!recurringModal || recurringModal.classList.contains('hidden')) return;
   closeRecurringModalUI();
   if (!fromPopState && window.history && window.history.state && window.history.state.modal === 'recurring') {
     window.history.back();
@@ -2986,7 +3196,7 @@ async function addSingleRecurringBillNow(bill) {
   const billDate = activeMonth === todayIso.slice(0, 7) ? todayIso : `${activeMonth}-01`;
   const entry = {
     id: generateNumericId(),
-    amount: Number(bill.amount),
+    amount: roundMoney(bill.amount),
     category: bill.category,
     mode: bill.mode,
     date: billDate,
@@ -2998,89 +3208,107 @@ async function addSingleRecurringBillNow(bill) {
   closeRecurringModal(false);
   renderAll({ soundCue: 'deducted', targetYm: activeMonth });
   await StorageService.saveData(appData);
-  showAppToast(`Added ${formatINR(entry.amount)} — Undo`, entry.id);
-}
-
-if (addNewRecurringBtn) addNewRecurringBtn.addEventListener('click', startCreateRecurring);
-if (closeRecurringBtn) closeRecurringBtn.addEventListener('click', () => closeRecurringModal(false));
-if (closeRecurringFooterBtn) closeRecurringFooterBtn.addEventListener('click', () => closeRecurringModal(false));
-if (cancelRecurringEditBtn) {
-  cancelRecurringEditBtn.addEventListener('click', () => {
-    editingRecurringId = null;
-    recurringEditorBox.classList.add('hidden');
+  showAppToast(`Added ${formatINR(entry.amount)} — Undo`, async () => {
+    await deleteExpenseById(entry.id, true);
+    showAppToast('Expense undone');
   });
 }
 
-if (saveRecurringEditBtn) {
-  saveRecurringEditBtn.addEventListener('click', async () => {
-    const val = parseFloat(recAmount.value);
-    if (!isValidAmount(val)) {
-      recAmount.focus();
-      showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
-      return;
-    }
+onEl(addNewRecurringBtn, 'click', startCreateRecurring);
+onEl(closeRecurringBtn, 'click', () => closeRecurringModal(false));
+onEl(closeRecurringFooterBtn, 'click', () => closeRecurringModal(false));
+onEl(cancelRecurringEditBtn, 'click', () => {
+  editingRecurringId = null;
+  if (recurringEditorBox) recurringEditorBox.classList.add('hidden');
+});
 
-    if (editingRecurringId === null) {
-      appData.recurring.push({
-        id: generateNumericId(),
+onEl(saveRecurringEditBtn, 'click', async () => {
+  const val = roundMoney(parseFloat(recAmount.value));
+  if (!isValidAmount(val)) {
+    recAmount.focus();
+    showAppToast('Enter a valid amount between ₹1 and ₹10,00,00,000');
+    return;
+  }
+
+  if (editingRecurringId === null) {
+    appData.recurring.push({
+      id: generateNumericId(),
+      amount: val,
+      category: recCategory.value,
+      mode: recMode.value,
+      note: recNote.value.trim().slice(0, 40),
+      updatedAt: Date.now()
+    });
+    await StorageService.saveData(appData);
+    showAppToast(`Saved monthly bill: ${formatINR(val)}`);
+  } else {
+    const idx = appData.recurring.findIndex((r) => normalizeId(r.id) === editingRecurringId);
+    if (idx !== -1) {
+      appData.recurring[idx] = {
+        ...appData.recurring[idx],
         amount: val,
         category: recCategory.value,
         mode: recMode.value,
         note: recNote.value.trim().slice(0, 40),
         updatedAt: Date.now()
-      });
+      };
       await StorageService.saveData(appData);
-      showAppToast(`Saved monthly bill: ${formatINR(val)}`);
-    } else {
-      const idx = appData.recurring.findIndex((r) => normalizeId(r.id) === editingRecurringId);
-      if (idx !== -1) {
-        appData.recurring[idx] = {
-          ...appData.recurring[idx],
-          amount: val,
-          category: recCategory.value,
-          mode: recMode.value,
-          note: recNote.value.trim().slice(0, 40),
-          updatedAt: Date.now()
-        };
-        await StorageService.saveData(appData);
-        showAppToast('Monthly bill updated');
-      }
+      showAppToast('Monthly bill updated');
     }
+  }
 
-    editingRecurringId = null;
-    recurringEditorBox.classList.add('hidden');
-    renderRecurringList();
-    renderMoreList();
-  });
-}
+  editingRecurringId = null;
+  if (recurringEditorBox) recurringEditorBox.classList.add('hidden');
+  renderRecurringList();
+  renderMoreList();
+});
 
-if (applyRecurringNowBtn) {
-  applyRecurringNowBtn.addEventListener('click', async () => {
-    const bills = appData.recurring || [];
-    if (bills.length === 0) {
-      showAppToast('Add a monthly bill first using + Add');
-      return;
-    }
-    const todayIso = getTodayISO();
-    const billDate = activeMonth === todayIso.slice(0, 7) ? todayIso : `${activeMonth}-01`;
-    bills.forEach((bill, idx) => {
-      appData.expenses.unshift({
-        id: generateNumericId() + idx * 1000,
-        amount: Number(bill.amount),
-        category: bill.category,
-        mode: bill.mode,
-        date: billDate,
-        note: bill.note || 'Monthly Fixed Bill',
-        updatedAt: Date.now()
-      });
+// L8: Guard against repeated taps / duplicate bills in the same month
+onEl(applyRecurringNowBtn, 'click', async () => {
+  if (applyRecurringNowBtn.disabled) return;
+  const bills = appData.recurring || [];
+  if (bills.length === 0) {
+    showAppToast('Add a monthly bill first using + Add');
+    return;
+  }
+
+  const monthItems = AnalyticsEngine.getMonthExpenses(activeMonth);
+  const alreadyHasAny = bills.some((b) =>
+    monthItems.some(
+      (tx) =>
+        tx.category === b.category &&
+        toPaise(tx.amount) === toPaise(b.amount) &&
+        (tx.note || '') === (b.note || 'Monthly Fixed Bill')
+    )
+  );
+
+  if (alreadyHasAny) {
+    const proceed = confirm(
+      `One or more recurring bills already exist in ${formatMonthLabel(activeMonth)}. Add them again anyway?`
+    );
+    if (!proceed) return;
+  }
+
+  applyRecurringNowBtn.disabled = true;
+  const todayIso = getTodayISO();
+  const billDate = activeMonth === todayIso.slice(0, 7) ? todayIso : `${activeMonth}-01`;
+  bills.forEach((bill) => {
+    appData.expenses.unshift({
+      id: generateNumericId(),
+      amount: roundMoney(bill.amount),
+      category: bill.category,
+      mode: bill.mode,
+      date: billDate,
+      note: bill.note || 'Monthly Fixed Bill',
+      updatedAt: Date.now()
     });
-
-    closeRecurringModal(false);
-    renderAll({ soundCue: 'deducted', targetYm: activeMonth });
-    await StorageService.saveData(appData);
-    showAppToast(`Added ${bills.length} recurring ${bills.length === 1 ? 'bill' : 'bills'} to ${formatMonthLabel(activeMonth)}`);
   });
-}
+
+  closeRecurringModal(false);
+  renderAll({ soundCue: 'deducted', targetYm: activeMonth });
+  await StorageService.saveData(appData);
+  showAppToast(`Added ${bills.length} recurring ${bills.length === 1 ? 'bill' : 'bills'} to ${formatMonthLabel(activeMonth)}`);
+});
 
 function renderRecurringList() {
   if (!recurringList) return;
@@ -3120,34 +3348,32 @@ function renderRecurringList() {
     .join('');
 }
 
-if (recurringList) {
-  recurringList.addEventListener('click', async (e) => {
-    const actionBtn = e.target.closest('[data-rec-action]');
-    const row = e.target.closest('.shortcut-row');
-    if (!actionBtn || !row) return;
+onEl(recurringList, 'click', async (e) => {
+  const actionBtn = e.target.closest('[data-rec-action]');
+  const row = e.target.closest('.shortcut-row');
+  if (!actionBtn || !row) return;
 
-    const id = normalizeId(row.dataset.recId);
-    const idx = appData.recurring.findIndex((r) => normalizeId(r.id) === id);
-    if (idx === -1) return;
+  const id = normalizeId(row.dataset.recId);
+  const idx = appData.recurring.findIndex((r) => normalizeId(r.id) === id);
+  if (idx === -1) return;
 
-    const action = actionBtn.dataset.recAction;
-    if (action === 'use') {
-      await addSingleRecurringBillNow(appData.recurring[idx]);
-    } else if (action === 'edit') {
-      startEditRecurring(appData.recurring[idx]);
-    } else if (action === 'delete') {
-      recordTombstone(id);
-      appData.recurring.splice(idx, 1);
-      await StorageService.saveData(appData);
-      renderRecurringList();
-      renderMoreList();
-      showAppToast('Monthly bill removed');
-    }
-  });
-}
+  const action = actionBtn.dataset.recAction;
+  if (action === 'use') {
+    await addSingleRecurringBillNow(appData.recurring[idx]);
+  } else if (action === 'edit') {
+    startEditRecurring(appData.recurring[idx]);
+  } else if (action === 'delete') {
+    recordTombstone(id);
+    appData.recurring.splice(idx, 1);
+    await StorageService.saveData(appData);
+    renderRecurringList();
+    renderMoreList();
+    showAppToast('Monthly bill removed');
+  }
+});
 
 /* ============================================================================
-   17. MOBILE TABS & UNIFIED HISTORY STATE MACHINE
+   19. MOBILE TABS & UNIFIED HISTORY STATE MACHINE
    ============================================================================ */
 function readSavedTab() {
   const t = safeGetItem(TAB_KEY, 'home');
@@ -3210,11 +3436,11 @@ window.addEventListener('popstate', (event) => {
     closeModal(funEditionModal);
     return;
   }
-  if (!recurringModal.classList.contains('hidden')) {
+  if (recurringModal && !recurringModal.classList.contains('hidden')) {
     closeRecurringModalUI();
     return;
   }
-  if (!shortcutsModal.classList.contains('hidden')) {
+  if (shortcutsModal && !shortcutsModal.classList.contains('hidden')) {
     closeShortcutsModalUI();
     return;
   }
@@ -3230,16 +3456,12 @@ window.addEventListener('popstate', (event) => {
   applyTabUI(targetTab, false);
 });
 
-if (tabbar) {
-  tabbar.addEventListener('click', (e) => {
-    const btn = e.target.closest('.mobile-tab');
-    if (btn) setTab(btn.dataset.tab, true, false);
-  });
-}
+onEl(tabbar, 'click', (e) => {
+  const btn = e.target.closest('.mobile-tab');
+  if (btn) setTab(btn.dataset.tab, true, false);
+});
 
-if (recentSeeAllBtn) {
-  recentSeeAllBtn.addEventListener('click', () => setTab('transactions', true, false));
-}
+onEl(recentSeeAllBtn, 'click', () => setTab('transactions', true, false));
 
 function isKeyboardField(el) {
   if (!el || !el.tagName) return false;
@@ -3311,7 +3533,9 @@ function getMoreItems() {
       icon: 'info',
       title: 'App Info & Diagnostics',
       desc: 'Schema health, offline cache & rollback controls',
-      action: () => openGuideBtn.click()
+      action: () => {
+        if (openGuideBtn) openGuideBtn.click();
+      }
     }
   ];
 }
@@ -3336,54 +3560,70 @@ function renderMoreList() {
     .join('');
 }
 
-if (moreList) {
-  moreList.addEventListener('click', (e) => {
-    const row = e.target.closest('.more-row');
-    if (!row) return;
-    const items = getMoreItems();
-    const item = items[Number(row.dataset.moreIndex)];
-    if (item && item.action) item.action();
-  });
-}
+onEl(moreList, 'click', (e) => {
+  const row = e.target.closest('.more-row');
+  if (!row) return;
+  const items = getMoreItems();
+  const item = items[Number(row.dataset.moreIndex)];
+  if (item && item.action) item.action();
+});
 
 /* ============================================================================
-   18. BUILT-IN SELF-TEST SUITE & SERVICE WORKER REGISTRATION (Rules 13, 17)
+   20. BUILT-IN SELF-TEST SUITE & SERVICE WORKER REGISTRATION (Audit Verified)
    ============================================================================ */
 const AppSelfTest = {
   run() {
     try {
-      // Test 1: XSS sanitization
+      // T1: XSS escaping & CSV newline injection check (L6)
       const escaped = escapeHtml('<script>alert(1)</script>');
       if (escaped.includes('<script>')) throw new Error('XSS escape check failed');
+      const csvCell = sanitizeCsvCell('\n=SUM(A1:A2)');
+      if (!csvCell.startsWith(`"'`)) throw new Error('CSV newline formula guard failed');
 
-      // Test 2: Schema v4 pack/unpack roundtrip with categoryCaps
-      const sample = StorageService.unpackData({
+      // T2: Integer paise precision check (L3)
+      if (fromPaise(toPaise(0.1) + toPaise(0.2)) !== 0.3) {
+        throw new Error('Paise precision check failed');
+      }
+
+      // T3: Timestamp clamping & legacy budget merge check (H3, M1)
+      const futureSample = StorageService.unpackData({
         b: { '2026-10': 3000, '2026-11': 2000 },
+        bt: { '2026-10': 1e300, invalid: 'bad' },
         cc: { Food: 1500 },
         e: [
-          { i: 101, a: 500, c: 'Food', m: 'Cash', d: '2026-10-15', n: 'Test' },
+          { i: 101, a: 500, c: 'Food', m: 'Cash', d: '2026-10-15', n: 'Test', u: 1e300 },
           { i: 102, a: 800, c: 'Food', m: 'UPI Lite', d: '2026-11-10', n: 'Test2' }
         ]
       });
-      if (sample.categoryCaps.Food !== 1500 || sample.expenses.length !== 2) {
-        throw new Error('Schema unpack check failed');
+      if (futureSample.expenses[0].updatedAt > Date.now() + AppConfig.MAX_FUTURE_SKEW_MS) {
+        throw new Error('Timestamp clamp check failed');
+      }
+      if (futureSample.budgetUpdatedAt.invalid !== undefined) {
+        throw new Error('bt key sanitization failed');
       }
 
-      // Test 3: Rollover & MoM analytics verification
-      const metricsNov = AnalyticsEngine.calculateMonthMetrics('2026-11', sample);
-      // Oct rollover = 3000 - 500 = 2500; Nov available = 2500 + 2000 = 4500; Nov remaining = 4500 - 800 = 3700
+      // Legacy backup without `bt` merges into empty local budget (H3)
+      const legacyMerged = StorageService.mergeSnapshots(
+        StorageService.emptyState(),
+        StorageService.unpackData({ b: { '2026-09': 2500 }, e: [] })
+      );
+      if (legacyMerged.budgets['2026-09'] !== 2500) {
+        throw new Error('Legacy budget merge check failed');
+      }
+
+      // T4: Rollover & MoM analytics verification
+      const metricsNov = AnalyticsEngine.calculateMonthMetrics('2026-11', futureSample);
       if (metricsNov.rolloverIn !== 2500 || metricsNov.remainingBalance !== 3700) {
         throw new Error('Rollover math check failed');
       }
 
-      const momNov = AnalyticsEngine.calculateMoMComparison('2026-11', sample);
-      // Nov spent 800 vs Oct spent 500 -> +60%
+      const momNov = AnalyticsEngine.calculateMoMComparison('2026-11', futureSample);
       if (momNov.pctChange !== 60 || momNov.topCat !== 'Food') {
         throw new Error('MoM analytics check failed');
       }
 
       AnalyticsEngine.invalidate();
-      Diagnostics.selfTestStatus = 'Passed (4/4)';
+      Diagnostics.selfTestStatus = 'Passed (6/6)';
       return true;
     } catch (err) {
       AnalyticsEngine.invalidate();
@@ -3399,7 +3639,11 @@ function registerOfflineServiceWorker() {
     Diagnostics.swStatus = 'Unsupported';
     return;
   }
-  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  if (
+    window.location.protocol !== 'https:' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
     Diagnostics.swStatus = 'Requires HTTPS';
     return;
   }
@@ -3416,11 +3660,12 @@ function registerOfflineServiceWorker() {
 }
 
 /* ============================================================================
-   19. BOOTSTRAPPING
+   21. BOOTSTRAPPING
    ============================================================================ */
 function init() {
   populateCategorySelects();
   SoundService.preload();
+  StorageService.cleanupExpiredPreRestoreSnapshot();
   AppSelfTest.run();
   registerOfflineServiceWorker();
 
@@ -3428,8 +3673,8 @@ function init() {
   applyTheme(savedTheme, false);
   updateSoundToggleUI();
 
-  activeMonthInput.value = activeMonth;
-  dateInput.value = getTodayISO();
+  if (activeMonthInput) activeMonthInput.value = activeMonth;
+  if (dateInput) dateInput.value = getTodayISO();
 
   previousMonthStatusByYm[activeMonth] = getMonthHealthStatus(
     AnalyticsEngine.calculateMonthMetrics(activeMonth)
@@ -3445,7 +3690,7 @@ function init() {
 
   if (StorageService.isDriveOptedIn()) {
     updateSyncUI('Saved Locally (Sync Drive)', 'default');
-    driveAuthBtn.textContent = 'Sync Drive';
+    if (driveAuthBtn) driveAuthBtn.textContent = 'Sync Drive';
   } else {
     updateSyncUI('Saved on Device', 'default');
   }
