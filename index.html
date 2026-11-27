@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
+  <meta name="theme-color" content="#047857" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';" />
   <title>TrackYourRupee • Personal Daily Ledger</title>
+  <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23047857'/%3E%3Cstop offset='100%25' stop-color='%230f766e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='6' width='28' height='21' rx='6' fill='url(%23g)'/%3E%3Cpath d='M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2' fill='none' stroke='%23047857' stroke-width='2.2'/%3E%3Crect x='21' y='13' width='9' height='7' rx='2.5' fill='%23ffffff' fill-opacity='0.22'/%3E%3Ccircle cx='24.5' cy='16.5' r='1.3' fill='%23ffffff'/%3E%3Cpath d='M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,7 +17,10 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- First-Visit Welcome & Privacy Modal -->
+  <!-- Hidden File Input for JSON Snapshot Restore -->
+  <input type="file" id="jsonRestoreInput" accept=".json,application/json" class="hidden" aria-hidden="true" />
+
+  <!-- First-Visit Welcome, Privacy & System Diagnostics Modal -->
   <div class="modal-backdrop hidden" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
     <div class="modal-card">
       <div class="modal-header">
@@ -22,33 +29,34 @@
             <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad1)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#047857" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <div>
-            <h2 id="welcomeTitle">Welcome to TrackYourRupee! 👋</h2>
-            <p class="subtitle">Your Personal, Offline-First Daily Ledger</p>
+            <h2 id="welcomeTitle">Welcome to TrackYourRupee</h2>
+            <p class="subtitle">Offline-First Personal Daily Ledger</p>
           </div>
         </div>
       </div>
       <div class="modal-body">
         <ul class="welcome-list">
           <li>
-            <strong>1. Welcome &amp; About TrackYourRupee:</strong><br />
-            TrackYourRupee is a lightweight personal finance tracker designed to help you manage your monthly allowance, track daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong>, and automatically carry forward unspent balances every month.
+            <strong>1. Purpose &amp; Architecture:</strong><br />
+            TrackYourRupee manages monthly allowances, rollover balances, category caps, and daily spending across <strong>Cash</strong>, <strong>UPI Lite</strong>, and <strong>UPI Bank</strong> with zero backend servers.
           </li>
           <li>
-            <strong>2. How Your Data Is Stored (Local &amp; Google Drive):</strong><br />
-            Everything you enter is saved immediately inside your own browser's <code>LocalStorage</code> so the app works completely offline. If you opt in to <strong>Google Drive Backup</strong>, it creates and syncs only one compact <code>expense.json</code> file inside your personal Drive—we cannot see, access, or read any other files in your Drive.
+            <strong>2. Local Storage, Offline Cache &amp; Backup:</strong><br />
+            Records are saved immediately inside browser <code>LocalStorage</code> (Schema v4) with Service Worker offline caching. Use <strong>Backup JSON</strong> to download a full snapshot (budgets, caps, shortcuts, bills, and entries) or <strong>Backup CSV</strong> for spreadsheets.
           </li>
           <li>
-            <strong>3. 100% Privacy &amp; Zero-Server Security:</strong><br />
-            TrackYourRupee runs on a zero-server architecture. No developer server, database, or third-party tracker ever collects, reads, or sells your financial data—your numbers stay strictly between your device and your own Google account. <em><br /><strong>TIP: To keep your local data safe, avoid clearing your browser's site data/cache unless you have backed up to Google Drive or exported a CSV.</strong></em>
+            <strong>3. Strict Privacy &amp; Input Isolation:</strong><br />
+            No third-party trackers or server databases read your records. Optional Google Drive sync uses <code>drive.file</code> scope so only <code>expense.json</code> is accessible.
           </li>
-          <li>
-            <strong>4. Coming in Future Updates:</strong><br />
-            *Support for bank statement linking may be added in future versions to make expense tracking even faster.<br />*Also support to manage your budget and guide to spend less may be added.
+          <li id="systemHealthPanel">
+            <strong>4. System Health &amp; Diagnostics:</strong><br />
+            <span class="muted-text" id="diagnosticReadout">Checking local storage, cache, and schema integrity...</span>
           </li>
         </ul>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary full-width" id="closeWelcomeBtn">Got It, Start Tracking</button>
+      <div class="modal-footer modal-footer-row">
+        <button type="button" class="btn btn-secondary" id="rollbackRestoreBtn">Rollback Pre-Restore</button>
+        <button type="button" class="btn btn-primary flex-1" id="closeWelcomeBtn">Start Tracking</button>
       </div>
     </div>
   </div>
@@ -62,24 +70,23 @@
             <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad2)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#047857" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
           <div>
-            <h2 id="budgetPromptTitle">Set Your Monthly Budget</h2>
-            <p class="subtitle" id="budgetPromptSubtitle">Plan your allowance &amp; fixed monthly bills</p>
+            <h2 id="budgetPromptTitle">Set Monthly Budget</h2>
+            <p class="subtitle" id="budgetPromptSubtitle">Plan allowance &amp; fixed monthly bills</p>
           </div>
         </div>
       </div>
       <div class="modal-body">
         <p class="muted-text prompt-msg-space" id="budgetPromptMessage">
-          You haven't set a budget for this month yet. Adding a budget helps track your remaining balance automatically.
+          Set a monthly budget to track your remaining balance automatically.
         </p>
         <div class="form-group">
           <label for="promptBudgetAmount">Monthly Budget Amount (₹)</label>
           <input type="number" id="promptBudgetAmount" placeholder="e.g. 3000" min="1" max="100000000" step="1" />
         </div>
 
-        <!-- Recurring Fixed Bills Checklist -->
         <div class="upi-sub-box mt-12 hidden" id="promptRecurringBox">
           <div class="recurring-prompt-head">
-            <strong>Include Monthly Fixed / Recurring Bills</strong>
+            <strong>Include Monthly Fixed Bills</strong>
             <span class="muted-text" id="promptRecurringTotal">Total: ₹0</span>
           </div>
           <div id="promptRecurringChecklist" class="recurring-checklist"></div>
@@ -100,7 +107,90 @@
       </div>
       <div class="modal-footer modal-footer-row">
         <button type="button" class="btn btn-primary flex-1" id="savePromptBudgetBtn">Save Budget</button>
-        <button type="button" class="btn btn-secondary" id="notNowBudgetBtn">Not Now / Remind Later</button>
+        <button type="button" class="btn btn-secondary" id="notNowBudgetBtn">Remind Later</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Existing Transaction Modal (Feature 5) -->
+  <div class="modal-backdrop hidden" id="editTxModal" role="dialog" aria-modal="true" aria-labelledby="editTxTitle">
+    <div class="modal-card">
+      <div class="modal-header shortcuts-modal-header">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </span>
+          <div>
+            <h2 id="editTxTitle">Edit Transaction</h2>
+            <p class="subtitle">Update entry details without losing history order</p>
+          </div>
+        </div>
+        <button type="button" class="icon-close-btn" id="closeEditTxBtn" aria-label="Close edit dialog">
+          <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editTxForm" autocomplete="off">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editTxAmount">Amount (₹)</label>
+              <input type="number" id="editTxAmount" min="1" max="100000000" step="0.01" required />
+            </div>
+            <div class="form-group">
+              <label for="editTxCategory">Category</label>
+              <select id="editTxCategory" required></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editTxMode">Payment Mode</label>
+              <select id="editTxMode" required>
+                <option value="Cash">Cash</option>
+                <option value="UPI Lite">UPI • Lite</option>
+                <option value="Bank Account">UPI • Bank</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editTxDate">Date</label>
+              <input type="date" id="editTxDate" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editTxNote">Note (Optional)</label>
+            <input type="text" id="editTxNote" maxlength="60" placeholder="e.g. Lunch / Bus ticket" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer modal-footer-row">
+        <button type="button" class="btn btn-primary flex-1" id="saveEditTxBtn">Save Changes</button>
+        <button type="button" class="btn btn-secondary" id="cancelEditTxBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-Category Monthly Spending Caps Modal (Feature 4) -->
+  <div class="modal-backdrop hidden" id="categoryCapsModal" role="dialog" aria-modal="true" aria-labelledby="categoryCapsTitle">
+    <div class="modal-card">
+      <div class="modal-header shortcuts-modal-header">
+        <div class="brand">
+          <span class="brand-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>
+          </span>
+          <div>
+            <h2 id="categoryCapsTitle">Category Monthly Caps</h2>
+            <p class="subtitle">Set optional limits per category (leave blank or 0 for no cap)</p>
+          </div>
+        </div>
+        <button type="button" class="icon-close-btn" id="closeCategoryCapsBtn" aria-label="Close category caps dialog">
+          <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="categoryCapsFormList" class="caps-form-list"></div>
+      </div>
+      <div class="modal-footer modal-footer-row">
+        <button type="button" class="btn btn-primary flex-1" id="saveCategoryCapsBtn">Save Category Caps</button>
+        <button type="button" class="btn btn-secondary" id="cancelCategoryCapsBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -111,7 +201,7 @@
       <div class="modal-header shortcuts-modal-header">
         <div class="brand">
           <span class="brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad3)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#047857" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
           </span>
           <div>
             <h2 id="shortcutsModalTitle">Quick Add Shortcuts</h2>
@@ -120,7 +210,9 @@
         </div>
         <div class="shortcuts-header-actions">
           <button type="button" class="btn btn-primary btn-sm" id="addNewShortcutModalBtn" aria-label="Add new shortcut">+ Add</button>
-          <button type="button" class="icon-close-btn" id="closeShortcutsBtn" aria-label="Close shortcuts dialog">✕</button>
+          <button type="button" class="icon-close-btn" id="closeShortcutsBtn" aria-label="Close shortcuts dialog">
+            <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
       </div>
       <div class="modal-body">
@@ -130,7 +222,9 @@
           <div class="quick-log-confirm-row">
             <input type="number" id="quickLogAmountInput" min="1" max="100000000" step="0.01" placeholder="Amount (₹)" aria-label="Shortcut expense amount" />
             <button type="button" class="btn btn-primary" id="confirmQuickLogBtn">Add Now</button>
-            <button type="button" class="btn btn-secondary" id="cancelQuickLogBtn" aria-label="Cancel quick log">✕</button>
+            <button type="button" class="btn btn-secondary" id="cancelQuickLogBtn" aria-label="Cancel quick log">
+              <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
           </div>
         </div>
 
@@ -157,7 +251,7 @@
             </div>
             <div class="form-group">
               <label for="scNote">Label / Note</label>
-              <input type="text" id="scNote" maxlength="40" placeholder="e.g. Chai / Auto" />
+              <input type="text" id="scNote" maxlength="40" placeholder="e.g. Tea / Auto" />
             </div>
           </div>
           <div class="shortcut-editor-actions">
@@ -180,7 +274,7 @@
       <div class="modal-header shortcuts-modal-header">
         <div class="brand">
           <span class="brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad4)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#047857" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </span>
           <div>
             <h2 id="recurringModalTitle">Monthly Fixed Bills</h2>
@@ -189,7 +283,9 @@
         </div>
         <div class="shortcuts-header-actions">
           <button type="button" class="btn btn-primary btn-sm" id="addNewRecurringBtn" aria-label="Add monthly recurring bill">+ Add</button>
-          <button type="button" class="icon-close-btn" id="closeRecurringBtn" aria-label="Close recurring bills dialog">✕</button>
+          <button type="button" class="icon-close-btn" id="closeRecurringBtn" aria-label="Close recurring bills dialog">
+            <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
       </div>
       <div class="modal-body">
@@ -240,29 +336,31 @@
       <div class="modal-header shortcuts-modal-header">
         <div class="brand">
           <span class="brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 32 32"><defs><linearGradient id="brandGrad5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0f766e"/></linearGradient></defs><rect x="2" y="6" width="28" height="21" rx="6" fill="url(#brandGrad5)"/><path d="M6 6V4.5A2.5 2.5 0 0 1 8.5 2H23a2 2 0 0 1 2 2v2" fill="none" stroke="#047857" stroke-width="2.2"/><rect x="21" y="13" width="9" height="7" rx="2.5" fill="#ffffff" fill-opacity="0.22"/><circle cx="24.5" cy="16.5" r="1.3" fill="#ffffff"/><path d="M9 11.5h7M9 14.8h7M13.5 11.5c1.8 0 2.5 1.1 2.5 2.3 0 1.4-1.1 2.4-2.8 2.4H9.5l5.8 5.3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 20 2 20"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="0.8" fill="#b45309"/></svg>
           </span>
           <div>
-            <h2 id="funEditionTitle">Heads Up — Fun Audio Edition</h2>
-            <p class="subtitle">Please check your volume before switching</p>
+            <h2 id="funEditionTitle">Notice — Fun Audio Edition</h2>
+            <p class="subtitle">Check device media volume before switching</p>
           </div>
         </div>
-        <button type="button" class="icon-close-btn" id="closeFunEditionBtn" aria-label="Close warning dialog">✕</button>
+        <button type="button" class="icon-close-btn" id="closeFunEditionBtn" aria-label="Close warning dialog">
+          <svg class="ui-svg-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
       </div>
       <div class="modal-body">
         <ul class="welcome-list">
           <li>
-            <strong>🔊 Keep Sound Low in Public:</strong><br />
-            The Fun Edition plays loud, unexpected reaction sound effects whenever expenses are deducted. Lower your media volume or use earphones if you are in class, a library, or around family.
+            <strong>Audio Volume Notice:</strong><br />
+            The Fun Edition plays loud reaction sound clips whenever expenses are logged. Lower your media volume or connect earphones in classrooms, libraries, or shared spaces.
           </li>
           <li>
-            <strong>⚠️ Proceed at Your Own Risk:</strong><br />
-            You are leaving the standard edition and opening the separate Fun Audio Edition in a new tab. Continue only at your own risk.
+            <strong>External Edition Notice:</strong><br />
+            You are opening the separate Fun Audio Edition in a new browser tab. Continue at your own discretion.
           </li>
         </ul>
       </div>
       <div class="modal-footer modal-footer-row">
-        <button type="button" class="btn btn-primary flex-1" id="confirmFunEditionBtn">Continue at My Own Risk →</button>
+        <button type="button" class="btn btn-primary flex-1" id="confirmFunEditionBtn">Continue to Fun Edition</button>
         <button type="button" class="btn btn-secondary" id="cancelFunEditionBtn">Stay Here</button>
       </div>
     </div>
@@ -293,9 +391,18 @@
           <input type="month" id="activeMonthInput" title="Switch Month" />
         </div>
         <span class="storage-badge" id="storageStatus" data-mtab="home">Saved on Device</span>
-        <button type="button" class="btn btn-secondary desktop-only" id="headerShortcutsBtn" title="Manage Quick Add Shortcuts">⚡ Shortcuts</button>
-        <button type="button" class="btn btn-secondary desktop-only" id="headerRecurringBtn" title="Manage Monthly Fixed Bills">🔁 Recurring</button>
-        <button type="button" class="btn btn-secondary desktop-only" id="soundToggleBtn" title="Toggle Sound Effects">🔊 Sound: On</button>
+        <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="headerShortcutsBtn" title="Manage Quick Add Shortcuts">
+          <svg class="ui-svg" viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Shortcuts</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="headerRecurringBtn" title="Manage Monthly Fixed Bills">
+          <svg class="ui-svg" viewBox="0 0 24 24" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          <span>Recurring</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-icon-label desktop-only" id="soundToggleBtn" title="Toggle Sound Effects">
+          <svg class="ui-svg" id="soundToggleIcon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span id="soundToggleText">Sound: On</span>
+        </button>
         <button type="button" class="btn btn-drive" id="driveAuthBtn" data-mtab="home">Backup to Drive</button>
         <button type="button" class="btn btn-secondary" id="themeToggleBtn" data-mtab="home" title="Switch Light / Dark Theme">Dark Mode</button>
         <button type="button" class="btn btn-secondary" id="exportCsvBtn" data-mtab="home" title="Export active month CSV (Shift+Click for All Months)">Export CSV</button>
@@ -305,8 +412,8 @@
     <!-- Optional Google Drive Backup Prompt Banner -->
     <section class="card drive-prompt-banner hidden" id="drivePromptBanner" data-mtab="home">
       <div class="drive-prompt-text">
-        <strong>Want to back up your expenses to Google Drive?</strong>
-        <span class="muted-text">Your data is already saved safely on this device. Connect Drive only if you want cross-device sync via a single private <code>expense.json</code> file.</span>
+        <strong>Back up expenses to Google Drive</strong>
+        <span class="muted-text">Your data is saved locally on this device. Connect Drive for cross-device sync via a single private <code>expense.json</code> file.</span>
       </div>
       <div class="drive-prompt-actions">
         <button type="button" class="btn btn-primary" id="promptConnectBtn">Sign in &amp; Sync Drive</button>
@@ -350,7 +457,9 @@
 
         <div class="reminder-chip hidden" id="budgetReminderChip">
           <span id="budgetReminderText">Reminder: --</span>
-          <button type="button" class="reminder-del-btn" id="deleteReminderBtn" title="Delete Reminder" aria-label="Delete budget reminder">✕</button>
+          <button type="button" class="reminder-del-btn" id="deleteReminderBtn" title="Delete Reminder" aria-label="Delete budget reminder">
+            <svg class="ui-svg-xs" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
       </article>
 
@@ -373,7 +482,10 @@
           <div class="stat-block stat-block-right">
             <span class="metric-label">Spent Today</span>
             <h2 class="metric-value metric-value-secondary" id="todayTotal">₹0</h2>
-            <button type="button" class="metric-sub daily-limit-trigger" id="dailyAllowanceSub" title="Tap to see how Today's Limit is calculated" aria-label="Explain how today's daily spending limit is calculated">Today's limit: ₹0 ⓘ</button>
+            <button type="button" class="metric-sub daily-limit-trigger" id="dailyAllowanceSub" title="Tap to see how Today's Limit is calculated" aria-label="Explain how today's daily spending limit is calculated">
+              <span id="dailyAllowanceText">Today's limit: ₹0</span>
+              <svg class="ui-svg-xs inline-info-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.8" fill="currentColor" stroke="none"/></svg>
+            </button>
           </div>
         </div>
       </article>
@@ -423,14 +535,20 @@
 
     <!-- Adaptive 2-Column Main Grid -->
     <main class="main-grid" id="mainGrid" data-mtab="home transactions insights">
-      <!-- Left Column: Add Expense -->
+      <!-- Left Column: Add Expense + Insights Modules -->
       <div class="left-column" id="leftColumn" data-mtab="home insights">
         <section class="card form-card" data-mtab="home">
           <div class="card-header">
             <h3>Add Expense</h3>
             <div class="module-header-right">
-              <button type="button" class="btn btn-quick-add" id="openRecurringQuickBtn" aria-label="Trigger Monthly Recurring Bills">🔁 Recurring</button>
-              <button type="button" class="btn btn-quick-add" id="openQuickAddBtn" aria-label="Open Quick Add Shortcuts">⚡ Quick add</button>
+              <button type="button" class="btn btn-quick-add btn-icon-label" id="openRecurringQuickBtn" aria-label="Trigger Monthly Recurring Bills">
+                <svg class="ui-svg-xs" viewBox="0 0 24 24" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                <span>Recurring</span>
+              </button>
+              <button type="button" class="btn btn-quick-add btn-icon-label" id="openQuickAddBtn" aria-label="Open Quick Add Shortcuts">
+                <svg class="ui-svg-xs" viewBox="0 0 24 24" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span>Quick add</span>
+              </button>
             </div>
           </div>
           <form id="expenseForm" autocomplete="off">
@@ -474,16 +592,45 @@
 
             <div class="form-submit-row">
               <button type="submit" class="btn btn-primary submit-expense-btn">+ Record Expense</button>
-              <button type="button" class="btn btn-secondary save-shortcut-btn" id="saveAsShortcutBtn" title="Save as 1-tap shortcut">☆ Save shortcut</button>
+              <button type="button" class="btn btn-secondary save-shortcut-btn btn-icon-label" id="saveAsShortcutBtn" title="Save as 1-tap shortcut">
+                <svg class="ui-svg-xs" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Save shortcut</span>
+              </button>
             </div>
           </form>
         </section>
 
-        <!-- Category Breakdown Donut Module -->
+        <!-- Month-over-Month Comparison Card (Feature 6) -->
+        <section class="card mom-card" id="momComparisonCard" data-mtab="insights">
+          <div class="card-header module-header">
+            <div>
+              <h3>Month-over-Month</h3>
+              <span class="muted-text" id="momSubtitle">Comparing against previous month</span>
+            </div>
+            <span class="status-pill status-green" id="momDeltaBadge">0%</span>
+          </div>
+          <div class="mom-grid">
+            <div class="mom-metric">
+              <span class="metric-label" id="momPrevLabel">Previous Month</span>
+              <strong id="momPrevTotal">₹0</strong>
+              <span class="metric-sub" id="momDailyAvg">Daily avg: ₹0</span>
+            </div>
+            <div class="mom-metric mom-metric-right">
+              <span class="metric-label">Top Category Shift</span>
+              <strong id="momTopShiftCategory">--</strong>
+              <span class="metric-sub" id="momTopShiftDetail">No prior data</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Category Breakdown Module (With Category Caps - Feature 4) -->
         <section class="card breakdown-card" id="breakdownCard" data-mtab="insights">
           <div class="card-header">
-            <h3>Category Breakdown</h3>
-            <span class="muted-text" id="breakdownMonthLabel">This Month</span>
+            <div>
+              <h3>Category Breakdown</h3>
+              <span class="muted-text" id="breakdownMonthLabel">This Month</span>
+            </div>
+            <button type="button" class="mini-edit-btn" id="openCategoryCapsBtn">Set Caps</button>
           </div>
           <div id="categoryDonut" class="category-donut"></div>
         </section>
@@ -530,18 +677,21 @@
     <!-- Phone only: More tab -->
     <section class="card more-card mobile-only" data-mtab="more">
       <div class="card-header">
-        <h3>More</h3>
+        <h3>Tools &amp; Backups</h3>
       </div>
       <div id="moreList" class="more-list"></div>
     </section>
 
-    <!-- Developer & Privacy Footer -->
+    <!-- Developer, Backup & Privacy Footer -->
     <footer class="app-footer" data-mtab="more">
       <span>&copy; 2026 <strong>TrackYourRupee</strong> &bull; Developed by <strong>Muhammed Nihal Aalum</strong></span>
       <div class="footer-links">
-        <button type="button" class="footer-link-btn" id="openFunEditionBtn" title="Open Fun Audio Edition (Use with low volume)">Fun Edition</button>
-        <button type="button" class="footer-link-btn" id="exportAllBackupBtn" title="Export all months to CSV">Backup All Months (CSV)</button>
-        <button type="button" class="footer-link-btn" id="openGuideBtn">App Info &amp; Privacy</button>
+        <button type="button" class="footer-link-btn" id="openCategoryCapsFooterBtn">Category Caps</button>
+        <button type="button" class="footer-link-btn" id="exportJsonBackupBtn" title="Download full JSON snapshot">Backup JSON</button>
+        <button type="button" class="footer-link-btn" id="importJsonRestoreBtn" title="Restore &amp; merge JSON backup">Restore JSON</button>
+        <button type="button" class="footer-link-btn" id="exportAllBackupBtn" title="Export all months to CSV">Backup CSV</button>
+        <button type="button" class="footer-link-btn" id="openFunEditionBtn" title="Open Fun Audio Edition">Fun Edition</button>
+        <button type="button" class="footer-link-btn" id="openGuideBtn">App Info &amp; Diagnostics</button>
       </div>
     </footer>
   </div>
@@ -553,7 +703,7 @@
       <span>Home</span>
     </button>
     <button type="button" class="mobile-tab" data-tab="transactions">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><rect x="3" y="5" width="2" height="2" rx="0.5"/><rect x="3" y="11" width="2" height="2" rx="0.5"/><rect x="3" y="17" width="2" height="2" rx="0.5"/></svg>
       <span>Transactions</span>
     </button>
     <button type="button" class="mobile-tab" data-tab="insights">
@@ -561,7 +711,7 @@
       <span>Insights</span>
     </button>
     <button type="button" class="mobile-tab" data-tab="more">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10.5" width="3" height="3" rx="0.8"/><rect x="10.5" y="10.5" width="3" height="3" rx="0.8"/><rect x="17" y="10.5" width="3" height="3" rx="0.8"/></svg>
       <span>More</span>
     </button>
   </nav>
