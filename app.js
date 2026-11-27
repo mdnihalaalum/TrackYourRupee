@@ -1039,7 +1039,9 @@ let previousMonthStatusByYm = {};
 // Modals & File Input
 const jsonRestoreInput = document.getElementById('jsonRestoreInput');
 const welcomeModal = document.getElementById('welcomeModal');
-const welcomeSoundGroup = document.getElementById('welcomeSoundGroup');
+const welcomeSoundToggleBtn = document.getElementById('welcomeSoundToggleBtn');
+const welcomeSoundIcon = document.getElementById('welcomeSoundIcon');
+const welcomeSoundText = document.getElementById('welcomeSoundText');
 const closeWelcomeBtn = document.getElementById('closeWelcomeBtn');
 const rollbackRestoreBtn = document.getElementById('rollbackRestoreBtn');
 const diagnosticReadout = document.getElementById('diagnosticReadout');
@@ -1315,27 +1317,23 @@ function updateSyncUI(text, state = 'default') {
 
 function updateSoundToggleUI() {
   const on = SoundService.isEnabled();
-  if (soundToggleText) {
-    soundToggleText.textContent = on ? 'Sound: On' : 'Sound: Off';
-  }
-  if (soundToggleIcon) {
-    soundToggleIcon.innerHTML = on ? SVG_SHAPES.volumeOn : SVG_SHAPES.volumeOff;
-  }
-  if (welcomeSoundGroup) {
-    welcomeSoundGroup.querySelectorAll('.pill').forEach((btn) => {
-      const btnOn = btn.dataset.welcomeSound === 'on';
-      btn.classList.toggle('active', btnOn === on);
-    });
+  const label = on ? 'Sound: On' : 'Sound: Off';
+  const iconSvg = on ? SVG_SHAPES.volumeOn : SVG_SHAPES.volumeOff;
+
+  if (soundToggleText) soundToggleText.textContent = label;
+  if (soundToggleIcon) soundToggleIcon.innerHTML = iconSvg;
+
+  if (welcomeSoundText) welcomeSoundText.textContent = label;
+  if (welcomeSoundIcon) welcomeSoundIcon.innerHTML = iconSvg;
+  if (welcomeSoundToggleBtn) {
+    welcomeSoundToggleBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
   }
 }
 
-onEl(welcomeSoundGroup, 'click', (e) => {
-  const btn = e.target.closest('.pill');
-  if (!btn) return;
-  const enable = btn.dataset.welcomeSound === 'on';
-  SoundService.setEnabled(enable);
-  if (enable) SoundService.play('added');
+onEl(welcomeSoundToggleBtn, 'click', () => {
+  const enabled = SoundService.toggle();
   renderMoreList();
+  showAppToast(enabled ? 'Sound effects enabled' : 'Sound effects muted');
 });
 
 onEl(soundToggleBtn, 'click', () => {
@@ -2107,21 +2105,63 @@ function openModalWithFocus(modalEl, initialFocusEl = null) {
 function closeModal(modalEl) {
   if (!modalEl || modalEl.classList.contains('hidden')) return;
   modalEl.classList.add('hidden');
+  modalEl.classList.remove('kb-active');
+  modalEl.style.height = '';
+  const card = modalEl.querySelector('.modal-card');
+  if (card) card.style.maxHeight = '';
   if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
     lastFocusedBeforeModal.focus();
     lastFocusedBeforeModal = null;
   }
 }
 
-// Automatically scroll focused inputs inside modals into view when mobile keyboard opens
+// Shift & scroll modal card cleanly above mobile soft keyboard when editing
+function syncModalKeyboardLayout() {
+  const activeModal = getVisibleModal();
+  if (!activeModal) return;
+  const activeEl = document.activeElement;
+  const isFieldInModal =
+    activeEl &&
+    activeModal.contains(activeEl) &&
+    (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA');
+
+  activeModal.classList.toggle('kb-active', Boolean(isFieldInModal));
+
+  if (isFieldInModal) {
+    const modalBody = activeEl.closest('.modal-body');
+    if (modalBody) {
+      const targetTop = Math.max(0, activeEl.offsetTop - 24);
+      modalBody.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+    if (typeof activeEl.scrollIntoView === 'function') {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
 document.addEventListener('focusin', (e) => {
-  const modalBody = e.target && e.target.closest ? e.target.closest('.modal-body') : null;
-  if (modalBody && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) {
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 180);
+  if (e.target && e.target.closest && e.target.closest('.modal-backdrop')) {
+    syncModalKeyboardLayout();
+    setTimeout(syncModalKeyboardLayout, 220);
   }
 });
+
+document.addEventListener('focusout', () => {
+  setTimeout(syncModalKeyboardLayout, 60);
+});
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const activeModal = getVisibleModal();
+    if (!activeModal || window.innerWidth > 640) return;
+    activeModal.style.height = `${window.visualViewport.height}px`;
+    const card = activeModal.querySelector('.modal-card');
+    if (card) {
+      card.style.maxHeight = `${Math.max(240, window.visualViewport.height - 12)}px`;
+    }
+    syncModalKeyboardLayout();
+  });
+}
 
 document.addEventListener('keydown', (e) => {
   const activeModal = getVisibleModal();
