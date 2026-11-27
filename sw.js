@@ -2,7 +2,7 @@
  * TrackYourRupee Service Worker (Hardened Bounded App Shell Cache)
  * Fixes L9: Caches strictly known versioned app shell assets without unbounded cache growth.
  */
-const CACHE_NAME = 'trackyourrupee-shell-v4-4-2';
+const CACHE_NAME = 'trackyourrupee-shell-v4-4-3';
 const APP_SHELL_ASSETS = [
   './',
   './index.html',

@@ -24,7 +24,7 @@ const AppConfig = Object.freeze({
   DRIVE_SCOPE: 'https://www.googleapis.com/auth/drive.file',
   DRIVE_FILE_NAME: 'expense.json',
   FUN_EDITION_URL: 'https://trackyourrupeef.vercel.app',
-  MIN_AMOUNT: 1,
+  MIN_AMOUNT: 0.01,
   MAX_AMOUNT: 100000000,
   MAX_TOMBSTONES: 2000,
   TOMBSTONE_TTL_MS: 90 * 24 * 60 * 60 * 1000, // 90 days
@@ -444,7 +444,8 @@ const StorageService = {
       const rawMode = x.m ?? x.mode;
       const mode = VALID_MODES.has(rawMode) ? rawMode : 'Cash';
       const note = String(x.n ?? x.note ?? '').slice(0, 60);
-      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(id, Date.now()));
+      const idFallbackTs = id > 1e14 ? Math.floor(id / 1000) : id;
+      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(idFallbackTs, Date.now()));
       return { id, amount: amt, category, mode, date, note, updatedAt };
     };
 
@@ -458,7 +459,8 @@ const StorageService = {
       const rawMode = x.m ?? x.mode;
       const mode = VALID_MODES.has(rawMode) ? rawMode : 'Cash';
       const note = String(x.n ?? x.note ?? '').slice(0, 40);
-      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(id, Date.now()));
+      const idFallbackTs = id > 1e14 ? Math.floor(id / 1000) : id;
+      const updatedAt = clampTimestamp(x.u ?? x.updatedAt, clampTimestamp(idFallbackTs, Date.now()));
       return { id, amount: amt, category, mode, note, updatedAt };
     };
 
@@ -836,7 +838,6 @@ const StorageService = {
         await this.findOrCreateDriveFile(merged);
         const cloudData = await this.readDriveData();
         if (cloudData) {
-          this.createPreRestoreSafetySnapshot(merged);
           merged = this.mergeSnapshots(merged, cloudData);
           appData = merged;
           this.saveLocal(merged);
@@ -1696,7 +1697,6 @@ async function triggerDriveSync(promptMode = 'consent') {
 
     const cloudData = await StorageService.readDriveData();
     if (cloudData) {
-      StorageService.createPreRestoreSafetySnapshot(appData);
       appData = StorageService.mergeSnapshots(appData, cloudData);
     }
 
